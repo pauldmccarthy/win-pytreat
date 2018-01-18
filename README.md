@@ -4,7 +4,7 @@
 This repository contains Jupyter notebooks and data for the 2018 WIN PyTreat.
 
 
-The master repository can be found at: https://git.fmrib.ox.ac.uk/paulmc/pytreat-2018-practicals
+The master repository can be found at: https://git.fmrib.ox.ac.uk/fsl/pytreat-2018-practicals
 
 
 To contribute to the practicals:
