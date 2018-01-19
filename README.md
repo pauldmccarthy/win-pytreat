@@ -54,7 +54,7 @@ ln -s $FSLDIR/fslpython/envs/fslpython/bin/notedown $FSLDIR/bin/fslnotedown
 
 
 > [`notedown`](https://github.com/aaren/notedown) is a handy tool which allows
-> you to convert a markdownd (`.md`) file to a Jupyter notebook (`.ipynb`)
+> you to convert a markdown (`.md`) file to a Jupyter notebook (`.ipynb`)
 > file. So you can write your practical in your text editor of choice, and
 > then convert it into a notebook, instead of writing the practical in the web
 > browser interface.
