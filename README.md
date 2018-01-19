@@ -15,33 +15,33 @@ To contribute to the practicals:
 
 2. Make a local clone of your fork:
 
-   ```
-   git clone git@git.fmrib.ox.ac.uk:<username>/pytreat-2018-practicals
-   ```
+    ```
+    git clone git@git.fmrib.ox.ac.uk:<username>/pytreat-2018-practicals
+    ```
 
 3. Add the upstream repository as a remote:
 
-   ```
-   git remote add upstream git@git.fmrib.ox.ac.uk:fsl/pytreat-2018-practicals.git
-   ```
+    ```
+    git remote add upstream git@git.fmrib.ox.ac.uk:fsl/pytreat-2018-practicals.git
+    ```
 
 4. Make your changes on your local repository
 
 5. Rebase onto the upstream repository, and push your changes to your fork:
 
-   ```
-   git fetch --all
-   git rebase upstream master
-   git push origin master
-   ```
+    ```
+    git fetch --all
+    git rebase upstream master
+    git push origin master
+    ```
 
 6. In gitlab, submit a merge request from your fork back to the upstream
    repository.
 
 
-
 To run these notebooks in the `fslpython` environment, you must first install
 jupyter:
+
 
 ```
 source $FSLDIR/fslpython/bin/activate fslpython
