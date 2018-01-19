@@ -31,8 +31,8 @@ To contribute to the practicals:
 
     ```
     git fetch --all
-    git rebase upstream master
-    git push origin master
+    git rebase upstream/master
+    git push --force origin master
     ```
 
 6. In gitlab, submit a merge request from your fork back to the upstream
