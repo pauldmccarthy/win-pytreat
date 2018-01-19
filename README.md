@@ -4,18 +4,39 @@
 This repository contains Jupyter notebooks and data for the 2018 WIN PyTreat.
 
 
-The master repository can be found at:
+The upstream repository can be found at:
 
 https://git.fmrib.ox.ac.uk/fsl/pytreat-2018-practicals
 
 
 To contribute to the practicals:
 
-1. Fork the master repository on gitlab
+1. Fork the upstream repository on gitlab
 
-2. Make your changes on your fork
+2. Make a local clone of your fork:
 
-3. Submit a merge request back to the master repository
+   ```
+   git clone git@git.fmrib.ox.ac.uk:<username>/pytreat-2018-practicals
+   ```
+
+3. Add the upstream repository as a remote:
+
+   ```
+   git remote add upstream git@git.fmrib.ox.ac.uk:fsl/pytreat-2018-practicals.git
+   ```
+
+4. Make your changes on your local repository
+
+5. Rebase onto the upstream repository, and push your changes to your fork:
+
+   ```
+   git fetch --all
+   git rebase upstream master
+   git push origin master
+   ```
+
+6. In gitlab, submit a merge request from your fork back to the upstream
+   repository.
 
 
 
