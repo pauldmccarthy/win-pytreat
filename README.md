@@ -61,7 +61,7 @@ ln -s $FSLDIR/fslpython/envs/fslpython/bin/notedown $FSLDIR/bin/fslnotedown
 > above, you can run it on a markdown file like so:
 >
 > ```
-> notedown my_markdown_file.md > my_notebook.ipynb
+> fslnotedown my_markdown_file.md > my_notebook.ipynb
 > ```
 
 
