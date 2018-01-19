@@ -57,7 +57,12 @@ ln -s $FSLDIR/fslpython/envs/fslpython/bin/notedown $FSLDIR/bin/fslnotedown
 > you to convert a markdown (`.md`) file to a Jupyter notebook (`.ipynb`)
 > file. So you can write your practical in your text editor of choice, and
 > then convert it into a notebook, instead of writing the practical in the web
-> browser interface.
+> browser interface. If you install notedown as suggested in the code block
+> above, you can run it on a markdown file like so:
+>
+> ```
+> notedown my_markdown_file.md > my_notebook.ipynb
+> ```
 
 
 Now you can start the notebook server from the repository root:
