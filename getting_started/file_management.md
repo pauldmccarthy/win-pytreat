@@ -32,7 +32,7 @@ managing file and directory _paths_.
 
 
 If you are impatient, feel free to dive straight in to the exercises, and use the
-other sections as a reference. You might miss out on some neat tricks though ...
+other sections as a reference. You might miss out on some neat tricks though.
 
 
 * [Managing files and directories](#managing-files-and-directories)
@@ -52,10 +52,11 @@ other sections as a reference. You might miss out on some neat tricks though ...
 * [Exercises](#exercises)
  * [Re-name subject directories](#re-name-subject-directories)
  * [Re-organise a data set](#re-organise-a-data-set)
+ * [Re-name subject files](#re-name-subject-files)
  * [Compress all uncompressed images](#compress-all-uncompressed-images)
  * [Write your own `os.path.splitext`](#write-your-own-os-path-splitext)
  * [Write a function to return a specific image file](#write-a-function-to-return-a-specific-image-file)
-
+ * [Solutions](#solutions)
 
 
 <a class="anchor" id="managing-files-and-directories"></a>
@@ -394,6 +395,7 @@ print('Directory and base names: {}'.format(op.split(   path)))
 > having it return a tuple. For example, the implementation of `op.split` might
 > look something like this:
 >
+>
 > ```
 > def mysplit(path):
 >     dirname  = op.dirname(path)
@@ -677,33 +679,66 @@ print(op.join(op.sep, 'home', 'fsluser', '.bash_profile'))
 ### Re-name subject directories
 
 
-Rename the subject directories in raw_mri_data so that the subject IDs are
-padded with zeros, and thus will be able to be sorted alphabetically.
+Write a function which can rename the subject directories in `raw_mri_data` so
+that the subject IDs are padded with zeros, and thus will be able to be sorted
+alphabetically. This function:
+
+
+  - Should accept the path to the parent directory of the data set
+    (`raw_mri_data` in this case).
+  - Should be able to handle any number of subjects
+    > Hint: `numpy.log10`
+
+  - May assume that the subject directory names follow the pattern
+    `subj_[id]`, where `[id]` is the integer subject ID.
 
 
 <a class="anchor" id="re-organise-a-data-set"></a>
 ### Re-organise a data set
 
 
-Separate the data for each group (patients: 1, 4, 7, 8, 9, and controls: 2, 3,
-5, 6, 10) into sub-directories.
+Write a function which can be used to separate the data for each group
+(patients: 1, 4, 7, 8, 9, and controls: 2, 3, 5, 6, 10) into sub-directories
+`CON` and `PAT`.
+
+This function should work with any number of groups, and should accept three
+parameters:
+
+ - The root directory of the data set (e.g. `raw_mri_data`).
+ - A list of strings, the labels for each group.
+ - A list of lists, with each list containing the subject IDs for one group.
 
 
-<a class="anchor" id="rename-files"></a>
-### Rename files
+<a class="anchor" id="re-name-subject-files"></a>
+### Re-name subject files
 
 
-Rename all of the scans so that theuy are prefixed with '[group]_subj_[id]',
-where [group] is either CON or PAT, and [id] is the (zero-padded) subject ID.
+Write a function which, given a subject directory, renames all of the image
+files for this subject so that they are prefixed with `[group]_subj_[id]`,
+where `[group]` is either `CON` or `PAT`, and `[id]` is the (zero-padded)
+subject ID.
+
+
+This function should accept the following parameters:
+ - The subject directory
+ - The subject group
+
+
+**Bonus 1** Make your function work with both `.nii` and `.nii.gz` files.
+
+**Bonus 2** If you completed [the previous exercise](#re-organise-a-data-set),
+write a second function which accepts the data set directory as a sole
+parameter, and then calls the first function for every subject.
 
 
 <a class="anchor" id="compress-all-uncompressed-images"></a>
 ### Compress all uncompressed images
 
 
-Learn how to compress a file using the built-in
-[`gzip`](https://docs.python.org/3.5/library/gzip.html) library, and compress
-all of those uncompressed image files.
+Write a function which recursively scans a directory, and replaces all `.nii`
+files with `.nii.gz` files, using the built-in
+[`gzip`](https://docs.python.org/3.5/library/gzip.html) library to perform
+the compression.
 
 
 <a class="anchor" id="write-your-own-os-path-splitext"></a>
@@ -721,6 +756,56 @@ uncompressed NIFTI images.
 ### Write a function to return a specific image file
 
 
-Write a function which is given a group, numeric subject ID, and scan type
-(t1, t2, task, rest), and returns the fully resolved path to the relevant
-image file.
+Assuming that you have completed the previous exercises, and re-organised
+`raw_mri_data` so that it has the structure:
+
+  `raw_mri_data/[group]/subj_[id]/[group]_subj_[id]_[modality].nii.gz`
+
+write a function which is given:
+
+ - the data set directory
+ - a group label
+ - integer ubject ID
+ - modality (`'t1'`, `'t2'`, `'task'`, `'rest'`)
+
+and which returns the fully resolved path to the relevant image file.
+
+ > Hint: Python has [regular
+   expressions](https://docs.python.org/3.5/library/re.html) - you might want
+   to use one to cope with zero-padding.
+
+**Bonus** Modify the function so the group label does not need to be passed in.
+
+
+<a class="anchor" id="solutions"></a>
+### Solutions
+
+
+Use the `print_solution` function, defined below, to print the solution for a
+specific exercise.
+
+
+```
+from pygments import highlight
+from pygments.lexers import PythonLexer
+from pygments.formatters import HtmlFormatter
+import IPython
+
+# Pass the title of the exercise you
+# are interested to this function
+def print_solution(extitle):
+    solfile = ''.join([c.lower() if c.isalnum() else '_' for c in extitle])
+    solfile = op.join('.solutions', '{}.py'.format(solfile))
+
+    if not op.exists(solfile):
+        print('Can\'t find solution to exercise "{}"'.format(extitle))
+        return
+
+    with open(solfile, 'rt') as f:
+        code = f.read()
+
+    formatter = HtmlFormatter()
+    return IPython.display.HTML('<style type="text/css">{}</style>{}'.format(
+        formatter.get_style_defs('.highlight'),
+        highlight(code, PythonLexer(), formatter)))
+```
