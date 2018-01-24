@@ -106,11 +106,11 @@ print('Changed back to: {}'.format(cwd))
 
 For the rest of this practical, we're going to use a little data set that has
 been pre-generated, and is located in a sub-directory called
-`file_management`.
+`03_file_management`.
 
 
 ```
-os.chdir('file_management')
+os.chdir('03_file_management')
 ```
 
 
