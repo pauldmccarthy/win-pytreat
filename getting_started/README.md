@@ -1,7 +1,7 @@
 Getting started
 ===============
 
-This directoryt contains the "Getting started" practical.
+This directory contains the "Getting started" practical.
 
 1. Python basics (MJ)
 2. Text input/output (MC)
