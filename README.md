@@ -44,6 +44,15 @@ jupyter:
 
 
 ```
+# If your FSL installation requires administrative privileges, then you MUST
+# run these commands as root - don't just prefix each individual command with
+# sudo!
+#
+# One further complication - once you have become root, $FSLDIR may not be set,
+# so either set it as we have ione below, or make sure that it is set, before
+# proceeding.
+sudo su
+export FSLDIR=/usr/local/fsl
 source $FSLDIR/fslpython/bin/activate fslpython
 conda install jupyter
 pip install notedown
