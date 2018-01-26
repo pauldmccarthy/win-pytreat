@@ -44,9 +44,10 @@ jupyter:
 
 
 ```
-# If your FSL installation requires administrative privileges, then you MUST
-# run these commands as root - don't just prefix each individual command with
-# sudo!
+# If your FSL installation requires administrative privileges to modify, then
+# you MUST run these commands as root - don't just prefix each individual
+# command with sudo, or you will probably install jupyter into the wrong
+# location!
 #
 # One further complication - once you have become root, $FSLDIR may not be set,
 # so either set it as we have ione below, or make sure that it is set, before
