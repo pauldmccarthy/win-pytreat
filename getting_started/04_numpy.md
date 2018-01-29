@@ -23,11 +23,13 @@ alternative to Matlab as a scientific computing platform.
  * [Array properties](#array-properties)
  * [Descriptive statistics](#descriptive-statistics)
  * [Reshaping and rearranging arrays](#reshaping-and-rearranging-arrays)
+* [Multi-variate operations](#multi-variate-operations)
+ * [Matrix multplication](#matrix-multiplication)
+ * [Broadcasting](#broadcasting)
 * [Array indexing](#array-indexing)
  * [Indexing multi-dimensional arrays](#indexing-multi-dimensional-arrays)
  * [Boolean indexing](#boolean-indexing)
  * [Coordinate array indexing](#coordinate-array-indexing)
-* [Array operations and broadcasting](#array-operations-and-broadcasting)
 * [Generating random numbers](#generating-random-numbers)
 
 * [Appendix: Importing Numpy](#appendix-importing-numpy)
@@ -212,10 +214,6 @@ print( a % 2)
 ```
 
 
-We'll cover more advanced array operations
-[below](#array-operations-and-broadcasting).
-
-
 <a class="anchor" id="array-properties"></a>
 ### Array properties
 
@@ -395,6 +393,96 @@ print( dstacked)
 ```
 
 
+<a class="anchor" id="multi-variate-operations"></a>
+## Multi-variate operations
+
+
+Many operations in Numpy operate on an elementwise basis. For example:
+
+
+```
+a = np.random.randint(1, 10, (5))
+b = np.random.randint(1, 10, (5))
+
+print('a:     ', a)
+print('b:     ', b)
+print('a + b: ', a + b)
+print('a * b: ', a * b)
+```
+
+
+This also extends to higher dimensional arrays:
+
+
+```
+a = np.random.randint(1, 10, (4, 4))
+b = np.random.randint(1, 10, (4, 4))
+
+print('a:')
+print(a)
+print('b:')
+print(b)
+
+print('a + b')
+print(a + b)
+print('a * b')
+print(a * b)
+```
+
+
+Wait ... what's that you say? Oh, I couldn't understand because of all the
+froth coming out of your mouth. I guess you're angry that `a * b` didn't give
+you the matrix product, like it would have in Matlab.  Well all I can say is
+that Python is not Matlab. Get over it. Take a calmative.
+
+
+<a class="anchor" id="matrix-multiplication"></a>
+*## Matrix multiplication
+
+
+When your heart rate has returned to its normal caffeine-induced state, you
+can use the `dot` method, or the `@` operator, to perform matrix
+multiplication:
+
+
+```
+a = np.random.randint(1, 10, (4, 4))
+b = np.random.randint(1, 10, (4, 4))
+
+print('a:')
+print(a)
+print('b:')
+print(b)
+
+print('a @ b')
+print(a @ b)
+
+print('a.dot(b)')
+print(a.dot(b))
+
+print('b.dot(a)')
+print(b.dot(a))
+```
+
+
+> The `@` matrix multiplication operator is a relatively recent addition
+> to Python and Numpy, so you might not see it all that often in existing
+> code. But it's here to stay, so go ahead and use it!
+
+
+<a class="anchor" id="broadcasting"></a>
+### Broadcasting
+
+
+One of the coolest (and possibly confusing) features of Numpy is its
+[_broadcasting_
+rules](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
+
+
+
+
+
+
 <a class="anchor" id="array-indexing"></a>
 ## Array indexing
 
@@ -409,7 +497,9 @@ reference](https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html).
 > indices (if specified) are exclusive.
 
 
-Let's whet our appetites with some basic 1D array slicing:
+Let's whet our appetites with some basic 1D array slicing. Numpy supports the
+standard Python __slice__ notation for indexing, where you can specify the
+start and end indices, and the step size, via the `start:stop:step` syntax:
 
 
 ```
@@ -437,7 +527,7 @@ print('a:', a)
 every2nd = a[::2]
 print('every 2nd:', every2nd)
 every2nd += 10
-print('a':, a)
+print('a:', a)
 ```
 
 
@@ -496,8 +586,34 @@ print('elements in a that are > 5: ', a[a > 5])
 ```
 
 
+In contrast to the simple indexing we have already seen, boolean indexing will
+return a _copy_ of the indexed data, __not__ a view. For example:
+
+
+```
+a = np.random.randint(1, 10, 10)
+b = a[a > 5]
+print('a: ', a)
+print('b: ', b)
+print('Setting b[0] to 999')
+b[0] = 999
+print('a: ', a)
+print('b: ', b)
+```
+
+
+> In general, any 'simple' indexing operation on a Numpy array, where the
+> indexing object comprises integers, slices (using the standard Python
+> `start:stop:step` notation), colons (`:`) and/or ellipses (`...`), will
+> result in a __view__ into the indexed array. Any 'advanced' indexing
+> operation, where the indexing object contains anything else (e.g. boolean or
+> integer arrays, or even python lists), will result in a __copy__ of the
+> data.
+
+
 Logical operators `~` (not), `&` (and) and `|` (or) can be used to manipulate
 and combine boolean Numpy arrays:
+
 
 ```
 a    = np.random.randint(1, 10, 10)
@@ -518,14 +634,23 @@ print('elements in a which are > 5 or odd:   ', a[gt5 | ~even])
 ### Coordinate array indexing
 
 
-```
+You can index a numpy array using another array containing coordinates into
+the first array.  As with boolean indexing, this will result in a copy of the
+data.  Generally, you will need to have a separate array, or list, of
+coordinates into each data axis:
+
 
 ```
+a = np.random.randint(1, 10, (4, 4))
+print(a)
 
+rows    = [0, 2, 3]
+cols    = [1, 0, 2]
+indexed = a[rows, cols]
 
-<a class="anchor" id="array-operations-and-broadcasting"></a>
-## Array operations and broadcasting
-
+for r, c, v in zip(rows, cols, indexed):
+    print('a[{}, {}] = {}'.format(r, c, v))
+```
 
 
 <a class="anchor" id="generating-random-numbers"></a>
