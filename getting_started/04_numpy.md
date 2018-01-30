@@ -19,22 +19,25 @@ alternative to Matlab as a scientific computing platform.
 * [The Python list versus the Numpy array](#the-python-list-versus-the-numpy-array)
 * [Numpy basics](#numpy-basics)
  * [Creating arrays](#creating-arrays)
- * [Operating on arrays](#operating-on-arrays)
  * [Array properties](#array-properties)
  * [Descriptive statistics](#descriptive-statistics)
  * [Reshaping and rearranging arrays](#reshaping-and-rearranging-arrays)
-* [Multi-variate operations](#multi-variate-operations)
+* [Operating on arrays](#operating-on-arrays)
+ * [Scalar operations](#scalar-operations)
+ * [Multi-variate operations](#multi-variate-operations)
  * [Matrix multplication](#matrix-multiplication)
  * [Broadcasting](#broadcasting)
+ * [Linear algebra](#linear-algebra)
 * [Array indexing](#array-indexing)
  * [Indexing multi-dimensional arrays](#indexing-multi-dimensional-arrays)
  * [Boolean indexing](#boolean-indexing)
  * [Coordinate array indexing](#coordinate-array-indexing)
-* [Generating random numbers](#generating-random-numbers)
 
-* [Appendix: Importing Numpy](#appendix-importing-numpy)
-* [Appendix: Vectors in Numpy](#appendix-vectors-in-numpy)
+* [Appendix A: Generating random numbers](#appendix-generating-random-numbers)
+* [Appendix B: Importing Numpy](#appendix-importing-numpy)
+* [Appendix C: Vectors in Numpy](#appendix-vectors-in-numpy)
 
+* [Useful references](#useful-references)
 
 
 <a class="anchor" id="the-python-list-versus-the-numpy-array"></a>
@@ -76,10 +79,9 @@ But __BEWARE!__ A Python list is a terrible data structure for scientific
 computing!
 
 
-This is a major source of confusion for those poor souls who have spent their
-lives working in Matlab, but have finally seen the light and switched to
-Python. It is _crucial_ to be able to distinguish between a Python list and a
-Numpy array.
+This is a major source of confusion for people who are learning Python, and
+are trying to write efficient code. It is _crucial_ to be able to distinguish
+between a Python list and a Numpy array.
 
 
 ___Python list == Matlab cell array:___ A list in python is akin to a cell
@@ -165,7 +167,7 @@ print('np.zeros gives us zeros:                       ', np.zeros(5))
 print('np.ones gives us ones:                         ', np.ones(5))
 print('np.arange gives us a range:                    ', np.arange(5))
 print('np.linspace gives us N linearly spaced numbers:', np.linspace(0, 1, 5))
-print('np.random.random gives us random numbers:      ', np.random.random(5))
+print('np.random.random gives us random numbers [0-1]:', np.random.random(5))
 print('np.random.randint gives us random integers:    ', np.random.randint(1, 10, 5))
 print('np.eye gives us an identity matrix:')
 print(np.eye(4))
@@ -174,7 +176,8 @@ print(np.diag([1, 2, 3, 4]))
 ```
 
 
-> There will be more on random numbers [below](#generating-random-numbers).
+> There is more on random numbers
+> [below](#appendix-generating-random-numbers).
 
 
 The `zeros` and `ones` functions can also be used to generate N-dimensional
@@ -191,27 +194,6 @@ print(o)
 
 > Note that, in a 2D Numpy array, the first axis corresponds to rows, and the
 > second to columns - just like in Matlab.
-
-
-<a class="anchor" id="operating-on-arrays"></a>
-### Operating on arrays
-
-
-All of the mathematical operators you know and love can be applied to Numpy
-arrays:
-
-
-```
-a = np.random.randint(1, 10, (3, 3))
-print('a:')
-print(a)
-print('a + 2:')
-print( a + 2)
-print('a * 3:')
-print( a * 3)
-print('a % 2:')
-print( a % 2)
-```
 
 
 <a class="anchor" id="array-properties"></a>
@@ -278,7 +260,7 @@ print('prod:         ', a.prod())
 A numpy array can be reshaped very easily, using the `reshape` method.
 
 ```
-a = np.random.randint(1, 10, (4, 4))
+a = np.arange(16).reshape(4, 4)
 b = a.reshape((2, 8))
 print('a:')
 print(a)
@@ -306,7 +288,7 @@ function:
 
 
 ```
-a = np.random.randint(1, 10, (4, 4))
+a = arange(16).reshape((4, 4))
 b = np.array(a.reshape(2, 8))
 a[3, 3] = 12345
 b[0, 7] = 54321
@@ -321,18 +303,18 @@ The `T` attribute is a shortcut to obtain the transpose of an array.
 
 
 ```
-a = np.random.randint(1, 10, (4, 4))
+a = np.arange(16).reshape((4, 4))
 print(a)
 print(a.T)
 ```
 
 
 The `transpose` method allows you to obtain more complicated rearrangements
-of an array's axes:
+of an N-dimensional array's axes:
 
 
 ```
-a = np.random.randint(1, 10, (2, 3, 4))
+a = np.arange(24).reshape((2, 3, 4))
 b = a.transpose((2, 0, 1))
 print('a: ', a.shape)
 print(a)
@@ -393,16 +375,46 @@ print( dstacked)
 ```
 
 
+<a class="anchor" id="operating-on-arrays"></a>
+## Operating on arrays
+
+
+If you are coming from Matlab, you should read this section as, while many
+Numpy operations behave similarly to Matlab, there are a few important
+behaviours which differ from what you might expect.
+
+
+<a class="anchor" id="scalar-operations"></a>
+### Scalar operations
+
+
+All of the mathematical operators you know and love can be applied to Numpy
+arrays:
+
+
+```
+a = np.arange(1, 10).reshape((3, 3))
+print('a:')
+print(a)
+print('a + 2:')
+print( a + 2)
+print('a * 3:')
+print( a * 3)
+print('a % 2:')
+print( a % 2)
+```
+
+
 <a class="anchor" id="multi-variate-operations"></a>
-## Multi-variate operations
+### Multi-variate operations
 
 
 Many operations in Numpy operate on an elementwise basis. For example:
 
 
 ```
-a = np.random.randint(1, 10, (5))
-b = np.random.randint(1, 10, (5))
+a = np.ones(5)
+b = np.random.randint(1, 10, 5)
 
 print('a:     ', a)
 print('b:     ', b)
@@ -415,8 +427,8 @@ This also extends to higher dimensional arrays:
 
 
 ```
-a = np.random.randint(1, 10, (4, 4))
-b = np.random.randint(1, 10, (4, 4))
+a = np.ones((4, 4))
+b = np.arange(16).reshape((4, 4))
 
 print('a:')
 print(a)
@@ -433,21 +445,23 @@ print(a * b)
 Wait ... what's that you say? Oh, I couldn't understand because of all the
 froth coming out of your mouth. I guess you're angry that `a * b` didn't give
 you the matrix product, like it would have in Matlab.  Well all I can say is
-that Python is not Matlab. Get over it. Take a calmative.
+that Numpy is not Matlab. Matlab operations are typically consistent with
+linear algebra notation. This is not the case in Numpy. Get over it. Take a
+calmative.
 
 
 <a class="anchor" id="matrix-multiplication"></a>
-*## Matrix multiplication
+### Matrix multiplication
 
 
 When your heart rate has returned to its normal caffeine-induced state, you
-can use the `dot` method, or the `@` operator, to perform matrix
+can use the `@` operator or the `dot` method, to perform matrix
 multiplication:
 
 
 ```
-a = np.random.randint(1, 10, (4, 4))
-b = np.random.randint(1, 10, (4, 4))
+a = np.random.randint(1, 10, (2, 2))
+b = np.random.randint(1, 10, (2, 2))
 
 print('a:')
 print(a)
@@ -465,22 +479,102 @@ print(b.dot(a))
 ```
 
 
-> The `@` matrix multiplication operator is a relatively recent addition
-> to Python and Numpy, so you might not see it all that often in existing
-> code. But it's here to stay, so go ahead and use it!
+> The `@` matrix multiplication operator is a relatively recent addition to
+> Python and Numpy, so you might not see it all that often in existing
+> code. But it's here to stay, so if you don't need to worry about
+> backwards-compatibility, go ahead and use it!
 
 
 <a class="anchor" id="broadcasting"></a>
 ### Broadcasting
 
 
-One of the coolest (and possibly confusing) features of Numpy is its
-[_broadcasting_
-rules](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
+One of the coolest features of Numpy is _broadcasting_<sup>2</sup>.
+Broadcasting allows you to perform element-wise operations on arrays which
+have a different shape; For each axis in the two arrays, Numpy will implicitly
+expand the shapes of the smaller axis to match the shapes of the larger
+one. You never need to use `repmat` ever again!
 
 
+Broadcasting allows you to, for example, add the elements of a 1D vector to
+all of the rows or columns of a 2D array:
 
 
+```
+a = np.arange(9).reshape((3, 3))
+b = np.random.randint(1, 10, 3)
+print('a:')
+print(a)
+print('b: ', b)
+print('a * b (row-wise broadcasting):')
+print(a * b)
+
+# Refer to Appendix C for a
+# discussion on vectors in Numpy
+print('a * b.T (column-wise broadcasting):')
+print(a * b.reshape(-1, 1))
+```
+
+
+Here is a more useful example, where we use broadcasting to de-mean the rows
+or columns of an array:
+
+
+```
+a = np.random.randint(1, 10, (3, 3))
+print('a:')
+print(a)
+
+print('a (rows demeaned):')
+print(a - a.mean(axis=0))
+
+print('a (cols demeaned):')
+print(a - a.mean(axis=1).reshape(-1, 1))
+```
+
+
+Broadcasting can sometimes be confusing, but the rules which Numpy follows to
+align arrays of different sizes, and hence determine how the broadcasting
+should be applied, are pretty straightforward. If something is not working,
+and you can't figure out why refer to the [official
+documentation](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
+
+
+> <sup>2</sup>Mathworks have shamelessly stolen Numpy's broadcasting behaviour
+> and included it in Matlab versions from 2016b onwards, referring to it as
+> _implicit expansion_.
+
+
+<a class="anchor" id="linear-algebra"></a>
+### Linear algebra
+
+
+Numpy is first and foremost a library for general-purpose numerical computing.
+But it does have a range of linear algebra functionality, hidden away in the
+[`numpy.linalg`](https://docs.scipy.org/doc/numpy/reference/routines.linalg.html)
+module. Here are a couple of quick examples:
+
+
+```
+import numpy.linalg as npla
+
+a = np.array([[1, 2, 3,  4],
+              [0, 5, 6,  7],
+              [0, 0, 8,  9],
+              [0, 0, 0, 10]])
+
+print('a:')
+print(a)
+
+print('inv(a)')
+print(npla.inv(a))
+
+eigvals, eigvecs = npla.eig(a)
+
+print('eigenvalues and vectors of a:')
+for val, vec in zip(eigvals, eigvecs):
+    print('{:2.0f} - {}'.format(val, vec))
+```
 
 
 <a class="anchor" id="array-indexing"></a>
@@ -503,7 +597,7 @@ start and end indices, and the step size, via the `start:stop:step` syntax:
 
 
 ```
-a = np.random.randint(1, 10, 10)
+a = np.arange(10)
 
 print('a:                              ', a)
 print('first element:                  ', a[0])
@@ -522,7 +616,7 @@ array:
 
 
 ```
-a = np.random.randint(1, 10, 10)
+a = np.arange(10)
 print('a:', a)
 every2nd = a[::2]
 print('every 2nd:', every2nd)
@@ -540,7 +634,7 @@ indexing but with, well, more dimensions:
 
 
 ```
-a = np.random.randint(1, 10, (5, 5))
+a = np.arange(25).reshape((5, 5))
 print('a:')
 print(a)
 print(' First row:     ', a[  0, :])
@@ -557,7 +651,7 @@ more than one dimension:
 
 
 ```
-a = np.random.randint(1, 10, (3, 3, 3))
+a = np.arange(27).reshape((3, 3, 3))
 print('a:')
 print(a)
 print('All elements at x=0:')
@@ -578,7 +672,7 @@ example:
 
 
 ```
-a = np.random.randint(1, 10, 10)
+a = np.arange(10)
 
 print('a:                          ', a)
 print('a > 5:                      ', a > 4)
@@ -591,7 +685,7 @@ return a _copy_ of the indexed data, __not__ a view. For example:
 
 
 ```
-a = np.random.randint(1, 10, 10)
+a = np.arange(10)
 b = a[a > 5]
 print('a: ', a)
 print('b: ', b)
@@ -616,7 +710,7 @@ and combine boolean Numpy arrays:
 
 
 ```
-a    = np.random.randint(1, 10, 10)
+a    = np.arange(10)
 gt5  = a > 5
 even = a % 2 == 0
 
@@ -641,7 +735,7 @@ coordinates into each data axis:
 
 
 ```
-a = np.random.randint(1, 10, (4, 4))
+a = np.arange(16).reshape((4, 4))
 print(a)
 
 rows    = [0, 2, 3]
@@ -653,12 +747,12 @@ for r, c, v in zip(rows, cols, indexed):
 ```
 
 
-<a class="anchor" id="generating-random-numbers"></a>
-## Generating random numbers
+<a class="anchor" id="appendix-generating-random-numbers"></a>
+## Appendix A: Generating random numbers
 
 
 <a class="anchor" id="appendix-importing-numpy"></a>
-## Appendix: Importing Numpy
+## Appendix B: Importing Numpy
 
 
 For interactive exploration/experimentation, you might want to import
@@ -686,11 +780,13 @@ print(d)
 
 
 But if you are writing a script or application using Numpy, I implore you to
-Numpy like this instead:
+Numpy (and its commonly used sub-modules) like this instead:
 
 
 ```
-import numpy as np
+import numpy        as np
+import numpy.random as npr
+import numpy.linalg as npla
 ```
 
 
@@ -702,10 +798,12 @@ The downside to this is that you will have to prefix all Numpy functions with
 e = np.array([1, 2, 3, 4, 5])
 z = np.zeros((100, 100))
 d = np.diag([2, 3, 4, 5])
+r = npr.random(5)
 
 print(e)
 print(z)
 print(d)
+print(r)
 ```
 
 
@@ -716,7 +814,7 @@ them!
 
 
 <a class="anchor" id="appendix-vectors-in-numpy"></a>
-## Appendix: Vectors in Numpy
+## Appendix C: Vectors in Numpy
 
 
 One aspect of Numpy which might trip you up, and which can be quite
@@ -747,3 +845,14 @@ print(np.atleast_2d(r).T)
 > Here we used a handy feature of the `reshape` method - if you pass `-1` for
 > the size of one dimension, it will automatically determine the size to use
 > for that dimension.
+
+
+<a class="anchor" id="useful-references"></a>
+## Useful references
+
+
+* [The Numpy manual](https://docs.scipy.org/doc/numpy/)
+* [Linear algebra with
+  `numpy.linalg`](https://docs.scipy.org/doc/numpy/reference/routines.linalg.html)
+* [Numpy broadcasting](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
+* [Numpy indexing](https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html)
