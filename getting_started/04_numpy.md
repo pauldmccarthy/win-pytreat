@@ -176,8 +176,8 @@ print(np.diag([1, 2, 3, 4]))
 ```
 
 
-> There is more on random numbers
-> [below](#appendix-generating-random-numbers).
+> See the [appendix](#appendix-generating-random-numbers) for more information
+> on generating random numbers in Numpy.
 
 
 The `zeros` and `ones` functions can also be used to generate N-dimensional
@@ -288,7 +288,7 @@ function:
 
 
 ```
-a = arange(16).reshape((4, 4))
+a = np.arange(16).reshape((4, 4))
 b = np.array(a.reshape(2, 8))
 a[3, 3] = 12345
 b[0, 7] = 54321
@@ -409,7 +409,7 @@ print( a % 2)
 ### Multi-variate operations
 
 
-Many operations in Numpy operate on an elementwise basis. For example:
+Many operations in Numpy operate on an element-wise basis. For example:
 
 
 ```
@@ -460,8 +460,8 @@ multiplication:
 
 
 ```
-a = np.random.randint(1, 10, (2, 2))
-b = np.random.randint(1, 10, (2, 2))
+a = np.arange(1, 5).reshape((2, 2))
+b = a.T
 
 print('a:')
 print(a)
@@ -491,9 +491,14 @@ print(b.dot(a))
 
 One of the coolest features of Numpy is _broadcasting_<sup>2</sup>.
 Broadcasting allows you to perform element-wise operations on arrays which
-have a different shape; For each axis in the two arrays, Numpy will implicitly
-expand the shapes of the smaller axis to match the shapes of the larger
-one. You never need to use `repmat` ever again!
+have a different shape. For each axis in the two arrays, Numpy will implicitly
+expand the shape of the smaller axis to match the shape of the larger one. You
+never need to use `repmat` ever again!
+
+
+> <sup>2</sup>Mathworks have shamelessly stolen Numpy's broadcasting behaviour
+> and included it in Matlab versions from 2016b onwards, referring to it as
+> _implicit expansion_.
 
 
 Broadcasting allows you to, for example, add the elements of a 1D vector to
@@ -502,18 +507,21 @@ all of the rows or columns of a 2D array:
 
 ```
 a = np.arange(9).reshape((3, 3))
-b = np.random.randint(1, 10, 3)
+b = np.arange(1, 4)
 print('a:')
 print(a)
 print('b: ', b)
 print('a * b (row-wise broadcasting):')
 print(a * b)
-
-# Refer to Appendix C for a
-# discussion on vectors in Numpy
 print('a * b.T (column-wise broadcasting):')
 print(a * b.reshape(-1, 1))
 ```
+
+
+> Here we used a handy feature of the `reshape` method - if you pass `-1` for
+> the size of one dimension, it will automatically determine the size to use
+> for that dimension. Take a look at [the
+> appendix](#appendix-vectors-in-numpy) for a discussion on vectors in Numpy.
 
 
 Here is a more useful example, where we use broadcasting to de-mean the rows
@@ -521,16 +529,21 @@ or columns of an array:
 
 
 ```
-a = np.random.randint(1, 10, (3, 3))
+a = np.arange(9).reshape((3, 3))
 print('a:')
 print(a)
 
-print('a (rows demeaned):')
+print('a (cols demeaned):')
 print(a - a.mean(axis=0))
 
-print('a (cols demeaned):')
+print('a (rows demeaned):')
 print(a - a.mean(axis=1).reshape(-1, 1))
 ```
+
+
+> As demonstrated above, many functions in Numpy accept an `axis` parameter,
+> allowing you to apply the function along a specific axis. Omitting the
+> `axis` parameter will apply the function to the whole array.
 
 
 Broadcasting can sometimes be confusing, but the rules which Numpy follows to
@@ -538,11 +551,6 @@ align arrays of different sizes, and hence determine how the broadcasting
 should be applied, are pretty straightforward. If something is not working,
 and you can't figure out why refer to the [official
 documentation](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
-
-
-> <sup>2</sup>Mathworks have shamelessly stolen Numpy's broadcasting behaviour
-> and included it in Matlab versions from 2016b onwards, referring to it as
-> _implicit expansion_.
 
 
 <a class="anchor" id="linear-algebra"></a>
@@ -592,8 +600,10 @@ reference](https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html).
 
 
 Let's whet our appetites with some basic 1D array slicing. Numpy supports the
-standard Python __slice__ notation for indexing, where you can specify the
-start and end indices, and the step size, via the `start:stop:step` syntax:
+standard Python
+[__slice__](https://www.pythoncentral.io/how-to-slice-listsarrays-and-tuples-in-python/)
+notation for indexing, where you can specify the start and end indices, and
+the step size, via the `start:stop:step` syntax:
 
 
 ```
@@ -606,8 +616,8 @@ print('last element:                   ', a[a.shape[0] - 1])
 print('last element again:             ', a[-1])
 print('last two elements:              ', a[-2:])
 print('middle four elements:           ', a[3:7])
-print('Every second element:           ', a[::2])
-print('Every second element, reversed: ', a[1::-2])
+print('Every second element:           ', a[1::2])
+print('Every second element, reversed: ', a[-1::-2])
 ```
 
 
@@ -715,13 +725,31 @@ gt5  = a > 5
 even = a % 2 == 0
 
 print('a:                                    ', a)
-print('elements in a which are > 5:          ', a[gt5])
+print('elements in a which are > 5:          ', a[ gt5])
 print('elements in a which are <= 5:         ', a[~gt5])
-print('elements in a which are even:         ', a[even])
+print('elements in a which are even:         ', a[ even])
 print('elements in a which are odd:          ', a[~even])
 print('elements in a which are > 5 and even: ', a[gt5 &  even])
 print('elements in a which are > 5 or odd:   ', a[gt5 | ~even])
 ```
+
+
+Numpy also has two handy functions, `all` and `any`, which respectively allow
+you to perform boolean `and` and `or` operations along the axes of an array:
+
+
+```
+a = np.arange(9).reshape((3, 3))
+
+print('a:')
+print(a)
+print('rows with any element divisible by 3: ', np.any(a % 3 == 0, axis=1))
+print('cols with any element divisible by 3: ', np.any(a % 3 == 0, axis=0))
+print('rows with all elements divisible by 3:', np.all(a % 3 == 0, axis=1))
+print('cols with all elements divisible by 3:', np.all(a % 3 == 0, axis=0))
+```
+
+
 
 
 <a class="anchor" id="coordinate-array-indexing"></a>
@@ -731,11 +759,12 @@ print('elements in a which are > 5 or odd:   ', a[gt5 | ~even])
 You can index a numpy array using another array containing coordinates into
 the first array.  As with boolean indexing, this will result in a copy of the
 data.  Generally, you will need to have a separate array, or list, of
-coordinates into each data axis:
+coordinates for each axis of the array you wish to index:
 
 
 ```
 a = np.arange(16).reshape((4, 4))
+print('a:')
 print(a)
 
 rows    = [0, 2, 3]
@@ -744,6 +773,24 @@ indexed = a[rows, cols]
 
 for r, c, v in zip(rows, cols, indexed):
     print('a[{}, {}] = {}'.format(r, c, v))
+```
+
+
+The `numpy.where` function can be combined with boolean arrays to easily
+generate of coordinate arrays for values which meet some condition:
+
+
+```
+a = np.arange(16).reshape((4, 4))
+print('a:')
+print(a)
+
+evenx, eveny = np.where(a % 2 == 0)
+
+print('even X coordinates:', evenx)
+print('even Y coordinates:', eveny)
+
+print(a[evenx, eveny])
 ```
 
 
@@ -842,17 +889,12 @@ print(np.atleast_2d(r).T)
 ```
 
 
-> Here we used a handy feature of the `reshape` method - if you pass `-1` for
-> the size of one dimension, it will automatically determine the size to use
-> for that dimension.
-
-
 <a class="anchor" id="useful-references"></a>
 ## Useful references
 
 
 * [The Numpy manual](https://docs.scipy.org/doc/numpy/)
-* [Linear algebra with
-  `numpy.linalg`](https://docs.scipy.org/doc/numpy/reference/routines.linalg.html)
+* [Linear algebra with `numpy.linalg`](https://docs.scipy.org/doc/numpy/reference/routines.linalg.html)
 * [Numpy broadcasting](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
 * [Numpy indexing](https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html)
+* [Python slicing](https://www.pythoncentral.io/how-to-slice-listsarrays-and-tuples-in-python/)
