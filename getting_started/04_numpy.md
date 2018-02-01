@@ -38,6 +38,9 @@ out of date, but we will update it for the next release of FSL.
  * [Indexing multi-dimensional arrays](#indexing-multi-dimensional-arrays)
  * [Boolean indexing](#boolean-indexing)
  * [Coordinate array indexing](#coordinate-array-indexing)
+* [Exercises](#exercises)
+ * [Load an array from a file and do stuff with it](#load-an-array-from-a-file-and-do-stuff-with-it)
+ * [Concatenate affine transforms](#concatenate-affine-transforms)
 
 * [Appendix A: Generating random numbers](#appendix-generating-random-numbers)
 * [Appendix B: Importing Numpy](#appendix-importing-numpy)
@@ -853,8 +856,11 @@ print(a[evenrows, evencols])
 ## Exercises
 
 
-The challenge for each of these exercises is to complete them with as few
-lines of code as possible (whitespace and comments don't count)!
+The challenge for each of these exercises is to complete them in as few lines
+of code as possible!
+
+
+> You can find example answers to the exercises in `04_numpy/.solutions`.
 
 
 <a class="anchor" id="load-an-array-from-a-file-and-do-stuff-with-it"></a>
@@ -863,12 +869,11 @@ lines of code as possible (whitespace and comments don't count)!
 
 Load the file `04_numpy/2d_array.txt`, and calculate and print the mean for
 each column.  If your code doesn't work, you might want to __LOOK AT YOUR
-DATA__, as you will have learnt during the FSL course.
+DATA__, as you will have learnt if you have ever attended the FSL course.
 
 
 > Bonus: Find the hidden message (hint:
 > [chr](https://docs.python.org/3/library/functions.html#chr))
-
 
 
 <a class="anchor" id="concatenate-affine-transforms"></a>
@@ -877,11 +882,18 @@ DATA__, as you will have learnt during the FSL course.
 
 Given all of the files in `04_numpy/xfms/`, create a transformation matrix
 which can transform coordinates from subject 1 functional space to subject 2
-functional space<sup>4></sup>.
+functional space<sup>4</sup>.
+
+Write some code to transform the following coordinates from subject 1
+functional space to subject 2 functional space, to test that your matrix is
+correct:
 
 
-TODO Test coordinates
-
+| __Subject 1 coordinates__ | __Subject 2 coordinates__ |
+|:-------------------------:|:-------------------------:|
+| `[ 0.0,   0.0,   0.0]`    | `[ 3.21,   4.15, -9.89]`  |
+| `[-5.0, -20.0,  10.0]`    | `[-0.87, -14.36, -1.13]`  |
+| `[20.0,  25.0,  60.0]`    | `[29.58,  27.61, 53.37]`  |
 
 
 > <sup>4</sup> Even though these are FLIRT transforms, this is just a toy
@@ -891,8 +903,6 @@ TODO Test coordinates
 > [here](https://git.fmrib.ox.ac.uk/fsl/fslpy/blob/1.6.2/fsl/utils/transform.py#L537)
 > if you actually need to work with FLIRT transforms.
 
-
-> You can find example answers to the exercises in `04_numpy/.solutions`.
 
 
 <a class="anchor" id="appendix-generating-random-numbers"></a>
