@@ -37,14 +37,8 @@ testcoords = np.array([[ 0,   0,  0],
                        [20,  25, 60]], dtype=np.float32)
 
 
-def dist(p1, p2):
-    return np.sqrt(np.sum((p1 - p2) ** 2))
-
-
-
 for c in testcoords:
     xc = transform(s1func2s2func, c)
-    d  = dist(c, xc)
     c  = '{:6.2f} {:6.2f} {:6.2f}'.format(*c)
     xc = '{:6.2f} {:6.2f} {:6.2f}'.format(*xc)
-    print('Transform: [{}] -> [{}] (distance: {})'.format(c, xc, d))
+    print('Transform: [{}] -> [{}])'.format(c, xc))
