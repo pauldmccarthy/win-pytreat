@@ -13,12 +13,18 @@ important Python libraries, and it (along with its partners
 alternative to Matlab as a scientific computing platform.
 
 
+The `fslpython` environment currently includes [Numpy
+1.11.1](https://docs.scipy.org/doc/numpy-1.11.0/index.html), which is a little
+out of date, but we will update it for the next release of FSL.
+
+
 ## Contents
 
 
 * [The Python list versus the Numpy array](#the-python-list-versus-the-numpy-array)
 * [Numpy basics](#numpy-basics)
  * [Creating arrays](#creating-arrays)
+ * [Loading text files](#loading-text-files)
  * [Array properties](#array-properties)
  * [Descriptive statistics](#descriptive-statistics)
  * [Reshaping and rearranging arrays](#reshaping-and-rearranging-arrays)
@@ -84,7 +90,7 @@ are trying to write efficient code. It is _crucial_ to be able to distinguish
 between a Python list and a Numpy array.
 
 
-___Python list == Matlab cell array:___ A list in python is akin to a cell
+___Python list == Matlab cell array:___ A list in Python is akin to a cell
 array in Matlab - they can store anything, but are extremely inefficient, and
 unwieldy when you have more than a couple of dimensions.
 
@@ -196,6 +202,52 @@ print(o)
 > second to columns - just like in Matlab.
 
 
+<a class="anchor" id="loading-text-files"></a>
+### Loading text files
+
+
+The `numpy.loadtxt` function is capable of loading numerical data from
+plain-text files. By default it expects space-separated data:
+
+
+```
+data = np.loadtxt('04_numpy/space_separated.txt')
+print('data in 04_numpy/space_separated.txt:')
+print(data)
+```
+
+
+But you can also specify the delimiter to expect<sup>1</sup>:
+
+
+```
+data = np.loadtxt('04_numpy/comma_separated.txt', delimiter=',')
+print('data in 04_numpy/comma_separated.txt:')
+print(data)
+```
+
+
+> <sup>1</sup> And many other things such as file headers, footers, comments,
+> and newline characters - see the
+> [docs](https://docs.scipy.org/doc/numpy/reference/generated/numpy.loadtxt.html)
+> for more information.
+
+
+  Of course you can also save data out to a text file just as easily, with
+[`numpy.savetxt`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.savetxt.html):
+
+
+```
+data = np.random.randint(1, 10, (10, 10))
+np.savetxt('mydata.txt', data, delimiter=',', fmt='%i')
+
+with open('mydata.txt', 'rt') as f:
+    for line in f:
+        print(line.strip())
+```
+
+
+
 <a class="anchor" id="array-properties"></a>
 ### Array properties
 
@@ -227,8 +279,8 @@ print('Length of first dimension: ', len(z))
 ### Descriptive statistics
 
 
-Similarly, a Numpy array has a set of methods<sup>1</sup> which allow you to
-calculate basic descriptive statisics on an array:
+Similarly, a Numpy array has a set of methods<sup>2</sup> which allow you to
+calculate basic descriptive statistics on an array:
 
 
 ```
@@ -246,11 +298,12 @@ print('prod:         ', a.prod())
 ```
 
 
-> <sup>1</sup> Python, being an object-oriented language, distinguishes
-> between _functions_ and _methods_. _Method_ is simply the term used to refer
-> to a function that is associated with a specific object. Similarly, the term
-> _attribute_ is used to refer to some piece of information that is attached
-> to an object, such as `z.shape`, or `z.dtype`.
+> <sup>2</sup> Python, being an object-oriented language, distinguishes
+> between _functions_ and _methods_. Hopefully we all know what a function is
+> - a _method_ is simply the term used to refer to a function that is
+> associated with a specific object. Similarly, the term _attribute_ is used
+> to refer to some piece of information that is attached to an object, such as
+> `z.shape`, or `z.dtype`.
 
 
 <a class="anchor" id="reshaping-and-rearranging-arrays"></a>
@@ -489,14 +542,14 @@ print(b.dot(a))
 ### Broadcasting
 
 
-One of the coolest features of Numpy is _broadcasting_<sup>2</sup>.
+One of the coolest features of Numpy is _broadcasting_<sup>3</sup>.
 Broadcasting allows you to perform element-wise operations on arrays which
 have a different shape. For each axis in the two arrays, Numpy will implicitly
 expand the shape of the smaller axis to match the shape of the larger one. You
 never need to use `repmat` ever again!
 
 
-> <sup>2</sup>Mathworks have shamelessly stolen Numpy's broadcasting behaviour
+> <sup>3</sup>Mathworks have shamelessly stolen Numpy's broadcasting behaviour
 > and included it in Matlab versions from 2016b onwards, referring to it as
 > _implicit expansion_.
 
@@ -640,7 +693,8 @@ print('a:', a)
 
 
 Multi-dimensional array indexing works in much the same way as one-dimensional
-indexing but with, well, more dimensions:
+indexing but with, well, more dimensions. Use commas within the square
+brackets to separate the slices for each dimension:
 
 
 ```
@@ -785,17 +839,116 @@ a = np.arange(16).reshape((4, 4))
 print('a:')
 print(a)
 
-evenx, eveny = np.where(a % 2 == 0)
+evenrows, evencols = np.where(a % 2 == 0)
 
-print('even X coordinates:', evenx)
-print('even Y coordinates:', eveny)
+print('even row coordinates:', evenx)
+print('even col coordinates:', eveny)
 
-print(a[evenx, eveny])
+print(a[evenrows, evencols])
 ```
+
+
+
+<a class="anchor" id="exercises"></a>
+## Exercises
+
+
+The challenge for each of these exercises is to complete them with as few
+lines of code as possible (whitespace and comments don't count)!
+
+
+<a class="anchor" id="load-an-array-from-a-file-and-do-stuff-with-it"></a>
+### Load an array from a file and do stuff with it
+
+
+Load the file `04_numpy/2d_array.txt`, and calculate and print the mean for
+each column.  If your code doesn't work, you might want to __LOOK AT YOUR
+DATA__, as you will have learnt during the FSL course.
+
+
+> Bonus: Find the hidden message (hint:
+> [chr](https://docs.python.org/3/library/functions.html#chr))
+
+
+
+<a class="anchor" id="concatenate-affine-transforms"></a>
+### Concatenate affine transforms
+
+
+Given all of the files in `04_numpy/xfms/`, create a transformation matrix
+which can transform coordinates from subject 1 functional space to subject 2
+functional space<sup>4></sup>.
+
+
+TODO Test coordinates
+
+
+
+> <sup>4</sup> Even though these are FLIRT transforms, this is just a toy
+> example.  Look
+> [here](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FLIRT/FAQ#What_is_the_format_of_the_matrix_used_by_FLIRT.2C_and_how_does_it_relate_to_the_transformation_parameters.3F)
+> and
+> [here](https://git.fmrib.ox.ac.uk/fsl/fslpy/blob/1.6.2/fsl/utils/transform.py#L537)
+> if you actually need to work with FLIRT transforms.
+
+
+> You can find example answers to the exercises in `04_numpy/.solutions`.
 
 
 <a class="anchor" id="appendix-generating-random-numbers"></a>
 ## Appendix A: Generating random numbers
+
+
+Numpy's
+[`numpy.random`](https://docs.scipy.org/doc/numpy/reference/routines.random.html)
+module is where you should go if you want to introduce a little randomness
+into your code.  You have already seen a couple of functions for generating
+uniformly distributed real or integer data:
+
+
+```
+import numpy.random as npr
+
+print('Random floats between 0.0 (inclusive) and 1.0 (exclusive):')
+print(npr.random((3, 3)))
+
+print('Random integers in a specified range:')
+print(npr.randint(1, 100, (3, 3)))
+```
+
+
+You can also draw random data from other distributions - here are just a few
+examples:
+
+
+```
+print('Gaussian (mean: 0, stddev: 1):')
+print(npr.normal(0, 1, (3, 3)))
+
+print('Gamma (shape: 1, scale: 1):')
+print(npr.normal(1, 1, (3, 3)))
+
+print('Chi-square (dof: 10):')
+print(npr.chisquare(10, (3, 3)))
+```
+
+
+The `numpy.random` module also has a couple of other handy functions for
+random sampling of existing data:
+
+
+```
+data = np.arange(5)
+
+print('data:               ', data)
+print('two random values:  ', npr.choice(data, 2))
+print('random permutation: ', npr.permutation(data))
+
+# The numpy.random.shuffle function
+# will shuffle an array *in-place*.
+npr.shuffle(data)
+print('randomly shuffled: ', data)
+```
 
 
 <a class="anchor" id="appendix-importing-numpy"></a>
@@ -894,7 +1047,8 @@ print(np.atleast_2d(r).T)
 
 
 * [The Numpy manual](https://docs.scipy.org/doc/numpy/)
-* [Linear algebra with `numpy.linalg`](https://docs.scipy.org/doc/numpy/reference/routines.linalg.html)
-* [Numpy broadcasting](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-* [Numpy indexing](https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html)
+* [Linear algebra in `numpy.linalg`](https://docs.scipy.org/doc/numpy/reference/routines.linalg.html)
+* [Broadcasting in Numpy](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
+* [Indexing in Numpy](https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html)
+* [Random sampling in `numpy.random`](https://docs.scipy.org/doc/numpy/reference/routines.random.html)
 * [Python slicing](https://www.pythoncentral.io/how-to-slice-listsarrays-and-tuples-in-python/)
