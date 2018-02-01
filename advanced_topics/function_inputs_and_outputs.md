@@ -106,7 +106,39 @@ myfunc(c=300)
 ```
 
 
-> Pitfall: mutable argument values
+__WARNING:__ _Never_ define a function with a mutable default value, such as a
+`list`, `dict` or other non-primitive type. Let's see what happens when we do:
 
 
-You can see here that
+```
+def badfunc(a=[]):
+    a.append('end of sequence')
+    output = ', '.join([str(elem) for elem in a])
+    print(output)
+```
+
+
+With this function, all is well and good if we pass in our own value for `a`:
+
+
+```
+badfunc([1, 2, 3, 4])
+badfunc([2, 4, 6])
+```
+
+
+But what happens when we let `badfunc` use the default value for `a`?
+
+
+```
+badfunc()
+badfunc()
+badfunc()
+```
+
+
+This happens because default argument values are created when the function is
+defined, and will persist for the duration of your program. So in this
+example, the default value for `a`, a Python `list`, gets created when
+`badfunc` is defined, and hangs around for the lifetime of the `badfunc`
+function!
