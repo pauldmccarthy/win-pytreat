@@ -576,8 +576,14 @@ print(a * b.reshape(-1, 1))
 
 > Here we used a handy feature of the `reshape` method - if you pass `-1` for
 > the size of one dimension, it will automatically determine the size to use
-> for that dimension. Take a look at [the
-> appendix](#appendix-vectors-in-numpy) for a discussion on vectors in Numpy.
+> for that dimension.
+
+
+Note that Numpy treats row and column vectors differently than in Matlab,
+which is a potential source of confusion for those of you who are used to
+Matlab's linear algebra-based take on things. You might wish to take a break
+now to read [the appendix](#appendix-vectors-in-numpy) for a discussion on
+vectors in Numpy.
 
 
 Here is a more useful example, where we use broadcasting to de-mean the rows
