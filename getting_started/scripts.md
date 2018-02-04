@@ -17,43 +17,63 @@ For FSL scripts we use an alternative, to ensure that we pick up the version of 
 #!/usr/bin/env fslpython
 ```
 
-After this line the rest of the file just uses regular python syntax, as in the other tutorials.
+After this line the rest of the file just uses regular python syntax, as in the other tutorials.  Make sure you make the file executable - just like a bash script.
 
 ## Calling other executables
 
 The most essential call that you need to use to replicate the way a bash script calls executables is `subprocess.run()`.  A simple call looks like this:
 
 ```
-import subprocess
-subprocess.run(["ls","-la"])
+import subprocess as sp
+sp.run(['ls', '-la'])
 ```
 
 
 To suppress the output do this:
 
 ```
-sp=subprocess.run(["ls"],stdout=subprocess.PIPE)
+spobj = sp.run(['ls'], stdout = sp.PIPE)
 ```
 
 To store the output do this:
 
 ```
-sp=subprocess.run("ls -la".split(),stdout=subprocess.PIPE)
-sout=sp.stdout.decode('utf-8')
+spobj = sp.run('ls -la'.split(), stdout = sp.PIPE)
+sout = spobj.stdout.decode('utf-8')
 print(sout)
 ```
 
-Note that the `decode` call in the middle line converts the string from a byte string to a normal string.
+> Note that the `decode` call in the middle line converts the string from a byte string to a normal string. In Python 3 there is a distinction between strings (sequences of characters, possibly using multiple bytes to store each character) and bytes (sequences of bytes). The world has moved on from ASCII, so in this day and age, this distinction is absolutely necessary, and Python does a fairly good job of it.
 
 If the output is numerical then this can be extracted like this:
 ```
 import os
-fsldir=os.getenv('FSLDIR')
-sp=subprocess.run([fsldir+'/bin/fslstats',fsldir+'/data/standard/MNI152_T1_1mm_brain','-V'],stdout=subprocess.PIPE)
-sout=sp.stdout.decode('utf-8')
-vol_vox=float(sout.split()[0])
-vol_mm=float(sout.split()[1])
-print('Volumes are: ',vol_vox,' in voxels and ',vol_mm,' in mm')
+fsldir = os.getenv('FSLDIR')
+spobj = sp.run([fsldir+'/bin/fslstats', fsldir+'/data/standard/MNI152_T1_1mm_brain', '-V'], stdout = sp.PIPE)
+sout = spobj.stdout.decode('utf-8')
+vol_vox = float(sout.split()[0])
+vol_mm = float(sout.split()[1])
+print('Volumes are: ', vol_vox, ' in voxels and ', vol_mm, ' in mm')
+```
+
+
+
+An alternative way to run a set of commands would be like this:
+```
+commands = """
+{fsldir}/bin/fslmaths {t1} -bin {t1_mask}
+{fsldir}/bin/fslmaths {t2} -mas {t1_mask} {t2_masked}
+"""
+
+fsldirpath = os.getenv('FSLDIR')
+commands = commands.format(t1 = 't1.nii.gz', t1_mask = 't1_mask', t2 = 't2', t2_masked = 't2_masked', fsldir = fsldirpath)
+
+sout=[]
+for cmd in commands.split('\n'):
+    if cmd:   # avoids empty strings getting passed to sp.run()
+        print('Running command: ', cmd)
+        spobj = sp.run(cmd.split(), stdout = sp.PIPE)
+        sout.append(spobj.stdout.decode('utf-8'))
 ```
 
 
@@ -66,15 +86,12 @@ print(len(sys.argv))
 print(sys.argv[0])
 ```
 
-There are also some modules that are useful for parsing arguments:
- - `getopt`
- - `argparse`
- and you can find good documentation and examples of these on the web.
+For more sophisticated argument parsing you can use `argparse` -  good documentation and examples of this can be found on the web.
 
 
 ## Example script
 
-Here is a simple bash script (it masks an image and calculates volumes - just as random examples):
+Here is a simple bash script (it masks an image and calculates volumes - just as a random example). DO NOT execute the code blocks here within the notebook/webpage:
 
 ```
 #!/bin/bash
@@ -98,20 +115,22 @@ And an alternative in python:
 
 ```
 #!/usr/bin/env fslpython
-import os, sys, subprocess
+import os, sys
+import subprocess as sp
 fsldir=os.getenv('FSLDIR')
 if len(sys.argv)<2:
-  print('Usage: ',sys.argv[0],' <input image> <output image>')
+  print('Usage: ', sys.argv[0], ' <input image> <output image>')
   sys.exit(1)
-infile=sys.argv[1]
-outfile=sys.argv[2]
+infile = sys.argv[1]
+outfile = sys.argv[2]
 # mask input image with MNI
-sp=subprocess.run([fsldir+'/bin/fslmaths',infile,'-mas',fsldir+'/data/standard/MNI152_T1_1mm_brain',outfile],stdout=subprocess.PIPE)
+spobj = sp.run([fsldir+'/bin/fslmaths', infile, '-mas', fsldir+'/data/standard/MNI152_T1_1mm_brain', outfile], stdout = sp.PIPE)
 # calculate volumes of masked image  
-sp=subprocess.run([fsldir+'/bin/fslstats',outfile,'-V'],stdout=subprocess.PIPE)
-sout=sp.stdout.decode('utf-8')
-vol_vox=float(sout.split()[0])
-vol_mm=float(sout.split()[1])
-print('Volumes are: ',vol_vox,' in voxels and ',vol_mm,' in mm')
+spobj = sp.run([fsldir+'/bin/fslstats', outfile, '-V'], stdout = sp.PIPE)
+sout = spobj.stdout.decode('utf-8')
+vol_vox = float(sout.split()[0])
+vol_mm = float(sout.split()[1])
+print('Volumes are: ', vol_vox, ' in voxels and ', vol_mm, ' in mm')
 ```
+
 
