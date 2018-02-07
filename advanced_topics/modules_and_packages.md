@@ -17,12 +17,26 @@ them alongside this notebook file, in a directory called
 `modules_and_packages/`.
 
 
+## Contents
+
+* [What is a module?](#what-is-a-module)
+* [Importing modules](#importing-modules)
+ * [Importing specific items from a module](#importing-specific-items-from-a-module)
+ * [Importing everything from a module](#importing-everything-from-a-module)
+ * [Module aliases](#module-aliases)
+ * [What happens when I import a module?](#what-happens-when-i-import-a-module)
+ * [How can I make my own modules importable?](#how-can-i-make-my-own-modules-importable)
+* [Modules versus scripts](#modules-versus-scripts)
+* [What is a package?](#what-is-a-package)
+ * [`__init__.py`](#init-py)
+* [Useful references](#useful-references)
+
 ```
 import os
 os.chdir('modules_and_packages')
 ```
 
-
+<a class="anchor" id="what-is-a-module"></a>
 ## What is a module?
 
 
@@ -42,6 +56,7 @@ This is a perfectly valid Python module, although not a particularly useful
 one. It contains an attribute called `PI`, and a function `add`.
 
 
+<a class="anchor" id="importing-modules"></a>
 ## Importing modules
 
 
@@ -68,6 +83,7 @@ print(numfuncs.add(1, 50))
 There are a couple of other ways to import items from a module...
 
 
+<a class="anchor" id="importing-specific-items-from-a-module"></a>
 ### Importing specific items from a module
 
 
@@ -82,6 +98,7 @@ print(add(1, 3))
 ```
 
 
+<a class="anchor" id="importing-everything-from-a-module"></a>
 ### Importing everything from a module
 
 
@@ -116,7 +133,7 @@ print(add(1, 5))
 
 
 Instead, it is better to give modules a name when you import them.  While this
-requires you to type more code, the benefits of doing this far outweighs the
+requires you to type more code, the benefits of doing this far outweigh the
 hassle of typing a few extra characters - it becomes much easier to read and
 trace through code when the functions you use are accessed through a namespace
 for each module:
@@ -128,6 +145,9 @@ import strfuncs
 print('number add: ', numfuncs.add(1, 2))
 print('string add: ', strfuncs.add(1, 2))
 ```
+
+<a class="anchor" id="module-aliases"></a>
+### Module aliases
 
 
 And Python allows you to define an _alias_ for a module when you import it,
@@ -143,7 +163,21 @@ print('string add: ', sf.add(1, 2))
 ```
 
 
-## What happens when I import a module?
+You have already seen this in the earlier practicals - here are a few
+aliases which have become a de-facto standard for commonly used Python
+modules:
+
+
+```
+import os.path           as op
+import numpy             as np
+import nibabel           as nib
+import matplotlib        as mpl
+import matplotlib.pyplot as plt
+```
+
+<a class="anchor" id="what-happens-when-i-import-a-module"></a>
+### What happens when I import a module?
 
 
 When you `import` a module, the contents of the module file are literally
@@ -190,12 +224,148 @@ subsequent imports, the cached version of the module is returned:
 import sideeffects
 ```
 
+<a class="anchor" id="how-can-i-make-my-own-modules-importable"></a>
+### How can I make my own modules importable?
 
+
+When you `import` a module, Python searches for it in the following locations,
+in the following order:
+
+
+1. Built-in modules (e.g. `os`, `sys`, etc.).
+2. In the current directory or, if a script has been executed, in the directory
+   containing that script.
+3. In directories listed in the PYTHONPATH environment variable.
+4. In installed third-party libraries (e.g. `numpy`).
+
+
+If you are experimenting or developing your program, the quickest and easiest
+way to make your module(s) importable is to add their containing directory to
+the `PYTHONPATH`. But if you are developing a larger piece of software, you
+should probably organise your modules into _packages_, which are [described
+below](#what-is-a-package).
+
+
+<a class="anchor" id="modules-versus-scripts"></a>
+## Modules versus scripts
+
+
+You now know that Python treats all files ending in `.py` as importable
+modules. But all files ending in `.py` can also be treated as scripts. In
+fact, there no difference between a _module_ and a _script_ - any `.py` file
+can be executed as a script, or imported as a module, or both.
+
+
+Have a look at the file `modules_and_packages/module_and_script.py`:
+
+
+```
+with open('module_and_script.py', 'rt') as f:
+    for line in f:
+        print(line.rstrip())
+```
+
+
+This file contains two functions `mul` and `main`.  The
+`if __name__ == '__main__':` clause at the bottom is a standard trick in Python
+that allows you to add code to a file that is _only executed when the module is
+called as a script_. Try it in a terminal now:
+
+
+> `python modules_and_packages/module_and_script.py`
+
+
+But if we `import` this module from another file, or from an interactive
+session, the code within the `if __name__ == '__main__':` clause will not be
+executed, and we can access its functions just like any other module that we
+import.
+
+
+```
+import module_and_script as mas
+
+a = 1.5
+b = 3
+
+print('mul({}, {}): {}'.format(a, b, mas.mul(a, b)))
+print('calling main...')
+mas.main([str(a), str(b)])
+```
+
+
+<a class="anchor" id="what-is-a-package"></a>
 ## What is a package?
 
 
+You now know how to split your Python code up into separate files
+(a.k.a. _modules_). When your code grows beyond a handful of files, you may
+wish for more fine-grained control over the namespaces in which your modules
+live. Python has another feature which allows you to organise your modules
+into _packages_.
 
 
-# Useful references
+A package in Python is simply a directory which:
 
-* [Modules in Python](https://docs.python.org/3.5/tutorial/modules.html)
+
+* Contains a special file called `__init__.py`
+* May contain one or more module files (any other files ending in `*.py`)
+* May contain other package directories.
+
+
+For example, the [FSLeyes](https://git.fmrib.ox.ac.uk/fsl/fsleyes/fsleyes)
+code is organised into packages and sub-packages as follows (abridged):
+
+
+> ```
+> fsleyes/
+>     __init__.py
+>     main.py
+>     frame.py
+>     views/
+>         __init__.py
+>         orthopanel.py
+>         lightboxpanel.py
+>     controls/
+>         __init__.py
+>         locationpanel.py
+>         overlaylistpanel.py
+> ```
+
+
+Within a package structure, we will typically still import modules directly,
+via their full path within the package:
+
+
+```
+import fsleyes.main as fmain
+fmain.fsleyes_main()
+```
+
+<a class="anchor" id="init-py"></a>
+### `__init__.py`
+
+
+Every Python package must have an `__init__.py` file. In many cases, this will
+actually be an empty file, and you don't need to worry about it any more, apart
+from knowing that it is needed. But you can use `__init__.py` to perform some
+package-specific initialisation, and/or to customise the package's namespace.
+
+
+As an example, take a look the `modules_and_packages/fsleyes/__init__.py` file
+in our mock FSLeyes package. We have imported the `fsleyes_main` function from
+the `fsleyes.main` module, making it available at the package level. So
+instead of importing the `fsleyes.main` module, we could instead just import
+the `fsleyes` package:
+
+
+```
+import fsleyes
+fsleyes.fsleyes_main()
+```
+
+
+<a class="anchor" id="useful-references"></a>
+## Useful references
+
+* [Modules and packages in Python](https://docs.python.org/3.5/tutorial/modules.html)
+* [Using `__init__.py`](http://mikegrouchy.com/blog/2012/05/be-pythonic-__init__py.html)
