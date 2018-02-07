@@ -150,9 +150,8 @@ function.
 
 
 __We didn't specify the `self` argument - what gives?!?__ The `self` argument
-is a special argument that is specific to methods in Python. If you are coming
-from C++, Java, C# or similar, `self` in Python is equivalent to `this` in
-those languages.
+is a special argument for methods in Python. If you are coming from C++, Java,
+C# or similar, `self` in Python is equivalent to `this` in those languages.
 
 
 ### The `self` argument
@@ -172,10 +171,10 @@ that has been created (and is then assigned to the `fm` variable, after the
 `__init__` method has finished).
 
 
-But note that we do not need to provide the `self` argument - this is a quirk
-specific to methods in Python - when you call a method on an object (or a
-class, to create a new object), the Python runtime will take care of passing
-the instance as the `self` argument to to the method.
+But note that we do not need to explicitly provide the `self` argument - when
+you call a method on an object, or when you create a new object, the Python
+runtime will take care of passing the instance as the `self` argument to the
+method.
 
 
 But when you are writing a class, you _do_ need to explicitly list `self` as
@@ -200,8 +199,8 @@ class FSLMaths(object):
     def __init__(self, inimg):
         self.input = inimg
 
-input = op.expanduser('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
-fm = FSLMaths(nib.load(input))
+input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+fm    = FSLMaths(nib.load(input))
 ```
 
 
@@ -212,7 +211,7 @@ attribute like so:
 
 
 ```
-print('Input for our FSLMaths instance: {}'.format(fm.input))
+print('Input for our FSLMaths instance: {}'.format(fm.input.get_filename()))
 ```
 
 
@@ -222,9 +221,10 @@ And that concludes the section on adding attributes to Python objects.
 Just kidding. But it really is that simple. This is one aspect of Python which
 might be quite jarring to you if you are coming from a language with more
 rigid semantics, such as C++ or Java. In those languages, you must pre-specify
-all of the attributes and methods that are a part of a class. But Python works
-a bit differently - you add attributes to an object affer it has been created.
-In fact, you can even do this outside of the class definition<sup>1</sup>:
+all of the attributes and methods that are a part of a class. But Python is
+more flexible - you simply add attributes to an object affer it has been
+created.  In fact, you can even do this outside of the class
+definition<sup>1</sup>:
 
 
 ```
@@ -234,14 +234,14 @@ print(fm.another_attribute)
 ```
 
 
-> <sup>1</sup>This not possible with many of the built-in types, such as
-> `list` and `dict` objects, nor with types that are defined in Python
-> extensions (Python modules that are written in C).
-
-
 __But...__ while attributes can be added to a Python object at any time, it is
 good practice (and makes for more readable and maintainable code) to add all
 of an object's attributes within the `__init__` method.
+
+
+> <sup>1</sup>This not possible with many of the built-in types, such as
+> `list` and `dict` objects, nor with types that are defined in Python
+> extensions (Python modules that are written in C).
 
 
 ## Methods
@@ -256,6 +256,7 @@ functionality:
 class FSLMaths(object):
     """This class is the Python version of the fslmaths shell command. """
 
+
     def __init__(self, inimg):
         """Create an FSLMaths object, which will work on the specified input
         image.
@@ -263,13 +264,16 @@ class FSLMaths(object):
         self.input      = inimg
         self.operations = []
 
+
     def add(self, value):
         """Add the specified value to the current image. """
         self.operations.append(('add', value))
 
+
     def mul(self, value):
         """Multiply the current image by the specified value. """
         self.operations.append(('mul', value))
+
 
     def div(self, value):
         """Divide the current image by the specified value. """
@@ -278,7 +282,7 @@ class FSLMaths(object):
 
 
 Woah woah, [slow down egg-head, you're going a mile a
-minute!](https://www.youtube.com/watch?v=yz-TemWooa4).  We've modified
+minute!](https://www.youtube.com/watch?v=yz-TemWooa4)  We've modified
 `__init__` so that a second attribute called `operations` is added to our
 object - this `operations` attribute is simply a list.
 
@@ -288,7 +292,7 @@ append a tuple to that `operations` list.
 
 
 > Note that, just like in the `__init__` method, the first argument that will
-> be passed to the `add` method is `self` - a reference to the object that the
+> be passed to these methods is `self` - a reference to the object that the
 > method has been called on.
 
 
@@ -299,6 +303,7 @@ another method, `run`, which actually does the work:
 
 
 ```
+import numpy   as np
 import nibabel as nib
 
 
@@ -334,14 +339,14 @@ class FSLMaths(object):
         save it to the specified output file.
         """
 
-        data = self.input.get_data()
+        data = np.array(self.input.get_data())
 
         for operation, value in self.operations:
 
             # if value is a string, we assume that
             # it is a path to an image. Otherwise,
             # we assume that it is a scalar value.
-            if isinstance(image, str):
+            if isinstance(value, str):
                 image = nib.load(value)
                 value = image.get_data()
 
@@ -370,10 +375,201 @@ We now have a useable (but not very useful) `FSLMaths` class!
 ```
 input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
 inimg = nib.load(input)
+fm    = FSLMaths(inimg)
+
+fm.mul(op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz'))
+
+outimg = fm.run()
+
+norigvox = (inimg .get_data() > 0).sum()
+nmaskvox = (outimg.get_data() > 0).sum()
+
+print('Number of voxels >0 in original image: {}'.format(norigvox))
+print('Number of voxels >0 in masked image:   {}'.format(nmaskvox))
+```
+
+
+## Protecting attribute access
+
+
+In our `FSLMaths` class, the input image was added as an attribute called
+`input` to `FSLMaths` objects. We saw that it is easy to read the attributes
+of an object - if we have a `FSLMaths` instance called `fm`, we can read its
+input image via `fm.input`.
+
+
+But it is just as easy to write the attributes of an object. What's to stop
+some sloppy research assistant from overwriting our `input` attribute?
+
+
+```
+inimg = nib.load(op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz'))
 fm = FSLMaths(inimg)
-fm.mul(op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
+fm.input = None
 fm.run()
 ```
+
+
+Well, the scary answer is ... there is __nothing__ stopping you from doing
+whatever you want to a Python object. You can add, remove, and modify
+attribute at will. You can even replace the methods of an existing object if
+you like:
+
+
+```
+fm = FSLMaths(inimg)
+
+def myadd(value):
+    print('Oh no, I\'m not going to add {} to '
+          'your image. Go away!'.format(value))
+
+fm.add = myadd
+fm.add(123)
+
+fm.mul = None
+fm.mul(123)
+```
+
+
+But you really shouldn't get into the habit of doing devious things like
+this - take a look at the appendix for a [brief discussion on this topic](todo).
+
+
+Python tends to assume that programmers are "responsible adults", and hence
+doesn't do much in the way of restricting access to the attributes or methods
+of an object. This is in contrast to languages like C++ and Java, where the
+notion of a private attribute or method is enforced by the language.
+
+
+However, there are a couple of conventions in Python that are [universally
+adhered
+to](https://docs.python.org/3.5/tutorial/classes.html#private-variables):
+
+* Class-level attributes and methods, and module-level attributes, functions,
+  and classes, which begin with a single underscore (`_`), should be
+  considered _protected_ - they are intended for internal use only, and should
+  not be considered part of the public API of a class or module.  This is not
+  enforced by the language in any way<sup>2</sup> - remember, we are all
+  responsible adults here!
+
+* Class-level attributes and methods which begin with a double-underscore
+  (`__`) should be considered _private_. Python provides a weak form of
+  enforcement for this rule - any attribute or method with such a name will
+  actually be _renamed_ (in a standardised manner) at runtime, so that it is
+  not accessible through its original name. It is still accessible via its
+  [mangled
+  name](https://docs.python.org/3.5/tutorial/classes.html#private-variables)
+  though.
+
+
+> <sup>2</sup> With the exception that module-level fields which begin with a
+> single underscore will not be imported into the local scope via the `from
+> [module] import *` techinque.
+
+
+So with all of this in mind, we can adjust our `FSLMaths` class to discourage
+our sloppy research assistant from overwriting the `input` attribute:
+
+
+```
+# remainder of definition omitted for brevity
+class FSLMaths(object):
+    def __init__(self, inimg):
+        self.__input      = inimg
+        self.__operations = []
+```
+
+
+### A better way - properties
+
+
+Python has a feature called
+[`properties`](https://docs.python.org/3.5/library/functions.html#property),
+which is a nice means of controlling access to the attributes of an object. We
+can use properties by defining a "getter" method which can be used to access
+our attributes, and "decorating" them with the `@property` decorator (we will
+cover decorators in a later practical).
+
+
+```
+class FSLMaths(object):
+    def __init__(self, inimg):
+        self.__input      = inimg
+        self.__operations = []
+
+    @property
+    def input(self):
+        return self.__input
+```
+
+
+So we are still storing our input image as a private attribute, but now
+we have made it available in a read-only manner via the `input` property:
+
+
+```
+input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+inimg = nib.load(input)
+fm    = FSLMaths(inimg)
+
+print(fm.input.get_filename())
+```
+
+
+Note that, even though we have defined `input` as a method, we can access it
+like an attribute - this is due to the magic behind the `@property` decorator.
+
+
+We can also define "setter" methods for a property. For example, we might wish
+to add the ability for a user of our `FSLMaths` class to change the input
+image after creation.
+
+
+```
+class FSLMaths(object):
+    def __init__(self, inimg):
+        self.__input      = None
+        self.__operations = []
+        self.input        = inimg
+
+    @property
+    def input(self):
+        return self.__input
+
+    @input.setter
+    def input(self, value):
+        if not isinstance(value, nib.nifti1.Nifti1Image):
+            raise ValueError('value must be a NIFTI image!')
+        self.__input = value
+```
+
+
+Property setters are a nice way to restrict the values that a property may
+take - note that we perform a sanity check in the `input` setter, to make
+sure that the new input is a NIFTI image:
+
+
+```
+input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+inimg = nib.load(input)
+fm    = FSLMaths(inimg)
+
+print('Input:     ', fm.input.get_filename())
+
+# let's change the input
+# to a different image
+input2   = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain.nii.gz')
+inimg2   = nib.load(input2)
+fm.input = inimg2
+
+print('New input: ', fm.input.get_filename())
+
+# this is going to explode
+fm.input = 'abcde'
+```
+
+> Note also that we used the `input` setter method within `__init__` to
+> validate the initial `inimg` that was passed in during creation..
 
 
 ## Appendix: The `object` base-class
@@ -411,3 +607,34 @@ the difference between `__new__` and `__init__` can be found
 [here](https://www.reddit.com/r/learnpython/comments/2s3pms/what_is_the_difference_between_init_and_new/cnm186z/),
 and you may also wish to take a look at the [official Python
 docs](https://docs.python.org/3.5/reference/datamodel.html#basic-customization).
+
+
+## Appendix: Monkey-patching
+
+
+The act of run-time modification of objects or class definitions is referred
+to as [_monkey-patching_](https://en.wikipedia.org/wiki/Monkey_patch) and,
+while it is allowed by the Python programming language, it is generally
+considered quite rude practice.
+
+
+Just because you _can_ do something doesn't mean that you _should_. Python
+gives you the flexibility to write your software in whatever manner you deem
+suitable.  __But__ if you want to write software that will be used, adopted,
+and maintained by other people, you should be polite, write your code in a
+clear, readable fashion, and avoid the use of devious tactics such as
+monkey-patching.
+
+
+__However__, while monkey-patching may seem like a horrific programming
+practice to those of you coming from the realms of C++, Java, and the like,
+(and it is horrific in many cases), it can be _extremely_ useful in certain
+circumstances.  For instance, monkey-patching makes unit testing [a
+breeze](https://docs.python.org/3.5/library/unittest.mock.html) in Python.
+
+
+As another example, consider the scenario where you are dependent on a third
+party library which has bugs in it. No problem - while you are waiting for the
+library author to release a new version of the library, you can write your own
+working implementation and [monkey-patch it
+in](https://git.fmrib.ox.ac.uk/fsl/fsleyes/fsleyes/blob/0.21.0/fsleyes/views/viewpanel.py#L726)!
