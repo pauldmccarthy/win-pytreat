@@ -26,8 +26,8 @@ and _classes_ (also known as _types_).
 
 
 If you have some experience in C, then you can start off by thinking of a
-class as like a `struct` definition - it is a specification for the layout of
-a chunk of memory. For example, here is a typical struct definition:
+class as like a `struct` definition - a `struct` is a specification for the
+layout of a chunk of memory. For example, here is a typical struct definition:
 
 > ```
 > /**
@@ -254,29 +254,18 @@ functionality:
 
 ```
 class FSLMaths(object):
-    """This class is the Python version of the fslmaths shell command. """
-
 
     def __init__(self, inimg):
-        """Create an FSLMaths object, which will work on the specified input
-        image.
-        """
         self.input      = inimg
         self.operations = []
 
-
     def add(self, value):
-        """Add the specified value to the current image. """
         self.operations.append(('add', value))
 
-
     def mul(self, value):
-        """Multiply the current image by the specified value. """
         self.operations.append(('mul', value))
 
-
     def div(self, value):
-        """Divide the current image by the specified value. """
         self.operations.append(('div', value))
 ```
 
@@ -306,55 +295,46 @@ another method, `run`, which actually does the work:
 import numpy   as np
 import nibabel as nib
 
-
 class FSLMaths(object):
-    """This class is the Python version of the fslmaths shell command. """
-
 
     def __init__(self, inimg):
-        """Create an FSLMaths object, which will work on the specified input
-        image.
-        """
         self.input      = inimg
         self.operations = []
 
-
     def add(self, value):
-        """Add the specified value to the current image. """
         self.operations.append(('add', value))
 
-
     def mul(self, value):
-        """Multiply the current image by the specified value. """
         self.operations.append(('mul', value))
 
-
     def div(self, value):
-        """Divide the current image by the specified value. """
         self.operations.append(('div', value))
 
-
     def run(self, output=None):
-        """Apply all staged operations, and return the final result, or
-        save it to the specified output file.
-        """
 
         data = np.array(self.input.get_data())
 
-        for operation, value in self.operations:
+        for oper, value in self.operations:
 
-            # if value is a string, we assume that
-            # it is a path to an image. Otherwise,
-            # we assume that it is a scalar value.
+            # If value is a string, we assume
+            # that it is a path to an image.
             if isinstance(value, str):
                 image = nib.load(value)
                 value = image.get_data()
 
-            if operation == 'add':
+            # Or it could be an image that
+            # has already been loaded.
+            elif isinstance(value, nib.nifti1.Nifti1Image):
+                value = image.get_data()
+
+            # Otherwise we assume that
+            # it is a scalar value.
+
+            if oper == 'add':
                 data = data + value
-            elif operation == 'mul':
+            elif oper == 'mul':
                 data = data * value
-            elif operation == 'div':
+            elif oper == 'div':
                 data = data / value
 
         # turn final output into a nifti,
@@ -378,6 +358,7 @@ inimg = nib.load(input)
 fm    = FSLMaths(inimg)
 
 fm.mul(op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz'))
+fm.add(-10)
 
 outimg = fm.run()
 
@@ -463,8 +444,8 @@ to](https://docs.python.org/3.5/tutorial/classes.html#private-variables):
 
 
 > <sup>2</sup> With the exception that module-level fields which begin with a
-> single underscore will not be imported into the local scope via the `from
-> [module] import *` techinque.
+> single underscore will not be imported into the local scope via the
+> `from [module] import *` techinque.
 
 
 So with all of this in mind, we can adjust our `FSLMaths` class to discourage
@@ -477,6 +458,15 @@ class FSLMaths(object):
     def __init__(self, inimg):
         self.__input      = inimg
         self.__operations = []
+```
+
+But now we have lost the ability to read our `__input` attribute:
+
+
+```
+inimg = nib.load(op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz'))
+fm = FSLMaths(inimg)
+print(fm.__input)
 ```
 
 
@@ -569,13 +559,206 @@ fm.input = 'abcde'
 ```
 
 > Note also that we used the `input` setter method within `__init__` to
-> validate the initial `inimg` that was passed in during creation..
+> validate the initial `inimg` that was passed in during creation.
+
+
+## Class attributes and methods
+
+
+Up to this point we have been covering how to add attributes and methods to an
+_object_. But it is also possible to add methods and attributes to a _class_
+(`static` methods and fields, for those of you familiar with C++ or Java).
+
+
+Class attributes and methods can be accessed without having to create an
+instance of the class - they are not associated with individual objects, but
+rather to the class itself.
+
+
+Class methods and attributes can be useful in several scenarios - as a
+hypothetical, not very useful example, let's say that we want to gain usage
+statistics for how many times each type of operation is used on instances of
+our `FSLMaths` class. We might, for example, use this information in a grant
+application to show evidence that more research is needed to optimise the
+performance of the `add` operation.
+
+
+### Class attributes
+
+
+Let's add a `dict` as a class attribute to the `FSLMaths` class - this `dict`
+
+called on a `FSLMaths` object, that object will increment the class-level
+counters for each operation that is applied:
+
+
+```
+import numpy   as np
+import nibabel as nib
+
+class FSLMaths(object):
+
+    # It's this easy to add a class-level
+    # attribute. This dict is associated
+    # with the FSLMaths *class*, not with
+    # any individual FSLMaths instance.
+    opCounters = {}
+
+    def __init__(self, inimg):
+        self.input      = inimg
+        self.operations = []
+
+    def add(self, value):
+        self.operations.append(('add', value))
+
+    def mul(self, value):
+        self.operations.append(('mul', value))
+
+    def div(self, value):
+        self.operations.append(('div', value))
+
+    def run(self, output=None):
+
+        data = np.array(self.input.get_data())
+
+        for oper, value in self.operations:
+
+            # Code omitted for brevity
+
+            # Increment the usage counter
+            # for this operation.
+            FSLMaths.opCounters[oper] = self.opCounters.get(oper, 0) + 1
+```
+
+
+So let's see it in action:
+
+
+```
+input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+mask  = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
+inimg = nib.load(input)
+
+fm1 = FSLMaths(inimg)
+fm2 = FSLMaths(inimg)
+
+fm1.mul(mask)
+fm1.add(15)
+
+fm2.add(25)
+fm1.div(1.5)
+
+fm1.run()
+fm2.run()
+
+print('FSLMaths usage statistics')
+for oper in ('add', 'div', 'mul'):
+    print('  {} : {}'.format(oper, FSLMaths.opCounters.get(oper, 0)))
+```
+
+
+### Class methods
+
+
+It is just as easy to add a method to a class - let's take our reporting code
+from above, and add it as a method to the `FSLMaths` class:
+
+
+```
+class FSLMaths(object):
+
+    opCounters = {}
+
+    # We use the @classmethod decorator to denote a class
+    # method. Also note that, where a regular method which
+    # is called on an instance will be passed the instance
+    # as its first argument ('self'), a class method will
+    # be passed the class itself as the first argument -
+    # the standard convention is to call this argument 'cls'.
+    @classmethod
+    def usage(cls):
+        print('FSLMaths usage statistics')
+        for oper in ('add', 'div', 'mul'):
+            print('  {} : {}'.format(oper, FSLMaths.opCounters.get(oper, 0)))
+
+    def __init__(self, inimg):
+        self.input      = inimg
+        self.operations = []
+
+    def add(self, value):
+        self.operations.append(('add', value))
+
+    def mul(self, value):
+        self.operations.append(('mul', value))
+
+    def div(self, value):
+        self.operations.append(('div', value))
+
+    def run(self, output=None):
+
+        data = np.array(self.input.get_data())
+
+        for oper, value in self.operations:
+
+            # Code omitted for brevity
+
+            # Increment the usage counter
+            # for this operation.
+            FSLMaths.opCounters[oper] = self.opCounters.get(oper, 0) + 1
+```
+
+
+Calling a class method is the same as accessing a class attribute:
+
+
+```
+input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+mask  = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
+inimg = nib.load(input)
+
+fm1 = FSLMaths(inimg)
+fm2 = FSLMaths(inimg)
+
+fm1.mul(mask)
+fm1.add(15)
+
+fm2.add(25)
+fm1.div(1.5)
+
+fm1.run()
+fm2.run()
+
+FSLMaths.usage()
+```
+
+Note that it is also possible to access class attributes and methods through
+instances:
+
+
+```
+print(fm1.opCounters)
+print(fm1.usage())
+```
+
+
+## Inheritance
 
 
 ## Appendix: The `object` base-class
 
-In older code bases, you might see class definitions that look like this,
-without explicitly inheriting from the `object` base class:
+
+When you are defining a class, you need to specify the base-class from which
+your class inherits. If your class does not inherit from a particular class,
+then it should inherit from the built-in `object` class:
+
+> ```
+> class MyClass(object):
+>     ...
+> ```
+
+
+However, in older code bases, you might see class definitions that look like
+this, without explicitly inheriting from the `object` base class:
 
 > ```
 > class MyClass:
@@ -583,9 +766,10 @@ without explicitly inheriting from the `object` base class:
 > ```
 
 This syntax is a [throwback to older versions of
-Python](https://docs.python.org/2/reference/datamodel.html#new-style-and-classic-classes)
-- in Python 3 there is actually no difference between defining a class in this
-way, and defining a class in the way we have shown in this tutorial.
+Python](https://docs.python.org/2/reference/datamodel.html#new-style-and-classic-classes).
+In Python 3 there is actually no difference between in whether you define your
+class in the way we have shown in this tutorial, or the old-style way.
+
 
 But if you are writing code which needs to run on both Python 2 and 3, you
 _must_ define your classes to explicitly inherit from the `object` base class.
