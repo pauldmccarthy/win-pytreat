@@ -1,4 +1,4 @@
-# Object-oriented programming
+# Object-oriented programming in Python
 
 
 By now you might have realised that __everything__ in Python is an
@@ -57,7 +57,7 @@ instantiation of a struct:
 > ```
 
 
-The fundamental difference between a `struct` in C, and a `class` in Python
+One of the major differences between a `struct` in C, and a `class` in Python
 and other object oriented languages, is that you can't (easily) add functions
 to a `struct` - it is just a chunk of memory. Whereas in Python, you can add
 functions to your class definition, which will then be added as methods when
@@ -65,10 +65,11 @@ you create an object from that class.
 
 
 Of course there are many more differences between C structs and classes (most
-notably [inheritance](todo), and [protection](todo)). But if you can
-understand the difference between a _definition_ of a C struct, and an
-_instantiation_ of that struct, then you are most of the way towards
-understanding the difference between a Python _class_, and a Python _object_.
+notably [inheritance](todo), [polymorphism](todo), and [access
+protection](todo)). But if you can understand the difference between a
+_definition_ of a C struct, and an _instantiation_ of that struct, then you
+are most of the way towards understanding the difference between a _class_,
+and an _object_.
 
 
 > But just to confuse you, remember that in Python, __everything__ is an
@@ -124,9 +125,10 @@ class FSLMaths(object):
 
 
 Here we have added a _method_ called `__init__` to our class (remember that a
-_method_ is just a function which is associated with a specific object).  This
-method expects two arguments - `self`, and `inimg`. So now, when we create an
-instance of the `FSLMaths` class, we will need to provide an input image:
+_method_ is just a function which is defined in a cliass, and which can be
+called on instances of that class).  This method expects two arguments -
+`self`, and `inimg`. So now, when we create an instance of the `FSLMaths`
+class, we will need to provide an input image:
 
 
 ```
@@ -316,19 +318,13 @@ class FSLMaths(object):
 
         for oper, value in self.operations:
 
-            # If value is a string, we assume
-            # that it is a path to an image.
-            if isinstance(value, str):
-                image = nib.load(value)
-                value = image.get_data()
-
-            # Or it could be an image that
+            # Values could be an image that
             # has already been loaded.
             elif isinstance(value, nib.nifti1.Nifti1Image):
-                value = image.get_data()
+                value = value.get_data()
 
             # Otherwise we assume that
-            # it is a scalar value.
+            # values are scalars.
 
             if oper == 'add':
                 data = data + value
@@ -354,10 +350,12 @@ We now have a useable (but not very useful) `FSLMaths` class!
 
 ```
 input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
-inimg = nib.load(input)
-fm    = FSLMaths(inimg)
+mask  = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
+input = nib.load(input)
+mask  = nib.load(mask)
+fm    = FSLMaths(input)
 
-fm.mul(op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz'))
+fm.mul(mask)
 fm.add(-10)
 
 outimg = fm.run()
@@ -393,7 +391,7 @@ fm.run()
 
 Well, the scary answer is ... there is __nothing__ stopping you from doing
 whatever you want to a Python object. You can add, remove, and modify
-attribute at will. You can even replace the methods of an existing object if
+attributes at will. You can even replace the methods of an existing object if
 you like:
 
 
@@ -419,7 +417,7 @@ this - take a look at the appendix for a [brief discussion on this topic](todo).
 Python tends to assume that programmers are "responsible adults", and hence
 doesn't do much in the way of restricting access to the attributes or methods
 of an object. This is in contrast to languages like C++ and Java, where the
-notion of a private attribute or method is enforced by the language.
+notion of a private attribute or method is strictly enforced by the language.
 
 
 However, there are a couple of conventions in Python that are [universally
@@ -534,9 +532,9 @@ class FSLMaths(object):
 ```
 
 
-Property setters are a nice way to restrict the values that a property may
-take - note that we perform a sanity check in the `input` setter, to make
-sure that the new input is a NIFTI image:
+Property setters are a nice way to add validation logic when an attribute is
+assigned a value. We are doing this in the above example, by making sure that
+the new input is a NIFTI image:
 
 
 ```
@@ -560,6 +558,306 @@ fm.input = 'abcde'
 
 > Note also that we used the `input` setter method within `__init__` to
 > validate the initial `inimg` that was passed in during creation.
+
+
+## Inheritance
+
+
+One of the major advantages of an object-oriented programming approach is
+_inheritance_ - the ability to define hierarchical relationships between
+classes and instances.
+
+
+### The basics
+
+
+For example, a veterinary surgery might be running some Python code which
+looks like the following. Perhaps it is used to assist the nurses in
+identifying an animal when it arrives at the surgery:
+
+
+```
+class Animal(object):
+    def noiseMade(self):
+        raise NotImplementedError('This method is implemented by sub-classes')
+
+class Dog(Animal):
+    def noiseMade(self):
+        return 'Woof'
+
+class Cat(Animal):
+    def noiseMade(self):
+        return 'Meow'
+
+class Labrador(Dog):
+    pass
+
+class Chihuahua(Dog):
+    def noiseMade(self):
+        return 'Yap yap yap'
+```
+
+
+Hopefully this example doesn't need much in the way of explanation - this
+collection of classes captures a hierarchical relationship which exists in the
+real world (and also captures the inherently annoying nature of
+chihuahuas). For example, in the real world, all dogs are animals, but not all
+animals are dogs.  Therefore in our model, the `Dog` class has specified
+`Animal` as its base class. We say that the `Dog` class _extends_, _derives
+from_, or _inherits from_, the `Animal` class, and that all `Dog` instances
+are also `Animal` instances (but not vice-versa).
+
+
+What does that `noiseMade` method do?  There is a `noiseMade` method defined
+on the `Animal` class, but it has been re-implemented, or _overridden_ in the
+`Dog`, `Cat`, and `Chihuahua` classes (but not on the `Labrador` class).  We
+can call the `noiseMade` method on any `Animal` instance, but the specific
+behaviour that we get is dependent on the specific type of animal.
+
+
+```
+d  = Dog()
+l  = Labrador()
+c  = Cat()
+ch = Chihuahua()
+
+print('Noise made by dogs:       {}'.format(d .noiseMade()))
+print('Noise made by labradors:  {}'.format(l .noiseMade()))
+print('Noise made by cats:       {}'.format(c .noiseMade()))
+print('Noise made by chihuahuas: {}'.format(ch.noiseMade()))
+```
+
+
+### Code re-use and problem decomposition
+
+
+Inheritance allows us to split a problem into smaller problems, and to re-use
+code.  Let's demonstrate this with a more involved example.  Imagine that a
+former colleague had written a class called `Operator`:
+
+
+> I know this is a little abstract (and quite contrived), but bear with me
+> here.
+
+
+```
+class Operator(object):
+
+    def __init__(self):
+        self.__operations = []
+        self.__opFuncs    = {}
+
+    @property
+    def operations(self):
+        return list(self.__operations)
+
+    @property
+    def functions(self):
+        return dict(self.__opFuncs)
+
+    def addFunction(self, name, func):
+        self.__opFuncs[name] = func
+
+    def do(self, name, *values):
+        self.__operations.append((name, values))
+
+    def preprocess(self, value):
+        return value
+
+    def run(self, input):
+        data = self.preprocess(input)
+        for oper, vals in self.__operations:
+            func = self.__opFuncs[oper]
+            vals = [self.preprocess(v) for v in vals]
+            data = func(data, *vals)
+        return data
+```
+
+
+This `Operator` class provides an interface and logic to execute a chain of
+operations - an operation is some function which accepts one or more inputs,
+and produce one output.
+
+
+But it stops short of defining any operations. Instead, we can create another
+class - a sub-class - which derives from the `Operator` class. This sub-class
+will define the operations that will ultimately be executed by the `Operator`
+class. All that the `Operator` class does is:
+
+- Allow functions to be registered with the `addFunction` method - all
+  registered functions can be used via the `do` method.
+
+- Stage an operation (using a registered function) via the `do` method. Note
+  that `do` allows any number of values to be passed to it, as we used the `*`
+  operator when specifying the `values` argument.
+
+- Run all staged operations via the `run` method - it passes an input through
+  all of the operations that have been staged, and then returns the final
+  result.
+
+
+Let's define a sub-class:
+
+
+```
+class NumberOperator(Operator):
+
+    def __init__(self):
+        super().__init__()
+        self.addFunction('add',    self.add)
+        self.addFunction('mul',    self.mul)
+        self.addFunction('negate', self.negate)
+
+    def preprocess(self, value):
+        return float(value)
+
+    def add(self, a, b):
+        return a + b
+
+    def mul(self, a, b):
+        return a * b
+
+    def negate(self, a):
+        return -a
+```
+
+
+The `NumberOperator` is a sub-class of `Operator`, which we can use for basic
+numerical calculations. It provides a handful of simple numerical methods, but
+the most interesting stuff is inside `__init__`:
+
+
+> ```
+> super().__init__()
+> ```
+
+
+This line invokes `Operator.__init__` - the initialisation method for the
+`Operator` base-class. In Python, we can use the [built-in `super`
+method](https://docs.python.org/3.5/library/functions.html#super) to take care
+of correctly calling methods that are defined in an object's base-class (or
+classes, in the case of [multiple inheritance](todo)).
+
+
+> ```
+> self.addFunction('add',    self.add)
+> self.addFunction('mul',    self.mul)
+> self.addFunction('negate', self.negate)
+> ```
+
+
+Here we are registering all of the functionality that is provided by the
+`NumberOperator` class, via the `Opoerator.addFunction` method.
+
+
+The `NumberOperator` class has also overridden the `preprocess` method, to
+ensure that all values handled by the `Operator` are numbers. This method gets
+called within the `run` method - for a `NumberOperator` instance, the
+`NumberOperator.preprocess` method will get called<sup>1</sup>.
+
+> <sup>1</sup> We can still [access overridden base-class methods](todo link)
+> via the `super()` function, or by explicitly calling the base-class
+> implementation.
+
+
+
+Now let's see what our `NumberOperator` class does:
+
+
+```
+no = NumberOperator()
+no.do('add', 10)
+no.do('mul', 2)
+no.do('negate')
+
+print('Operations on {}: {}'.format(10,  no.run(10)))
+print('Operations on {}: {}'.format(2.5, no.run(5)))
+```
+
+
+It works! While this is a contrived example, hopefully you can see how
+inheritance can be used to break a problem down into sub-problems:
+
+- The `Operator` class provides all of the logic needed to manage and execute
+  operations, without caring about what those operations are actually doing.
+
+- This leaves the `NumberOperator` class free to concentrate on implementing
+  the functions that are specific to its task, and not having to worry about
+  how they are executed.
+
+
+We could also easily implement other `Operator` sub-classes to work on
+different data types, such as arrays, images, or even non-numeric data such as
+strings:
+
+
+```
+class StringOperator(Operator):
+    def __init__(self):
+        super().__init__()
+        self.addFunction('capitalise', self.capitalise)
+        self.addFunction('concat',     self.concat)
+
+    def preprocess(self, value):
+        return str(value)
+
+    def capitalise(self, s):
+        return ' '.join([w[0].upper() + w[1:] for w in s.split()])
+
+    def concat(self, s1, s2):
+        return s1 + s2
+
+so = StringOperator()
+so.do('capitalise')
+so.do('concat', '!')
+
+print(so.run('python is an ok language'))
+```
+
+
+### Polymorphism
+
+
+Inheritance also allows us to take advantage of _polymorphism_, which refers
+to idea that, in an object-oriented language, we should be able to use an
+object without having complete knowledge about the class, or type, of that
+object. For example, we should be able to write a function which expects an
+`Operator` instance, but which should work on an instance of any `Operator`
+sub-classs. For example, we can write a function which prints a summary
+of an `Operator` instance:
+
+
+```
+def operatorSummary(o):
+    print(type(o).__name__)
+    print('  All functions: ')
+    for fname in o.functions.keys():
+        print('    {}'.format(fname))
+    print('  Staged operations: ')
+    for i, (fname, vals) in enumerate(o.operations):
+        vals = ', '.join([str(v) for v in vals])
+        print('    {}: {}({})'.format(i + 1, fname, vals))
+```
+
+
+Because the `operatorSummary` function only uses methods that are defined
+in the `Operator` base-class, we can use it on _any_ `Operator` instance,
+regardless of its type:
+
+
+```
+operatorSummary(no)
+operatorSummary(so)
+```
+
+
+### Multiple inheritance
+
+
+Mention the MRO
+
+
+
 
 
 ## Class attributes and methods
@@ -708,7 +1006,7 @@ class FSLMaths(object):
 ```
 
 
-Calling a class method is the same as accessing a class attribute:
+alling a class method is the same as accessing a class attribute:
 
 
 ```
@@ -739,9 +1037,6 @@ instances:
 print(fm1.opCounters)
 print(fm1.usage())
 ```
-
-
-## Inheritance
 
 
 ## Appendix: The `object` base-class
@@ -822,3 +1117,58 @@ party library which has bugs in it. No problem - while you are waiting for the
 library author to release a new version of the library, you can write your own
 working implementation and [monkey-patch it
 in](https://git.fmrib.ox.ac.uk/fsl/fsleyes/fsleyes/blob/0.21.0/fsleyes/views/viewpanel.py#L726)!
+
+
+## Appendix: Method overloading
+
+
+Method overloading (defining multiple methods on a class, each accepting
+different arguments) is one of the only object-oriented features that is not
+present in Python. Becuase Python does not perform any runtime checks on the
+types of arguments that are passed to a method, or the compatibility of the
+method to accept the arguments, it would not be possible to determine which
+implementation of a method is to be called.
+
+
+However, because a Python method can be written to accept any number or type
+of arguments, it is very easy to to build your own overloading logic by
+writing a "dispatch" method. Here is YACE (Yet Another Contrived Example):
+
+
+```
+class Adder(object):
+
+    def add(self, *args):
+        if   len(args) == 2: return self.__add2(*args)
+        elif len(args) == 3: return self.__add3(*args)
+        elif len(args) == 4: return self.__add4(*args)
+
+    def __add2(self, a, b):
+        return a + b
+
+    def __add3(self, a, b, c):
+        return a + b + c
+
+    def __add4(self, a, b, c, d):
+        return a + b + c + d
+
+a = Adder()
+
+print('Add two:   {}'.format(a.add(1, 2)))
+print('Add three: {}'.format(a.add(1, 2, 3)))
+print('Add four:  {}'.format(a.add(1, 2, 3, 4)))
+```
+
+## Useful references
+
+
+https://docs.python.org/3.5/library/unittest.mock.html
+https://docs.python.org/3.5/tutorial/classes.html
+https://docs.python.org/3.5/library/functions.html
+https://docs.python.org/2/reference/datamodel.html
+https://www.reddit.com/r/learnpython/comments/2s3pms/what_is_the_difference_between_init_and_new/cnm186z/
+https://docs.python.org/3.5/reference/datamodel.html
+http://www.jesshamrick.com/2011/05/18/an-introduction-to-classes-and-inheritance-in-python/
+https://www.digitalocean.com/community/tutorials/understanding-class-inheritance-in-python-3
+
+https://docs.python.org/3.5/library/functions.html#super
