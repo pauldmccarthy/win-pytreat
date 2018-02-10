@@ -13,22 +13,22 @@ you use an object-oriented approach.
 
 
 * [Objects versus classes](#objects-versus-classes)
- * [Defining a class](#defining-a-class)
- * [Object creation - the `__init__` method](#object-creation-the-init-method)
-  * [Our method is called `__init__`, but we didn't actually call the `__init__` method!](#our-method-is-called-init)
-  * [We didn't specify the `self` argument - what gives?!?](#we-didnt-specify-the-self-argument)
- * [Attributes](#attributes)
- * [Methods](#methods)
- * [Protecting attribute access](#protecting-attribute-access)
-  * [A better way - properties](#a-better-way-properties])
- * [Inheritance](#inheritance)
-  * [The basics](#the-basics)
-  * [Code re-use and problem decomposition](#code-re-use-and-problem-decomposition)
-  * [Polymorphism](#polymorphism)
-  * [Multiple inheritance](#multiple-inheritance)
- * [Class attributes and methods](#class-attributes-and-methods)
-  * [Class attributes](#class-attributes)
-  * [Class methods](#class-methods)
+* [Defining a class](#defining-a-class)
+* [Object creation - the `__init__` method](#object-creation-the-init-method)
+ * [Our method is called `__init__`, but we didn't actually call the `__init__` method!](#our-method-is-called-init)
+ * [We didn't specify the `self` argument - what gives?!?](#we-didnt-specify-the-self-argument)
+* [Attributes](#attributes)
+* [Methods](#methods)
+* [Protecting attribute access](#protecting-attribute-access)
+ * [A better way - properties](#a-better-way-properties])
+* [Inheritance](#inheritance)
+ * [The basics](#the-basics)
+ * [Code re-use and problem decomposition](#code-re-use-and-problem-decomposition)
+ * [Polymorphism](#polymorphism)
+ * [Multiple inheritance](#multiple-inheritance)
+* [Class attributes and methods](#class-attributes-and-methods)
+ * [Class attributes](#class-attributes)
+ * [Class methods](#class-methods)
 * [Appendix: The `object` base-class](#appendix-the-object-base-class)
 * [Appendix: `__init__` versus `__new__`](#appendix-init-versus-new)
 * [Appendix: Monkey-patching](#appendix-monkey-patching)
@@ -116,8 +116,8 @@ class FSLMaths(object):
 
 
 In this statement, we defined a new class called `FSLMaths`, which inherits
-from the built-in `object` base-class (see [below](todo) for more details on
-inheritance).
+from the built-in `object` base-class (see [below](inheritance) for more
+details on inheritance).
 
 
 Now that we have defined our class, we can create objects - instances of that
@@ -181,7 +181,7 @@ calling the class in the same way that we call a function.
 
 
 There are a number of "special" methods that you can add to a class in Python
-to control various aspects of how instances of the class behave.  One of the
+to customise various aspects of how instances of the class behave.  One of the
 first ones you may come across is the `__str__` method, which defines how an
 object should be printed (more specifically, how an object gets converted into
 a string). For example, we could add a `__str__` method to our `FSLMaths`
@@ -209,7 +209,7 @@ Refer to the [official
 docs](https://docs.python.org/3.5/reference/datamodel.html#special-method-names)
 for details on all of the special methods that can be defined in a class. And
 take a look at the appendix for some more details on [how Python objects get
-created](todo).
+created](appendix-init-versus-new).
 
 
 <a class="anchor" id="we-didnt-specify-the-self-argument"></a>
@@ -237,7 +237,7 @@ that has been created (and is then assigned to the `fm` variable, after the
 
 But note that you __do not__ need to explicitly provide the `self` argument
 when you call a method on an object, or when you create a new object. The
-Python runtime will take care of passing the instance to its method, as as the
+Python runtime will take care of passing the instance to its method, as the
 first argument to the method.
 
 
@@ -336,10 +336,9 @@ class FSLMaths(object):
 ```
 
 
-Woah woah, [slow down egg-head, you're going a mile a
-minute!](https://www.youtube.com/watch?v=yz-TemWooa4)  We've modified
-`__init__` so that a second attribute called `operations` is added to our
-object - this `operations` attribute is simply a list.
+Woah woah, [slow down egg-head!](https://www.youtube.com/watch?v=yz-TemWooa4)
+We've modified `__init__` so that a second attribute called `operations` is
+added to our object - this `operations` attribute is simply a list.
 
 
 Then, we added a handful of methods - `add`, `mul`, and `div` - which each
@@ -382,13 +381,12 @@ class FSLMaths(object):
 
         for oper, value in self.operations:
 
-            # Values could be an image that
-            # has already been loaded.
+            # Value could be an image.
+            # If not, we assume that
+            # it is a scalar/numpy array.
             if isinstance(value, nib.nifti1.Nifti1Image):
                 value = value.get_data()
 
-            # Otherwise we assume that
-            # values are scalars.
 
             if oper == 'add':
                 data = data + value
@@ -479,8 +477,9 @@ But you really shouldn't get into the habit of doing devious things like
 this. Think of the poor souls who inherit your code years after you have left
 the lab - if you go around overwriting all of the methods and attributes of
 your objects, they are not going to have a hope in hell of understanding what
-your code is actually doing. Take a look at the appendix for a [brief
-discussion on this topic](todo).
+your code is actually doing, and they are not going to like you very
+much. Take a look at the appendix for a [brief discussion on this
+topic](appendix-monkey-patching).
 
 
 Python tends to assume that programmers are "responsible adults", and hence
@@ -503,7 +502,7 @@ to](https://docs.python.org/3.5/tutorial/classes.html#private-variables):
 * Class-level attributes and methods which begin with a double-underscore
   (`__`) should be considered __private__. Python provides a weak form of
   enforcement for this rule - any attribute or method with such a name will
-  actually be __renamed_ (in a standardised manner) at runtime, so that it is
+  actually be _renamed_ (in a standardised manner) at runtime, so that it is
   not accessible through its original name (it is still accessible via its
   [mangled
   name](https://docs.python.org/3.5/tutorial/classes.html#private-variables)
@@ -562,7 +561,7 @@ class FSLMaths(object):
 
 
 So we are still storing our input image as a private attribute, but now we
-have made it available in a read-only manner via the `img` property:
+have made it available in a read-only manner via the public `img` property:
 
 
 ```
@@ -592,7 +591,7 @@ class FSLMaths(object):
 
     @property
     def img(self):
-        return self.__input
+        return self.__img
 
     @img.setter
     def img(self, value):
@@ -602,9 +601,13 @@ class FSLMaths(object):
 ```
 
 
-Property setters are a nice way to add validation logic when an attribute is
-assigned a value. We are doing this in the above example, by making sure that
-the new input is a NIFTI image:
+> Note that we used the `img` setter method within `__init__` to validate the
+> initial `inimg` that was passed in during creation.
+
+
+Property setters are a nice way to add validation logic for when an attribute
+is assigned a value. In this example, an error will be raised if the new input
+is not a NIFTI image.
 
 
 ```
@@ -622,15 +625,12 @@ fm.img = inimg2
 
 print('New input: ', fm.img.get_filename())
 
-# this is going to explode
+print('This is going to explode')
 fm.img = 'abcde'
 ```
 
-> Note also that we used the `img` setter method within `__init__` to
-> validate the initial `inimg` that was passed in during creation.
 
-
-<a class="anchor" id="inheritance"></>a
+<a class="anchor" id="inheritance"></a>
 ## Inheritance
 
 
@@ -643,19 +643,24 @@ classes and instances.
 ### The basics
 
 
-For example, a veterinary surgery might be running some Python code which
-looks like the following, to assist the nurses in identifying an animal when
-it arrives at the surgery:
+My local veterinary surgery runs some Python code which looks like the
+following, to assist the nurses in identifying an animal when it arrives at
+the surgery:
 
 
 ```
 class Animal(object):
     def noiseMade(self):
-        raise NotImplementedError('This method is implemented by sub-classes')
+        raise NotImplementedError('This method must be '
+                                  'implemented by sub-classes')
 
 class Dog(Animal):
     def noiseMade(self):
         return 'Woof'
+
+class TalkingDog(Dog):
+    def noiseMade(self):
+        return 'Hi Homer, find your soulmate!'
 
 class Cat(Animal):
     def noiseMade(self):
@@ -682,9 +687,11 @@ are also `Animal` instances (but not vice-versa).
 
 What does that `noiseMade` method do?  There is a `noiseMade` method defined
 on the `Animal` class, but it has been re-implemented, or _overridden_ in the
-`Dog`, `Cat`, and `Chihuahua` classes (but not on the `Labrador` class).  We
-can call the `noiseMade` method on any `Animal` instance, but the specific
-behaviour that we get is dependent on the specific type of animal.
+`Dog`,
+[`TalkingDog`](https://twitter.com/simpsonsqotd/status/427941665836630016?lang=en),
+`Cat`, and `Chihuahua` classes (but not on the `Labrador` class).  We can call
+the `noiseMade` method on any `Animal` instance, but the specific behaviour
+that we get is dependent on the specific type of animal.
 
 
 ```
@@ -718,7 +725,7 @@ example.  Imagine that a former colleague had written a class called
 class Operator(object):
 
     def __init__(self):
-        super().__init__()
+        super().__init__() # this line will be explained later
         self.__operations = []
         self.__opFuncs    = {}
 
@@ -814,7 +821,7 @@ This line invokes `Operator.__init__` - the initialisation method for the
 In Python, we can use the [built-in `super`
 method](https://docs.python.org/3.5/library/functions.html#super) to take care
 of correctly calling methods that are defined in an object's base-class (or
-classes, in the case of [multiple inheritance](todo)).
+classes, in the case of [multiple inheritance](multiple-inheritance)).
 
 
 > The `super` function is one thing which changed between Python 2 and 3 -
@@ -845,12 +852,15 @@ Here we are registering all of the functionality that is provided by the
 
 The `NumberOperator` class has also overridden the `preprocess` method, to
 ensure that all values handled by the `Operator` are numbers. This method gets
-called within the `run` method - for a `NumberOperator` instance, the
+called within the `Operator.run` method - for a `NumberOperator` instance, the
 `NumberOperator.preprocess` method will get called<sup>1</sup>.
 
-> <sup>1</sup> It is possible to [access overridden base-class methods](todo
-> link) via the `super()` function, or by explicitly calling the base-class
-> implementation.
+
+> <sup>1</sup> When a sub-class overrides a base-class method, it is still
+> possible to access the base-class implementation [via the `super()`
+> function](https://stackoverflow.com/a/4747427) (the preferred method), or by
+> [explicitly calling the base-class
+> implementation](https://stackoverflow.com/a/2421325).
 
 
 Now let's see what our `NumberOperator` class does:
@@ -915,8 +925,8 @@ to idea that, in an object-oriented language, we should be able to use an
 object without having complete knowledge about the class, or type, of that
 object. For example, we should be able to write a function which expects an
 `Operator` instance, but which will work on an instance of any `Operator`
-sub-classs. For example, we could write a function which prints a summary of
-an `Operator` instance:
+sub-classs. As an example, let's write a function which prints a summary of an
+`Operator` instance:
 
 
 ```
@@ -934,7 +944,7 @@ def operatorSummary(o):
 
 Because the `operatorSummary` function only uses methods that are defined
 in the `Operator` base-class, we can use it on _any_ `Operator` instance,
-regardless of its type:
+regardless of its specific type:
 
 
 ```
@@ -951,8 +961,8 @@ Python allows you to define a class which has multiple base classes - this is
 known as _multiple inheritance_. For example, we might want to build a
 notification mechanisim into our `StringOperator` class, so that listeners can
 be notified whenever the `capitalise` method gets called. It so happens that
-we already have a `Notifier` class which allows listeners to register to be
-notified when an event occurs:
+our old colleague of `Operator` class fame also wrote a `Notifier` class which
+allows listeners to register to be notified when an event occurs:
 
 
 ```
@@ -1025,11 +1035,11 @@ summary
 [here](http://python-history.blogspot.co.uk/2010/06/method-resolution-order.html).
 
 
-Note also that in for base class `__init__` methods to work in a design which
-uses multiple inheritance, _all_ classes in the hierarchy must invoke
-`super().__init__()`. This can become complicated when some base classes
-expect to be passed arguments to their `__init__` method. In scenarios like
-this it may be prefereable to manually invoke the base class `__init__`
+Note also that for base class `__init__` methods to be correctly called in a
+design which uses multiple inheritance, _all_ classes in the hierarchy must
+invoke `super().__init__()`. This can become complicated when some base
+classes expect to be passed arguments to their `__init__` method. In scenarios
+like this it may be prefereable to manually invoke the base class `__init__`
 methods instead of using `super()`. For example:
 
 
@@ -1043,7 +1053,8 @@ methods instead of using `super()`. For example:
 
 This approach has the disadvantage that if the base classes change, you will
 have to change these invocations. But the advantage is that you know exactly
-how the class hierarchy will be initialised.
+how the class hierarchy will be initialised. In general though, doing
+everything with `super()` will result in more maintainable code.
 
 
 <a class="anchor" id="class-attributes-and-methods"></a>
@@ -1057,7 +1068,7 @@ _object_. But it is also possible to add methods and attributes to a _class_
 
 Class attributes and methods can be accessed without having to create an
 instance of the class - they are not associated with individual objects, but
-rather to the class itself.
+rather with the class itself.
 
 
 Class methods and attributes can be useful in several scenarios - as a
@@ -1072,9 +1083,9 @@ performance of the `add` operation.
 ### Class attributes
 
 
-Let's add a `dict` as a class attribute to the `FSLMaths` class - this `dict`
-called on a `FSLMaths` object, that object will increment the class-level
-counters for each operation that is applied:
+Let's add a `dict` called `opCounters` as a class attribute to the `FSLMaths`
+class - whenever an operation is called on a `FSLMaths` instance, the counter
+for that operation will be incremented:
 
 
 ```
@@ -1111,7 +1122,10 @@ class FSLMaths(object):
             # Code omitted for brevity
 
             # Increment the usage counter
-            # for this operation.
+            # for this operation. We can
+            # access class attributes (and
+            # methods) through the class
+            # itself.
             FSLMaths.opCounters[oper] = self.opCounters.get(oper, 0) + 1
 ```
 
@@ -1151,10 +1165,12 @@ It is just as easy to add a method to a class - let's take our reporting code
 from above, and add it as a method to the `FSLMaths` class.
 
 
-A class method is denoted by the `@classmethod` decorator. Note that, where a
-regular method which is called on an instance will be passed the instance as
-its first argument ('self'), a class method will be passed the class itself as
-the first argument - the standard convention is to call this argument 'cls':
+A class method is denoted by the
+[`@classmethod`](https://docs.python.org/3.5/library/functions.html#classmethod)
+decorator. Note that, where a regular method which is called on an instance
+will be passed the instance as its first argument (`self`), a class method
+will be passed the class itself as the first argument - the standard
+convention is to call this argument `cls`:
 
 
 ```
@@ -1186,16 +1202,18 @@ class FSLMaths(object):
         data = np.array(self.img.get_data())
 
         for oper, value in self.operations:
-
-            # Code omitted for brevity
-
-            # Increment the usage counter
-            # for this operation.
             FSLMaths.opCounters[oper] = self.opCounters.get(oper, 0) + 1
 ```
 
 
-Calling a class method is the same as accessing a class attribute:
+> There is another decorator -
+> [`@staticmethod`](https://docs.python.org/3.5/library/functions.html#staticmethod) -
+> which can be used on methods defined within a class. The difference
+> between a `@classmethod` and a `@staticmethod` is that the latter will _not_
+> be passed the class (`cls`).
+
+
+calling a class method is the same as accessing a class attribute:
 
 
 ```
@@ -1226,7 +1244,7 @@ instances:
 
 ```
 print(fm1.opCounters)
-print(fm1.usage())
+fm1.usage()
 ```
 
 
@@ -1287,13 +1305,13 @@ and you may also wish to take a look at the [official Python
 docs](https://docs.python.org/3.5/reference/datamodel.html#basic-customization).
 
 
-<a class="anchor" id="appendix-monkey-patching"></>a
+<a class="anchor" id="appendix-monkey-patching"></a>
 ## Appendix: Monkey-patching
 
 
 The act of run-time modification of objects or class definitions is referred
 to as [_monkey-patching_](https://en.wikipedia.org/wiki/Monkey_patch) and,
-while it is allowed by the Python programming language, it is generally
+whilst it is allowed by the Python programming language, it is generally
 considered quite bad practice.
 
 
@@ -1323,12 +1341,15 @@ in!](https://git.fmrib.ox.ac.uk/fsl/fsleyes/fsleyes/blob/0.21.0/fsleyes/views/vi
 ## Appendix: Method overloading
 
 
-Method overloading (defining multiple methods on a class, each accepting
-different arguments) is one of the only object-oriented features that is not
-present in Python. Becuase Python does not perform any runtime checks on the
-types of arguments that are passed to a method, or the compatibility of the
-method to accept the arguments, it would not be possible to determine which
-implementation of a method is to be called.
+Method overloading (defining multiple methods with the same name in a class,
+but each accepting different arguments) is one of the only object-oriented
+features that is not present in Python. Becuase Python does not perform any
+runtime checks on the types of arguments that are passed to a method, or the
+compatibility of the method to accept the arguments, it would not be possible
+to determine which implementation of a method is to be called. In other words,
+in Python only the name of a method is used to identify that method, unlike in
+C++ and Java, where the full method signature (name, input types and return
+types) is used.
 
 
 However, because a Python method can be written to accept any number or type
@@ -1343,6 +1364,9 @@ class Adder(object):
         if   len(args) == 2: return self.__add2(*args)
         elif len(args) == 3: return self.__add3(*args)
         elif len(args) == 4: return self.__add4(*args)
+        else:
+            raise AttributeError('No method available to accept {} '
+                                 'arguments'.format(len(args)))
 
     def __add2(self, a, b):
         return a + b
