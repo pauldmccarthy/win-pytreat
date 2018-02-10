@@ -12,6 +12,31 @@ done. But some problems are just easier to solve, and to reason about, when
 you use an object-oriented approach.
 
 
+* [Objects versus classes](#objects-versus-classes)
+ * [Defining a class](#defining-a-class)
+ * [Object creation - the `__init__` method](#object-creation-the-init-method)
+  * [Our method is called `__init__`, but we didn't actually call the `__init__` method!](#our-method-is-called-init)
+  * [We didn't specify the `self` argument - what gives?!?](#we-didnt-specify-the-self-argument)
+ * [Attributes](#attributes)
+ * [Methods](#methods)
+ * [Protecting attribute access](#protecting-attribute-access)
+  * [A better way - properties](#a-better-way-properties])
+ * [Inheritance](#inheritance)
+  * [The basics](#the-basics)
+  * [Code re-use and problem decomposition](#code-re-use-and-problem-decomposition)
+  * [Polymorphism](#polymorphism)
+  * [Multiple inheritance](#multiple-inheritance)
+ * [Class attributes and methods](#class-attributes-and-methods)
+  * [Class attributes](#class-attributes)
+  * [Class methods](#class-methods)
+* [Appendix: The `object` base-class](#appendix-the-object-base-class)
+* [Appendix: `__init__` versus `__new__`](#appendix-init-versus-new)
+* [Appendix: Monkey-patching](#appendix-monkey-patching)
+* [Appendix: Method overloading](#appendix-method-overloading)
+* [Useful references](#useful-references)
+
+
+<a class="anchor" id="objects-versus-classes"></a>
 ## Objects versus classes
 
 
@@ -21,8 +46,8 @@ section.
 
 
 If you have not done any object-oriented programming before, your first step
-is to understand the difference between _objects_ (also known as _instances_)
-and _classes_ (also known as _types_).
+is to understand the difference between _objects_ (also known as
+_instances_) and _classes_ (also known as _types_).
 
 
 If you have some experience in C, then you can start off by thinking of a
@@ -76,6 +101,7 @@ and an _object_.
 > object - even classes!
 
 
+<a class="anchor" id="defining-a-class"></a>
 ## Defining a class
 
 
@@ -110,6 +136,7 @@ Although these objects are not of much use at this stage. Let's do some more
 work.
 
 
+<a class="anchor" id="object-creation-the-init-method"></a>
 ## Object creation - the `__init__` method
 
 
@@ -120,12 +147,12 @@ It makes sense to pass this in when we create an `FSLMaths` object:
 ```
 class FSLMaths(object):
     def __init__(self, inimg):
-        self.input = inimg
+        self.img = inimg
 ```
 
 
 Here we have added a _method_ called `__init__` to our class (remember that a
-_method_ is just a function which is defined in a cliass, and which can be
+_method_ is just a function which is defined in a class, and which can be
 called on instances of that class).  This method expects two arguments -
 `self`, and `inimg`. So now, when we create an instance of the `FSLMaths`
 class, we will need to provide an input image:
@@ -135,28 +162,63 @@ class, we will need to provide an input image:
 import nibabel as nib
 import os.path as op
 
-input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
-inimg = nib.load(input)
+fpath = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+inimg = nib.load(fpath)
 fm    = FSLMaths(inimg)
 ```
 
 
-There are a couple of things to note here:
+There are a couple of things to note here...
 
 
-__Our method is called__ `__init__`__, but we didn't actually call the__
-`__init__` __method!__ `__init__` is a special method in Python - it is called
-when an instance of a class is created. And recall that we can create an
-instance of a class by calling the class in the same way that we call a
-function.
+<a class="anchor" id="our-method-is-called-init"></a>
+### Our method is called `__init__`, but we didn't actually call the `__init__` method!
 
 
-__We didn't specify the `self` argument - what gives?!?__ The `self` argument
-is a special argument for methods in Python. If you are coming from C++, Java,
-C# or similar, `self` in Python is equivalent to `this` in those languages.
+`__init__` is a special method in Python - it is called when an instance of a
+class is created. And recall that we can create an instance of a class by
+calling the class in the same way that we call a function.
 
 
-### The `self` argument
+There are a number of "special" methods that you can add to a class in Python
+to control various aspects of how instances of the class behave.  One of the
+first ones you may come across is the `__str__` method, which defines how an
+object should be printed (more specifically, how an object gets converted into
+a string). For example, we could add a `__str__` method to our `FSLMaths`
+class like so:
+
+
+```
+class FSLMaths(object):
+
+    def __init__(self, inimg):
+        self.img = inimg
+
+    def __str__(self):
+        return 'FSLMaths({})'.format(self.img.get_filename())
+
+fpath = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+inimg = nib.load(fpath)
+fm    = FSLMaths(inimg)
+
+print(fm)
+```
+
+
+Refer to the [official
+docs](https://docs.python.org/3.5/reference/datamodel.html#special-method-names)
+for details on all of the special methods that can be defined in a class. And
+take a look at the appendix for some more details on [how Python objects get
+created](todo).
+
+
+<a class="anchor" id="we-didnt-specify-the-self-argument"></a>
+### We didn't specify the `self` argument - what gives?!?
+
+
+The `self` argument is a special argument for methods in Python. If you are
+coming from C++, Java, C# or similar, `self` in Python is equivalent to `this`
+in those languages.
 
 
 In a method, the `self` argument is a reference to the object that the method
@@ -173,20 +235,21 @@ that has been created (and is then assigned to the `fm` variable, after the
 `__init__` method has finished).
 
 
-But note that we do not need to explicitly provide the `self` argument - when
-you call a method on an object, or when you create a new object, the Python
-runtime will take care of passing the instance as the `self` argument to the
-method.
+But note that you __do not__ need to explicitly provide the `self` argument
+when you call a method on an object, or when you create a new object. The
+Python runtime will take care of passing the instance to its method, as as the
+first argument to the method.
 
 
-But when you are writing a class, you _do_ need to explicitly list `self` as
+But when you are writing a class, you __do__ need to explicitly list `self` as
 the first argument to all of the methods of the class.
 
 
+<a class="anchor" id="attributes"></a>
 ## Attributes
 
 
-In Python, the term _attribute_ is used to refer to a piece of information
+In Python, the term __attribute__ is used to refer to a piece of information
 that is associated with an object. An attribute is generally a reference to
 another object (which might be a string, a number, or a list, or some other
 more complicated object).
@@ -199,21 +262,21 @@ image on creation:
 ```
 class FSLMaths(object):
     def __init__(self, inimg):
-        self.input = inimg
+        self.img = inimg
 
-input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
-fm    = FSLMaths(nib.load(input))
+fpath = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+fm    = FSLMaths(nib.load(fpath))
 ```
 
 
 Take a look at what is going on in the `__init__` method - we take the `inimg`
-argument, and create a reference to it called `self.input`. We have added an
-_attribute_ to the `FSLMaths` instance, called `input`, and we can access that
+argument, and create a reference to it called `self.img`. We have added an
+_attribute_ to the `FSLMaths` instance, called `img`, and we can access that
 attribute like so:
 
 
 ```
-print('Input for our FSLMaths instance: {}'.format(fm.input.get_filename()))
+print('Input for our FSLMaths instance: {}'.format(fm.img.get_filename()))
 ```
 
 
@@ -224,8 +287,8 @@ Just kidding. But it really is that simple. This is one aspect of Python which
 might be quite jarring to you if you are coming from a language with more
 rigid semantics, such as C++ or Java. In those languages, you must pre-specify
 all of the attributes and methods that are a part of a class. But Python is
-more flexible - you simply add attributes to an object affer it has been
-created.  In fact, you can even do this outside of the class
+much more flexible - you can simply add attributes to an object after it has
+been created.  In fact, you can even do this outside of the class
 definition<sup>1</sup>:
 
 
@@ -236,7 +299,7 @@ print(fm.another_attribute)
 ```
 
 
-__But...__ while attributes can be added to a Python object at any time, it is
+__But ...__ while attributes can be added to a Python object at any time, it is
 good practice (and makes for more readable and maintainable code) to add all
 of an object's attributes within the `__init__` method.
 
@@ -246,6 +309,7 @@ of an object's attributes within the `__init__` method.
 > extensions (Python modules that are written in C).
 
 
+<a class="anchor" id="methods"></a>
 ## Methods
 
 
@@ -258,7 +322,7 @@ functionality:
 class FSLMaths(object):
 
     def __init__(self, inimg):
-        self.input      = inimg
+        self.img        = inimg
         self.operations = []
 
     def add(self, value):
@@ -300,7 +364,7 @@ import nibabel as nib
 class FSLMaths(object):
 
     def __init__(self, inimg):
-        self.input      = inimg
+        self.img        = inimg
         self.operations = []
 
     def add(self, value):
@@ -314,13 +378,13 @@ class FSLMaths(object):
 
     def run(self, output=None):
 
-        data = np.array(self.input.get_data())
+        data = np.array(self.img.get_data())
 
         for oper, value in self.operations:
 
             # Values could be an image that
             # has already been loaded.
-            elif isinstance(value, nib.nifti1.Nifti1Image):
+            if isinstance(value, nib.nifti1.Nifti1Image):
                 value = value.get_data()
 
             # Otherwise we assume that
@@ -349,11 +413,11 @@ We now have a useable (but not very useful) `FSLMaths` class!
 
 
 ```
-input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
-mask  = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
-input = nib.load(input)
-mask  = nib.load(mask)
-fm    = FSLMaths(input)
+fpath = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+fmask = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
+inimg = nib.load(fpath)
+mask  = nib.load(fmask)
+fm    = FSLMaths(inimg)
 
 fm.mul(mask)
 fm.add(-10)
@@ -368,23 +432,24 @@ print('Number of voxels >0 in masked image:   {}'.format(nmaskvox))
 ```
 
 
+<a class="anchor" id="protecting-attribute-access"></a>
 ## Protecting attribute access
 
 
 In our `FSLMaths` class, the input image was added as an attribute called
-`input` to `FSLMaths` objects. We saw that it is easy to read the attributes
+`img` to `FSLMaths` objects. We saw that it is easy to read the attributes
 of an object - if we have a `FSLMaths` instance called `fm`, we can read its
-input image via `fm.input`.
+input image via `fm.img`.
 
 
 But it is just as easy to write the attributes of an object. What's to stop
-some sloppy research assistant from overwriting our `input` attribute?
+some sloppy research assistant from overwriting our `img` attribute?
 
 
 ```
 inimg = nib.load(op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz'))
 fm = FSLMaths(inimg)
-fm.input = None
+fm.img = None
 fm.run()
 ```
 
@@ -411,7 +476,11 @@ fm.mul(123)
 
 
 But you really shouldn't get into the habit of doing devious things like
-this - take a look at the appendix for a [brief discussion on this topic](todo).
+this. Think of the poor souls who inherit your code years after you have left
+the lab - if you go around overwriting all of the methods and attributes of
+your objects, they are not going to have a hope in hell of understanding what
+your code is actually doing. Take a look at the appendix for a [brief
+discussion on this topic](todo).
 
 
 Python tends to assume that programmers are "responsible adults", and hence
@@ -426,19 +495,19 @@ to](https://docs.python.org/3.5/tutorial/classes.html#private-variables):
 
 * Class-level attributes and methods, and module-level attributes, functions,
   and classes, which begin with a single underscore (`_`), should be
-  considered _protected_ - they are intended for internal use only, and should
-  not be considered part of the public API of a class or module.  This is not
-  enforced by the language in any way<sup>2</sup> - remember, we are all
-  responsible adults here!
+  considered __protected__ - they are intended for internal use only, and
+  should not be considered part of the public API of a class or module.  This
+  is not enforced by the language in any way<sup>2</sup> - remember, we are
+  all responsible adults here!
 
 * Class-level attributes and methods which begin with a double-underscore
-  (`__`) should be considered _private_. Python provides a weak form of
+  (`__`) should be considered __private__. Python provides a weak form of
   enforcement for this rule - any attribute or method with such a name will
-  actually be _renamed_ (in a standardised manner) at runtime, so that it is
-  not accessible through its original name. It is still accessible via its
+  actually be __renamed_ (in a standardised manner) at runtime, so that it is
+  not accessible through its original name (it is still accessible via its
   [mangled
   name](https://docs.python.org/3.5/tutorial/classes.html#private-variables)
-  though.
+  though).
 
 
 > <sup>2</sup> With the exception that module-level fields which begin with a
@@ -447,33 +516,34 @@ to](https://docs.python.org/3.5/tutorial/classes.html#private-variables):
 
 
 So with all of this in mind, we can adjust our `FSLMaths` class to discourage
-our sloppy research assistant from overwriting the `input` attribute:
+our sloppy research assistant from overwriting the `img` attribute:
 
 
 ```
 # remainder of definition omitted for brevity
 class FSLMaths(object):
     def __init__(self, inimg):
-        self.__input      = inimg
+        self.__img        = inimg
         self.__operations = []
 ```
 
-But now we have lost the ability to read our `__input` attribute:
+But now we have lost the ability to read our `__img` attribute:
 
 
 ```
 inimg = nib.load(op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz'))
 fm = FSLMaths(inimg)
-print(fm.__input)
+print(fm.__img)
 ```
 
 
+<a class="anchor" id="a-better-way-properties"></a>
 ### A better way - properties
 
 
 Python has a feature called
 [`properties`](https://docs.python.org/3.5/library/functions.html#property),
-which is a nice means of controlling access to the attributes of an object. We
+which is a nice way of controlling access to the attributes of an object. We
 can use properties by defining a "getter" method which can be used to access
 our attributes, and "decorating" them with the `@property` decorator (we will
 cover decorators in a later practical).
@@ -482,29 +552,29 @@ cover decorators in a later practical).
 ```
 class FSLMaths(object):
     def __init__(self, inimg):
-        self.__input      = inimg
+        self.__img        = inimg
         self.__operations = []
 
     @property
-    def input(self):
-        return self.__input
+    def img(self):
+        return self.__img
 ```
 
 
-So we are still storing our input image as a private attribute, but now
-we have made it available in a read-only manner via the `input` property:
+So we are still storing our input image as a private attribute, but now we
+have made it available in a read-only manner via the `img` property:
 
 
 ```
-input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
-inimg = nib.load(input)
+fpath = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+inimg = nib.load(fpath)
 fm    = FSLMaths(inimg)
 
-print(fm.input.get_filename())
+print(fm.img.get_filename())
 ```
 
 
-Note that, even though we have defined `input` as a method, we can access it
+Note that, even though we have defined `img` as a method, we can access it
 like an attribute - this is due to the magic behind the `@property` decorator.
 
 
@@ -516,19 +586,19 @@ image after creation.
 ```
 class FSLMaths(object):
     def __init__(self, inimg):
-        self.__input      = None
+        self.__img        = None
         self.__operations = []
-        self.input        = inimg
+        self.img          = inimg
 
     @property
-    def input(self):
+    def img(self):
         return self.__input
 
-    @input.setter
-    def input(self, value):
+    @img.setter
+    def img(self, value):
         if not isinstance(value, nib.nifti1.Nifti1Image):
             raise ValueError('value must be a NIFTI image!')
-        self.__input = value
+        self.__img = value
 ```
 
 
@@ -538,28 +608,29 @@ the new input is a NIFTI image:
 
 
 ```
-input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
-inimg = nib.load(input)
+fpath = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+inimg = nib.load(fpath)
 fm    = FSLMaths(inimg)
 
-print('Input:     ', fm.input.get_filename())
+print('Input:     ', fm.img.get_filename())
 
 # let's change the input
 # to a different image
-input2   = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain.nii.gz')
-inimg2   = nib.load(input2)
-fm.input = inimg2
+fpath2 = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain.nii.gz')
+inimg2 = nib.load(fpath2)
+fm.img = inimg2
 
-print('New input: ', fm.input.get_filename())
+print('New input: ', fm.img.get_filename())
 
 # this is going to explode
-fm.input = 'abcde'
+fm.img = 'abcde'
 ```
 
-> Note also that we used the `input` setter method within `__init__` to
+> Note also that we used the `img` setter method within `__init__` to
 > validate the initial `inimg` that was passed in during creation.
 
 
+<a class="anchor" id="inheritance"></>a
 ## Inheritance
 
 
@@ -568,12 +639,13 @@ _inheritance_ - the ability to define hierarchical relationships between
 classes and instances.
 
 
+<a class="anchor" id="the-basics"></a>
 ### The basics
 
 
 For example, a veterinary surgery might be running some Python code which
-looks like the following. Perhaps it is used to assist the nurses in
-identifying an animal when it arrives at the surgery:
+looks like the following, to assist the nurses in identifying an animal when
+it arrives at the surgery:
 
 
 ```
@@ -628,22 +700,25 @@ print('Noise made by chihuahuas: {}'.format(ch.noiseMade()))
 ```
 
 
+Note that calling the `noiseMade` method on a `Labrador` instance resulted in
+the `Dog.noiseMade` implementation being called.
+
+
+<a class="anchor" id="code-re-use-and-problem-decomposition"></a>
 ### Code re-use and problem decomposition
 
 
 Inheritance allows us to split a problem into smaller problems, and to re-use
-code.  Let's demonstrate this with a more involved example.  Imagine that a
-former colleague had written a class called `Operator`:
-
-
-> I know this is a little abstract (and quite contrived), but bear with me
-> here.
+code.  Let's demonstrate this with a more involved (and even more contrived)
+example.  Imagine that a former colleague had written a class called
+`Operator`:
 
 
 ```
 class Operator(object):
 
     def __init__(self):
+        super().__init__()
         self.__operations = []
         self.__opFuncs    = {}
 
@@ -724,7 +799,7 @@ class NumberOperator(Operator):
 
 The `NumberOperator` is a sub-class of `Operator`, which we can use for basic
 numerical calculations. It provides a handful of simple numerical methods, but
-the most interesting stuff is inside `__init__`:
+the most interesting stuff is inside `__init__`.
 
 
 > ```
@@ -733,10 +808,28 @@ the most interesting stuff is inside `__init__`:
 
 
 This line invokes `Operator.__init__` - the initialisation method for the
-`Operator` base-class. In Python, we can use the [built-in `super`
+`Operator` base-class.
+
+
+In Python, we can use the [built-in `super`
 method](https://docs.python.org/3.5/library/functions.html#super) to take care
 of correctly calling methods that are defined in an object's base-class (or
 classes, in the case of [multiple inheritance](todo)).
+
+
+> The `super` function is one thing which changed between Python 2 and 3 -
+> in Python 2, it was necessary to pass both the type and the instance
+> to `super`. So it is common to see code that looks like this:
+>
+> ```
+> def __init__(self):
+>     super(NumberOperator, self).__init__()
+> ```
+>
+> Fortunately things are a lot cleaner in Python 3.
+
+
+Let's move on to the next few lines in `__init__`:
 
 
 > ```
@@ -747,7 +840,7 @@ classes, in the case of [multiple inheritance](todo)).
 
 
 Here we are registering all of the functionality that is provided by the
-`NumberOperator` class, via the `Opoerator.addFunction` method.
+`NumberOperator` class, via the `Operator.addFunction` method.
 
 
 The `NumberOperator` class has also overridden the `preprocess` method, to
@@ -755,10 +848,9 @@ ensure that all values handled by the `Operator` are numbers. This method gets
 called within the `run` method - for a `NumberOperator` instance, the
 `NumberOperator.preprocess` method will get called<sup>1</sup>.
 
-> <sup>1</sup> We can still [access overridden base-class methods](todo link)
-> via the `super()` function, or by explicitly calling the base-class
+> <sup>1</sup> It is possible to [access overridden base-class methods](todo
+> link) via the `super()` function, or by explicitly calling the base-class
 > implementation.
-
 
 
 Now let's see what our `NumberOperator` class does:
@@ -814,7 +906,7 @@ so.do('concat', '!')
 print(so.run('python is an ok language'))
 ```
 
-
+<a class="anchor" id="polymorphism"></a>
 ### Polymorphism
 
 
@@ -822,9 +914,9 @@ Inheritance also allows us to take advantage of _polymorphism_, which refers
 to idea that, in an object-oriented language, we should be able to use an
 object without having complete knowledge about the class, or type, of that
 object. For example, we should be able to write a function which expects an
-`Operator` instance, but which should work on an instance of any `Operator`
-sub-classs. For example, we can write a function which prints a summary
-of an `Operator` instance:
+`Operator` instance, but which will work on an instance of any `Operator`
+sub-classs. For example, we could write a function which prints a summary of
+an `Operator` instance:
 
 
 ```
@@ -851,15 +943,110 @@ operatorSummary(so)
 ```
 
 
+<a class="anchor" id="multiple-inheritance"></a>
 ### Multiple inheritance
 
 
-Mention the MRO
+Python allows you to define a class which has multiple base classes - this is
+known as _multiple inheritance_. For example, we might want to build a
+notification mechanisim into our `StringOperator` class, so that listeners can
+be notified whenever the `capitalise` method gets called. It so happens that
+we already have a `Notifier` class which allows listeners to register to be
+notified when an event occurs:
 
 
+```
+class Notifier(object):
+
+    def __init__(self):
+        super().__init__()
+        self.__listeners = {}
+
+    def register(self, name, func):
+        self.__listeners[name] = func
+
+    def notify(self, *args, **kwargs):
+        for func in self.__listeners.values():
+            func(*args, **kwargs)
+```
 
 
+Let's modify the `StringOperator` class to use the functionality of the
+`Notifier ` class:
 
+
+```
+class StringOperator(Operator, Notifier):
+
+    def __init__(self):
+        super().__init__()
+        self.addFunction('capitalise', self.capitalise)
+        self.addFunction('concat',     self.concat)
+
+    def preprocess(self, value):
+        return str(value)
+
+    def capitalise(self, s):
+        result = ' '.join([w[0].upper() + w[1:] for w in s.split()])
+        self.notify(result)
+        return result
+
+    def concat(self, s1, s2):
+        return s1 + s2
+```
+
+
+Now, anything which is interested in uses of the `capitalise` method can
+register as a listener on a `StringOperator` instance:
+
+
+```
+so = StringOperator()
+
+def capitaliseCalled(result):
+    print('Capitalise operation called: {}'.format(result))
+
+so.register('mylistener', capitaliseCalled)
+
+so = StringOperator()
+so.do('capitalise')
+so.do('concat', '?')
+
+print(so.run('did you notice that functions are objects too'))
+```
+
+If you wish to use multiple inheritance in your design, it is important to be
+aware of the mechanism that Python uses to determine how base class methods
+are called (and which base class method will be called, in the case of naming
+conflicts). This is referred to as the Method Resolution Order (MRO) - further
+details on the topic can be found
+[here](https://www.python.org/download/releases/2.3/mro/), and a more concise
+summary
+[here](http://python-history.blogspot.co.uk/2010/06/method-resolution-order.html).
+
+
+Note also that in for base class `__init__` methods to work in a design which
+uses multiple inheritance, _all_ classes in the hierarchy must invoke
+`super().__init__()`. This can become complicated when some base classes
+expect to be passed arguments to their `__init__` method. In scenarios like
+this it may be prefereable to manually invoke the base class `__init__`
+methods instead of using `super()`. For example:
+
+
+> ```
+> class StringOperator(Operator, Notifier):
+>     def __init__(self):
+>         Operator.__init__(self)
+>         Notifier.__init__(self)
+> ```
+
+
+This approach has the disadvantage that if the base classes change, you will
+have to change these invocations. But the advantage is that you know exactly
+how the class hierarchy will be initialised.
+
+
+<a class="anchor" id="class-attributes-and-methods"></a>
 ## Class attributes and methods
 
 
@@ -881,11 +1068,11 @@ application to show evidence that more research is needed to optimise the
 performance of the `add` operation.
 
 
+<a class="anchor" id="class-attributes"></a>
 ### Class attributes
 
 
 Let's add a `dict` as a class attribute to the `FSLMaths` class - this `dict`
-
 called on a `FSLMaths` object, that object will increment the class-level
 counters for each operation that is applied:
 
@@ -903,7 +1090,7 @@ class FSLMaths(object):
     opCounters = {}
 
     def __init__(self, inimg):
-        self.input      = inimg
+        self.img        = inimg
         self.operations = []
 
     def add(self, value):
@@ -917,7 +1104,7 @@ class FSLMaths(object):
 
     def run(self, output=None):
 
-        data = np.array(self.input.get_data())
+        data = np.array(self.img.get_data())
 
         for oper, value in self.operations:
 
@@ -933,9 +1120,10 @@ So let's see it in action:
 
 
 ```
-input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
-mask  = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
-inimg = nib.load(input)
+fpath = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+fmask = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
+inimg = nib.load(fpath)
+mask  = nib.load(fmask)
 
 fm1 = FSLMaths(inimg)
 fm2 = FSLMaths(inimg)
@@ -955,11 +1143,18 @@ for oper in ('add', 'div', 'mul'):
 ```
 
 
+<a class="anchor" id="class-methods"></a>
 ### Class methods
 
 
 It is just as easy to add a method to a class - let's take our reporting code
-from above, and add it as a method to the `FSLMaths` class:
+from above, and add it as a method to the `FSLMaths` class.
+
+
+A class method is denoted by the `@classmethod` decorator. Note that, where a
+regular method which is called on an instance will be passed the instance as
+its first argument ('self'), a class method will be passed the class itself as
+the first argument - the standard convention is to call this argument 'cls':
 
 
 ```
@@ -967,12 +1162,6 @@ class FSLMaths(object):
 
     opCounters = {}
 
-    # We use the @classmethod decorator to denote a class
-    # method. Also note that, where a regular method which
-    # is called on an instance will be passed the instance
-    # as its first argument ('self'), a class method will
-    # be passed the class itself as the first argument -
-    # the standard convention is to call this argument 'cls'.
     @classmethod
     def usage(cls):
         print('FSLMaths usage statistics')
@@ -980,7 +1169,7 @@ class FSLMaths(object):
             print('  {} : {}'.format(oper, FSLMaths.opCounters.get(oper, 0)))
 
     def __init__(self, inimg):
-        self.input      = inimg
+        self.img        = inimg
         self.operations = []
 
     def add(self, value):
@@ -994,7 +1183,7 @@ class FSLMaths(object):
 
     def run(self, output=None):
 
-        data = np.array(self.input.get_data())
+        data = np.array(self.img.get_data())
 
         for oper, value in self.operations:
 
@@ -1006,13 +1195,14 @@ class FSLMaths(object):
 ```
 
 
-alling a class method is the same as accessing a class attribute:
+Calling a class method is the same as accessing a class attribute:
 
 
 ```
-input = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
-mask  = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
-inimg = nib.load(input)
+fpath = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+fmask = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
+inimg = nib.load(fpath)
+mask  = nib.load(fmask)
 
 fm1 = FSLMaths(inimg)
 fm2 = FSLMaths(inimg)
@@ -1029,6 +1219,7 @@ fm2.run()
 FSLMaths.usage()
 ```
 
+
 Note that it is also possible to access class attributes and methods through
 instances:
 
@@ -1039,12 +1230,14 @@ print(fm1.usage())
 ```
 
 
+<a class="anchor" id="appendix-the-object-base-class"></a>
 ## Appendix: The `object` base-class
 
 
 When you are defining a class, you need to specify the base-class from which
 your class inherits. If your class does not inherit from a particular class,
 then it should inherit from the built-in `object` class:
+
 
 > ```
 > class MyClass(object):
@@ -1055,21 +1248,27 @@ then it should inherit from the built-in `object` class:
 However, in older code bases, you might see class definitions that look like
 this, without explicitly inheriting from the `object` base class:
 
+
 > ```
 > class MyClass:
 >     ...
 > ```
 
+
 This syntax is a [throwback to older versions of
 Python](https://docs.python.org/2/reference/datamodel.html#new-style-and-classic-classes).
-In Python 3 there is actually no difference between in whether you define your
-class in the way we have shown in this tutorial, or the old-style way.
+In Python 3 there is actually no difference in defining classes in the
+"new-style" way we have used throughout this tutorial, or the "old-style" way
+mentioned in this appendix.
 
 
 But if you are writing code which needs to run on both Python 2 and 3, you
-_must_ define your classes to explicitly inherit from the `object` base class.
+__must__ define your classes in the new-style convention, i.e. by explicitly
+inheriting from the `object` base class. Therefore, the safest approach is to
+always use the new-style format.
 
 
+<a class="anchor" id="appendix-init-versus-new"></a>
 ## Appendix: `__init__` versus `__new__`
 
 
@@ -1088,37 +1287,39 @@ and you may also wish to take a look at the [official Python
 docs](https://docs.python.org/3.5/reference/datamodel.html#basic-customization).
 
 
+<a class="anchor" id="appendix-monkey-patching"></>a
 ## Appendix: Monkey-patching
 
 
 The act of run-time modification of objects or class definitions is referred
 to as [_monkey-patching_](https://en.wikipedia.org/wiki/Monkey_patch) and,
 while it is allowed by the Python programming language, it is generally
-considered quite rude practice.
+considered quite bad practice.
 
 
 Just because you _can_ do something doesn't mean that you _should_. Python
 gives you the flexibility to write your software in whatever manner you deem
 suitable.  __But__ if you want to write software that will be used, adopted,
-and maintained by other people, you should be polite, write your code in a
-clear, readable fashion, and avoid the use of devious tactics such as
+maintained, and enjoyed by other people, you should be polite, write your code
+in a clear, readable fashion, and avoid the use of devious tactics such as
 monkey-patching.
 
 
 __However__, while monkey-patching may seem like a horrific programming
 practice to those of you coming from the realms of C++, Java, and the like,
 (and it is horrific in many cases), it can be _extremely_ useful in certain
-circumstances.  For instance, monkey-patching makes unit testing [a
-breeze](https://docs.python.org/3.5/library/unittest.mock.html) in Python.
+circumstances.  For instance, monkey-patching makes [unit testing a
+breeze in Python](https://docs.python.org/3.5/library/unittest.mock.html).
 
 
 As another example, consider the scenario where you are dependent on a third
 party library which has bugs in it. No problem - while you are waiting for the
 library author to release a new version of the library, you can write your own
 working implementation and [monkey-patch it
-in](https://git.fmrib.ox.ac.uk/fsl/fsleyes/fsleyes/blob/0.21.0/fsleyes/views/viewpanel.py#L726)!
+in!](https://git.fmrib.ox.ac.uk/fsl/fsleyes/fsleyes/blob/0.21.0/fsleyes/views/viewpanel.py#L726)
 
 
+<a class="anchor" id="appendix-method-overloading"></a>
 ## Appendix: Method overloading
 
 
@@ -1159,16 +1360,14 @@ print('Add three: {}'.format(a.add(1, 2, 3)))
 print('Add four:  {}'.format(a.add(1, 2, 3, 4)))
 ```
 
+
+<a class="anchor" id="useful-references"></a>
 ## Useful references
 
 
-https://docs.python.org/3.5/library/unittest.mock.html
-https://docs.python.org/3.5/tutorial/classes.html
-https://docs.python.org/3.5/library/functions.html
-https://docs.python.org/2/reference/datamodel.html
-https://www.reddit.com/r/learnpython/comments/2s3pms/what_is_the_difference_between_init_and_new/cnm186z/
-https://docs.python.org/3.5/reference/datamodel.html
-http://www.jesshamrick.com/2011/05/18/an-introduction-to-classes-and-inheritance-in-python/
-https://www.digitalocean.com/community/tutorials/understanding-class-inheritance-in-python-3
+The official Python documentation has a wealth of information on the internal
+workings of classes and objects, so these pages are worth a read:
 
-https://docs.python.org/3.5/library/functions.html#super
+
+* https://docs.python.org/3.5/tutorial/classes.html
+* https://docs.python.org/3.5/reference/datamodel.html
