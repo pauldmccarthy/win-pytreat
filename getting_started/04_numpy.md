@@ -98,7 +98,7 @@ array in Matlab - they can store anything, but are extremely inefficient, and
 unwieldy when you have more than a couple of dimensions.
 
 
-___Numy array == Matlab matrix:___ These are in contrast to the Numpy array
+___Numpy array == Matlab matrix:___ These are in contrast to the Numpy array
 and Matlab matrix, which are both thin wrappers around a contiguous chunk of
 memory, and which provide blazing-fast performance (because behind the scenes
 in both Numpy and Matlab, it's C, C++ and FORTRAN all the way down).
@@ -236,7 +236,7 @@ print(data)
 > for more information.
 
 
-  Of course you can also save data out to a text file just as easily, with
+Of course you can also save data out to a text file just as easily, with
 [`numpy.savetxt`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.savetxt.html):
 
 
@@ -249,6 +249,13 @@ with open('mydata.txt', 'rt') as f:
         print(line.strip())
 ```
 
+
+> The `fmt` argument to the `numpy.savetxt` function uses a specification
+> language similar to that used in the C `printf` function - in the example
+> above, `'%i`' indicates that the values of the array should be output as
+> signed integers. See the [`numpy.savetxt`
+> documentation](https://docs.scipy.org/doc/numpy/reference/generated/numpy.savetxt.html)
+> for more details on specifying the output format.
 
 
 <a class="anchor" id="array-properties"></a>
@@ -275,7 +282,9 @@ print('Length of first dimension: ', len(z))
 
 > As depicted above, passing a Numpy array to the built-in `len` function will
 > only give you the length of the first dimension, so you will typically want
-> to avoid using it - use the `size` attribute instead.
+> to avoid using it - instead, use the `size` attribute if you want to know
+> how many elements are in an array, or the `shape` attribute if you want to
+> know the array shape.
 
 
 <a class="anchor" id="descriptive-statistics"></a>
@@ -299,6 +308,27 @@ print('stddev:       ', a.std())
 print('sum:          ', a.sum())
 print('prod:         ', a.prod())
 ```
+
+
+These methods can also be applied to arrays with multiple dimensions:
+
+
+```
+a = np.random.randint(1, 10, (3, 3))
+print('a:')
+print(a)
+print('min:             ', a.min())
+print('row mins:        ', a.min(axis=1))
+print('col mins:        ', a.min(axis=0))
+print('Min index      : ', a.argmin())
+print('Row min indices: ', a.argmin(axis=1))
+```
+
+
+Note that, for a multi-dimensional array, the `argmin` and `argmax` methods
+will return the (0-based) index of the minimum/maximum values into a
+[flattened](https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.ndarray.flatten.html)
+view of the array.
 
 
 > <sup>2</sup> Python, being an object-oriented language, distinguishes
@@ -541,6 +571,33 @@ print(b.dot(a))
 > backwards-compatibility, go ahead and use it!
 
 
+One potential source of confusion for those of you who are used to Matlab's
+linear algebra-based take on things is that Numpy treats row and column
+vectors differently - you should take a break now and skim over the [appendix
+on vectors in Numpy](#appendix-vectors-in-numpy).
+
+
+For matrix-by-vector multiplications, a 1-dimensional Numpy array may be
+treated as _either_ a row vector _or_ a column vector, depending on where
+it is in the expression:
+
+
+```
+a = np.arange(1, 5).reshape((2, 2))
+b = np.random.randint(1, 10, 2)
+
+print('a:')
+print(a)
+print('b:', b)
+
+print('a @ b - b is a column vector:')
+print(a @ b)
+print('b @ a - b is a row vector:')
+print(b @ a)
+```
+
+
+
 <a class="anchor" id="broadcasting"></a>
 ### Broadcasting
 
@@ -577,13 +634,6 @@ print(a * b.reshape(-1, 1))
 > Here we used a handy feature of the `reshape` method - if you pass `-1` for
 > the size of one dimension, it will automatically determine the size to use
 > for that dimension.
-
-
-Note that Numpy treats row and column vectors differently than in Matlab,
-which is a potential source of confusion for those of you who are used to
-Matlab's linear algebra-based take on things. You might wish to take a break
-now to read [the appendix](#appendix-vectors-in-numpy) for a discussion on
-vectors in Numpy.
 
 
 Here is a more useful example, where we use broadcasting to de-mean the rows
@@ -840,7 +890,7 @@ for r, c, v in zip(rows, cols, indexed):
 
 
 The `numpy.where` function can be combined with boolean arrays to easily
-generate of coordinate arrays for values which meet some condition:
+generate coordinate arrays for values which meet some condition:
 
 
 ```
