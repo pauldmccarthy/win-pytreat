@@ -13,6 +13,56 @@ empty_string = ''
 empty_string.    # after running the code block above, put your cursor behind the dot and press tab to get a list of methods
 ```
 
+* [Reading/writing files](#reading-writing-files)
+* [Creating neew strings](#creating-new-strings)
+** [String syntax](#string-syntax)
+*** [Unicode versus bytes](#unicode-versus-bytes)
+** [Converting objects into strings](#converting-objects-into-strings)
+** [Combining strings](#combining-strings)
+** [String formattings](#string-formatting)
+* [Extracting information from strings](#extracting-information-from-strings)
+** [Splitting strings](#splitting-strings)
+** [Converting strings to numbers](#converting-strings-to-numbers)
+** [Regular expressions](#regular-expressions)
+* [Exercises](#exercises)
+
+<a class="anchor" id="reading-writing-files"></a>
+## Reading/writing files
+The syntax to open a file in python is `with open(<filename>, <mode>) as <file_object>: <block of code>`, where
+* `filename` is a string with the name of the file
+* `mode` is one of 'r' (for read-only access), 'w' (for writing a file, this wipes out any existing content), 'a' (for appending to an existing file).
+* `file_object` is a variable name which will be used within the `block of code` to access the opened file.
+
+For example the following will read all the text in `README.md` and print it.
+```
+with open('README.md', 'r') as readme_file:
+    print(readme_file.read())
+```
+> The `with` statement is an advanced python feature, however you will probably only encounter it when opening files. In that context it merely ensures that the file will be properly closed as soon as the program leaves the `with` statement (even if an error is raised within the `with` statement).
+
+You could also use the `readlines()` method to get a list of all the lines.
+
+A very similar syntax is used to write files:
+```
+with open('02_text_io/my_file', 'w') as my_file:
+    my_file.write('This is my first line\n')
+    my_file.writelines(['Second line\n', 'and the third\n'])
+```
+Note that no new line characters get added automatically. We can investigate the resulting file using
+```
+!cat 02_text_io/my_file
+```
+> Any lines starting with `!` will be interpreted as shell commands by ipython. It is great when playing around in the ipython notebook or in the ipython terminal, however it is an ipython-only feature and hence is not available when writing python scripts. How to call shell commands from python will be discusses in the `scripts` practical.
+
+If we want to add to the existing file we can open it in the append mode:
+```
+with open('02_text_io/my_file', 'a') as my_file:
+    my_file.write('More lines is always better\n')
+!cat 02_text_io/my_file
+```
+
+Below we will discuss how we can convert python objects to strings to store in these files and how to extract those python objects from strings again.
+
 <a class="anchor" id="creating-new-strings"></a>
 ## Creating new strings
 
@@ -25,7 +75,7 @@ same_string = "To be or not to be"
 print(a_string == same_string)
 ```
 
-The main rationale for choosing between single or double quotes, is whether the string itself will contain any quotes. You can include a single quote in a string surrounded by single quotes by escaping it with the `\` character:
+The main rationale for choosing between single or double quotes, is whether the string itself will contain any quotes. You can include a single quote in a string surrounded by single quotes by escaping it with the `\` character, however in such a case it would be more convenient to use double quotes:
 ```
 a_string = "That's the question"
 same_string = 'That\'s the question'
@@ -38,7 +88,7 @@ a_string = "This is the first line.\nAnd here is the second.\n\tThe third starts
 print(a_string)
 ```
 
-However, the easiest way to create multi-line strings is to use a triple quote (again single or double quotes can be used:
+However, the easiest way to create multi-line strings is to use a triple quote (again single or double quotes can be used). Triple quotes allow your string to span multiple lines:
 ```
 multi_line_string = """This is the first line.
 And here is the second.
@@ -52,6 +102,12 @@ single_line_string = r"This string is not multiline.\nEven though it contains th
 print(single_line_string)
 ```
 
+One pitfall when creating a list of strings is that python automatically concatenates string literals, which are only separated by white space:
+```
+my_list_of_strings = ['a', 'b', 'c' 'd', 'e']
+print("The 'c' and 'd' got concatenated, because we forgot the comma:", my_list_of_strings)
+```
+
 <a class="anchor" id="unicode-versus-bytes"></a>
 #### unicode versus bytes
 To encourage the spread of python around the world, python 3 switched to using unicode as the default for strings and code (which is one of the main reasons for the incompatibility between python 2 and 3).
@@ -63,10 +119,12 @@ print(Δ)
 ```
 
 
-In python 2 each element in a string was a single byte rather than a potentially multi-byte character. You can create such a byte array from your unicode string in python 3 using the `encode()` method and converted back to a `decode()` method.
+In python 2 each element in a string was a single byte rather than a potentially multi-byte character. You can convert back to interpreting your sequence as a unicode string or a byte array using:
+* `encode()` called on a string converts it into a bytes array (`bytes` object)
+* `decode()` called on a `bytes` array converts it into a unicode string.
 ```
 delta = "Δ"
-print(delta, ' in python 2 would be represented as ', delta.encode())
+print('The character', delta, 'consists of the following 2 bytes', delta.encode())
 ```
 
 These byte arrays can be created directly be prepending the quotes enclosing the string with a `b`, which tells python 3 to interpret the following as a byte array:
@@ -77,23 +135,28 @@ print('The two bytes ', a_byte_array, ' become single unicode character (', a_by
 
 Especially in code dealing with strings (e.g., reading/writing of files) many of the errors arising of running python 2 code in python 3 arise from the mixing of unicode strings with byte arrays. Decoding and/or encoding some of these objects can often fix these issues.
 
+By default any file opened in python will be interpreted as unicode. If you want to treat a file as raw bytes, you have to include a 'b' in the `mode` when calling the `open()` function:
+```
+with open('/usr/local/fsl/data/standard/MNI152_T1_1mm.nii.gz', 'rb') as gzipped_nifti:
+    print('First few bytes of gzipped NIFTI file:', gzipped_nifti.read(10))
+```
 <a class="anchor" id="converting-objects-into-strings"></a>
 ### converting objects into strings
 There are two functions to convert python objects into strings, `repr()` and `str()`.
 All other functions that rely on string-representations of python objects will use one of these two (for example the `print()` function will call `str()` on the object).
 
-The goal of the `str()` function is to be readable, while the goal of `repr()` is to be unambiguous. For example
+The goal of the `str()` function is to be readable, while the goal of `repr()` is to be unambiguous. Compare
 ```
 print(str("3"))
 print(str(3))
 ```
-While the output of both `str()` functions are very clear, we can not know whether the input was a string or an actual integer.
+with
 
 ```
 print(repr("3"))
 print(repr(3))
 ```
-Note that the output of the `repr()` function can be directly be passed back to the python interpreter to recreate our string/integer.
+In both cases you get the value of the object (3), but only the `repr` returns enough information to actually know the type of the object.
 
 <a class="anchor" id="combining-strings"></a>
 ### Combining strings
@@ -146,22 +209,20 @@ b = 1 / 3
 print('{:.3f} = {} + {:.3f}'.format(a + b, a, b))
 print('{total:.3f} = {a} + {b:.3f}'.format(a=a, b=b, total=a+b))
 ```
+Note that the variable `:` delimeter separates the variable identifies on the left from the formatting rules on the right.
 
 Finally the new, fancy formatted string literals (only available in python 3.6+). This new format is very similar to the recommended style, except that all placeholders are automatically evaluated in the local environment at the time the template is defined. This means that we do not have to explicitly provide the parameters (and we can evaluate the sum inside the string!), although it does mean we also can not re-use the template.
 ```
 a = 3
 b = 1/3
 
-print(f'{a + b:.3f} = {a} + {b:.3f} = {a + b}')
+print(f'{a + b:.3f} = {a} + {b:.3f}')
 ```
 
 
-<a class="anchor" id="reading-writing-files"></a>
-## Reading/writing files
-
-
-
-## Extracting sub-strings from strings
+<a class="anchor" id="extracting-information-from-strings"></a>
+## Extracting information from strings
+<a class="anchor" id="splitting-strings"></a>
 ### Splitting strings
 The simplest way to extract a sub-string is to use slicing
 ```
@@ -179,11 +240,39 @@ print(a_string[:index])  # extracts the sub-string up to the first occurence of 
 print('index for non-existent sub-string', a_string.find('cats'))  # note that find returns -1 when it can not find the sub-string rather than raising an error.
 ```
 
+You can automate this process of splitting a string at a sub-string using the `split()` method. By default it will split a string at the white space.
+```
+print('The split() method\trecognizes a wide variety\nof white space'.split())
+```
+
+To separate a comma separated list we will need to supply the delimiter to the `split()` method. We can then use the `strip()` method to remove any whitespace at the beginning or end of the string:
+```
+scientific_packages_string = "numpy, scipy, pandas, matplotlib, nibabel"
+list_with_whitespace = scientific_packages_string.split()
+print(list_with_whitespace)
+list_without_whitespace = [individual_string.strip() for individual_string in list_with_whitespace]
+print(list_without_whitespace)
+```
+> We use the syntax `[<expr> for <element> in <sequence>]` here which applies the `expr` to each `element` in the `sequence` and returns the resulting list. This is a convenient form in python to create a new list from the old one.
+
+<a class="anchor" id="converting-strings-to-numbers"></a>
+### Converting strings to numbers
+Once you have extracted a number from a string, you can convert it into an actual integer or float by calling respectively `int()` or `float()` on it. `float()` understands a wide variety of different ways to write numbers:
+```
+print(int("3"))
+print(float("3"))
+print(float("3.213"))
+print(float("3.213e5"))
+print(float("3.213E-25"))
+```
+
+<a class="anchor" id="regular-expressions"></a>
 ### Regular expressions
 Regular expressions are used for looking for specific patterns in a longer string. This can be used to extract specific information from a well-formatted string or to modify a string. In python regular expressions are available in the [re](https://docs.python.org/3/library/re.html#re-syntax) module.
 
-A full discussion of regular expression goes far beyond this tutorial. If you are interested, have a look at [https://docs.python.org/3/howto/regex.html]
+A full discussion of regular expression goes far beyond this practical. If you are interested, have a look [here](https://docs.python.org/3/howto/regex.html).
 
+<a class="anchor" id="exercises"></a>
 ## Exercises
 ### Joining/splitting strings
 go from 2 column file to 2 rows
