@@ -54,15 +54,16 @@ print(single_line_string)
 
 <a class="anchor" id="unicode-versus-bytes"></a>
 #### unicode versus bytes
-To encourage the spread of python around the world, python 3 switched to using unicode as the default for strings and code (which is one of the main reasons for the incompatibility between python 2 and 3). This means that any unicode characters can be used in strings (or in our code):
+To encourage the spread of python around the world, python 3 switched to using unicode as the default for strings and code (which is one of the main reasons for the incompatibility between python 2 and 3).
+This means that each element in a string is a unicode character (using [UTF-8 encoding](https://docs.python.org/3/howto/unicode.html)), which can consist of one or more bytes.
+The advantage is that any unicode characters can now be used in strings or in the code itself:
 ```
 Δ = "café"
 print(Δ)
 ```
 
-Python 3 uses UTF-8 encoding by default, although you can change this in any file (see [python documentation on encoding](https://docs.python.org/3/howto/unicode.html) for more details)
 
-In python 2 the string object was a simple array of bytes. You can create such a byte array from your unicode string in python 3 using the encode method
+In python 2 each element in a string was a single byte rather than a potentially multi-byte character. You can create such a byte array from your unicode string in python 3 using the `encode()` method and converted back to a `decode()` method.
 ```
 delta = "Δ"
 print(delta, ' in python 2 would be represented as ', delta.encode())
@@ -71,7 +72,7 @@ print(delta, ' in python 2 would be represented as ', delta.encode())
 These byte arrays can be created directly be prepending the quotes enclosing the string with a `b`, which tells python 3 to interpret the following as a byte array:
 ```
 a_byte_array = b'\xce\xa9'
-print('The bytes ', a_byte_array, ' become ', a_byte_array.decode(), ' with UTF-8 encoding')
+print('The two bytes ', a_byte_array, ' become single unicode character (', a_byte_array.decode(), ') with UTF-8 encoding')
 ```
 
 Especially in code dealing with strings (e.g., reading/writing of files) many of the errors arising of running python 2 code in python 3 arise from the mixing of unicode strings with byte arrays. Decoding and/or encoding some of these objects can often fix these issues.
