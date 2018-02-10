@@ -9,6 +9,5 @@ This directory contains the "Getting started" practical.
 4. Numpy (PM)
 5. Nifti images (MJ)
 6. Image manipulation (MC)
-7. Moving from the Jupyter notebook to a text editor and terminal (MC)
+7. Jupyter notebook and Ipython(MC)
 8. Writing a callable script (MJ)
-9. Debugging (MC)
