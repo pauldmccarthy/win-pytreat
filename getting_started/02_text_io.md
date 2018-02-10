@@ -275,7 +275,19 @@ A full discussion of regular expression goes far beyond this practical. If you a
 <a class="anchor" id="exercises"></a>
 ## Exercises
 ### Joining/splitting strings
-go from 2 column file to 2 rows
+The file 02_text_io/input.txt contains integers in a 2-column format (separated by spaces). Read in this file and write it back out in 2-rows separated by comma's.
+
+```
+input_filename = '02_text_io/input.txt'
+out_filename = '02_text_io/output.txt'
+
+with open(input_filename, 'r') as input_file:
+    ...
+
+with open(output_filename, 'w') as output_file:
+    ...
+```
+
 ### String formatting and regular expressions
 Given a template for MRI files:
 s<subject_id>/<modality>_<res>mm.nii.gz
