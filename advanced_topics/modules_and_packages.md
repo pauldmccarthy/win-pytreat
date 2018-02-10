@@ -61,8 +61,8 @@ one. It contains an attribute called `PI`, and a function `add`.
 
 
 Before we can use our module, we must `import` it. Importing a module in
-Python will make its contents available to the local scope.  We can import the
-contents of `mymodule` like so:
+Python will make its contents available in the local scope.  We can import the
+contents of `numfuncs` like so:
 
 
 ```
@@ -235,7 +235,7 @@ in the following order:
 1. Built-in modules (e.g. `os`, `sys`, etc.).
 2. In the current directory or, if a script has been executed, in the directory
    containing that script.
-3. In directories listed in the PYTHONPATH environment variable.
+3. In directories listed in the `$PYTHONPATH` environment variable.
 4. In installed third-party libraries (e.g. `numpy`).
 
 
