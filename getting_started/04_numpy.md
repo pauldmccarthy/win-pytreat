@@ -45,6 +45,7 @@ out of date, but we will update it for the next release of FSL.
 * [Appendix A: Generating random numbers](#appendix-generating-random-numbers)
 * [Appendix B: Importing Numpy](#appendix-importing-numpy)
 * [Appendix C: Vectors in Numpy](#appendix-vectors-in-numpy)
+* [Appendix D: The Numpy `matrix`](#appendix-the-numpy-matrix)
 
 * [Useful references](#useful-references)
 
@@ -148,7 +149,8 @@ will be loading our data from text or binary files directly into a Numpy
 array, thus completely bypassing the use of Python lists and the costly
 list-to-array conversion.  I'm emphasising this to help you understand the
 difference between Python lists and Numpy arrays. Apologies if you've already
-got it, forgiveness please.
+got it, [forgiveness
+please](https://www.youtube.com/watch?v=ZeHflFNR4kQ&feature=youtu.be&t=128).
 
 
 <a class="anchor" id="numpy-basics"></a>
@@ -532,8 +534,8 @@ Wait ... what's that you say? Oh, I couldn't understand because of all the
 froth coming out of your mouth. I guess you're angry that `a * b` didn't give
 you the matrix product, like it would have in Matlab.  Well all I can say is
 that Numpy is not Matlab. Matlab operations are typically consistent with
-linear algebra notation. This is not the case in Numpy. Get over it. Take a
-calmative.
+linear algebra notation. This is not the case in Numpy. Get over it.
+[Get yourself a calmative](https://youtu.be/M_w_n-8w3IQ?t=32).
 
 
 <a class="anchor" id="matrix-multiplication"></a>
@@ -595,6 +597,13 @@ print(a @ b)
 print('b @ a - b is a row vector:')
 print(b @ a)
 ```
+
+
+If you really can't stand using `@` to denote matrix multiplication, and just
+want things to be like they were back in Matlab-land, you do have the option
+of using a different Numpy data type - the `matrix` - which behaves a bit more
+like what you might expect from Matlab.  You can find a brief overview of the
+`matrix` data type in [the appendix](appendix-the-numpy-matrix).
 
 
 
@@ -1108,6 +1117,47 @@ print(np.atleast_2d(r).T)
 ```
 
 
+<a class="anchor" id="appendix-the-numpy-matrix"></a>
+## Appendix D: The Numpy `matrix`
+
+
+By now you should be aware that a Numpy `array` does not behave in quite the
+same way as a Matlab matrix. The primary difference between Numpy and Matlab
+is that in Numpy, the `*` operator denotes element-wise multiplication,
+gwhereas in Matlab, `*` denotes matrix multiplication.
+
+
+Numpy does support the `@` operator for matrix multiplication, but if this is
+a complete show-stopper for you - if you just can't bring yourself to write `A
+@ B` to denote the matrix product of `A` and `B` - if you _must_ have your
+code looking as Matlab-like as possible, then you should look into the Numpy
+[`matrix`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.matrix.html)
+data type.
+
+
+The `matrix` is an alternative to the `array` which essentially behaves more
+like a Matlab matrix:
+
+* `matrix` objects always have exactly two dimensions.
+* `a * b` denotes matrix multiplication, rather than elementwise
+  multiplication.
+* `matrix` objects have `.H` and `.I` attributes, which are convenient ways to
+  access the conjugate transpose and inverse of the matrix respectively.
+
+
+Note however that use of the `matrix` type is _not_ widespread, and if you use
+it you will risk confusing others who are familiar with the much more commonly
+used `array`, and who need to work with your code. In fact, the official Numpy
+documentation [recommends against using the `matrix`
+type](https://docs.scipy.org/doc/numpy-dev/user/numpy-for-matlab-users.html#array-or-matrix-which-should-i-use).
+
+
+But if you are writing some very maths-heavy code, and you want your code to
+be as clear and concise, and maths/Matlab-like as possible, then the `matrix`
+type is there for you. Just make sure you document your code well to make it
+clear to others what is going on!
+
+
 <a class="anchor" id="useful-references"></a>
 ## Useful references
 
@@ -1118,3 +1168,4 @@ print(np.atleast_2d(r).T)
 * [Indexing in Numpy](https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html)
 * [Random sampling in `numpy.random`](https://docs.scipy.org/doc/numpy/reference/routines.random.html)
 * [Python slicing](https://www.pythoncentral.io/how-to-slice-listsarrays-and-tuples-in-python/)
+* [Numpy for Matlab users](https://docs.scipy.org/doc/numpy-dev/user/numpy-for-matlab-users.html)
