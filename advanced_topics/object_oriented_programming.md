@@ -1018,7 +1018,6 @@ def capitaliseCalled(result):
 
 so.register('mylistener', capitaliseCalled)
 
-so = StringOperator()
 so.do('capitalise')
 so.do('concat', '?')
 
@@ -1298,7 +1297,15 @@ created.
 
 
 You can also define a method called `__new__` if you need to control the
-creation stage, although this is very rarely needed. A brief explanation on
+creation stage, although this is very rarely needed. One example of where you
+might need to implement the `__new__` method is if you wish to create a
+[subclass of a
+`numpy.array`](https://docs.scipy.org/doc/numpy-1.14.0/user/basics.subclassing.html)
+(although you might alternatively want to think about redefining your problem
+so that this is not necessary).
+
+
+A brief explanation on
 the difference between `__new__` and `__init__` can be found
 [here](https://www.reddit.com/r/learnpython/comments/2s3pms/what_is_the_difference_between_init_and_new/cnm186z/),
 and you may also wish to take a look at the [official Python
