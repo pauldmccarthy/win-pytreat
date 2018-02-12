@@ -853,10 +853,10 @@ Here we are registering all of the functionality that is provided by the
 The `NumberOperator` class has also overridden the `preprocess` method, to
 ensure that all values handled by the `Operator` are numbers. This method gets
 called within the `Operator.run` method - for a `NumberOperator` instance, the
-`NumberOperator.preprocess` method will get called<sup>1</sup>.
+`NumberOperator.preprocess` method will get called<sup>3</sup>.
 
 
-> <sup>1</sup> When a sub-class overrides a base-class method, it is still
+> <sup>3</sup> When a sub-class overrides a base-class method, it is still
 > possible to access the base-class implementation [via the `super()`
 > function](https://stackoverflow.com/a/4747427) (the preferred method), or by
 > [explicitly calling the base-class
@@ -1361,7 +1361,8 @@ types) is used.
 
 However, because a Python method can be written to accept any number or type
 of arguments, it is very easy to to build your own overloading logic by
-writing a "dispatch" method. Here is YACE (Yet Another Contrived Example):
+writing a "dispatch" method<sup>4</sup>. Here is YACE (Yet Another Contrived
+Example):
 
 
 ```
@@ -1390,6 +1391,11 @@ print('Add two:   {}'.format(a.add(1, 2)))
 print('Add three: {}'.format(a.add(1, 2, 3)))
 print('Add four:  {}'.format(a.add(1, 2, 3, 4)))
 ```
+
+> <sup>4</sup>Another option is the [`functools.singledispatch`
+> decorator](https://docs.python.org/3.5/library/functools.html#functools.singledispatch),
+> which is more complicated, but may allow you to write your dispatch logic in
+> a more concise manner.
 
 
 <a class="anchor" id="useful-references"></a>
