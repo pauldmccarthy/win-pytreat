@@ -48,7 +48,7 @@ print(a, b, c)
 ## Strings
 
 Strings can be specified using single quotes *or* double quotes - as long as they are matched.
-Strings can be dereferenced like lists (see later).
+Strings can be indexed like lists (see later).
 
 For example:
 ```
