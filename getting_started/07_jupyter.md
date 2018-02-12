@@ -6,7 +6,7 @@ However, they can not be called as scripts on the command line or be imported fr
 This makes them more useful for analysis that needs to be reproducible, but does not need to be replicated on different datasets (e.g., making a plot for a paper).
 
 For more ad-hoc analysis it can be useful to just use the command line (i.e., a REPL).
-We strongly recommend to use the IPython (available as `ipython` in the terminal after you install `ipython` using `pip` or `conda`) rather than default python REPL (available through `python` or `fslpython`)
+We strongly recommend to use the IPython (available as `ipython` or `fslipython`) rather than default python REPL (available through `python` or `fslpython`)
 
 Both Ipython and the jupyter notebook offer a whole range of magic commands, which all start with a `%` sign.
 * A magic command starting with a single `%` sign will only affect the single line.
@@ -31,7 +31,7 @@ import string
 string.capwords??
 ```
 
-Both Ipython and Jupyter also come with autocomplete, which is available at any time by pressing <tab>
+Both Ipython and Jupyter also come with autocomplete, which is available at any time by pressing the tab key
 
 ---
 
@@ -39,6 +39,13 @@ Both Ipython and Jupyter also come with autocomplete, which is available at any 
 Commands starting with a `!` will be sent to the shell rather than the python interpreter.
 ```
 !fslstats ${FSLDIR}/data/standard/FMRIB58_FA_1mm.nii.gz -r
+```
+
+You can even capture the output from the shell command in a variable:
+```
+r = !fslstats ${FSLDIR}/data/standard/FMRIB58_FA_1mm.nii.gz -r
+r_lower, r_upper = [float(element) for element in r[0].split()]
+print('Bounds are ({:.0f}, {:.0f})'.format(r_lower, r_upper))
 ```
 
 ---
@@ -67,7 +74,7 @@ For very fast evaluation, you might need to run it multiple times to get an accu
 ```
 import numpy as np
 numbers = np.random.rand(10)
-%timeit np.sin(numbers)
+%timeit np.sin(numbers)  # this will take a few seconds to run
 ```
 
 ---
@@ -77,6 +84,10 @@ Despite your best efforts in many cases some error will crop up
 ```
 import numpy as np
 def total(a_list):
+    """Calculate the total of a list.
+
+    This is a very naive (not recommended) and bugged implementation
+    """
     # create local copy befor changing the input
     local_list = list(a_list)
     total = 0.
@@ -92,6 +103,8 @@ You can always open a debugger at the location of the last error by using the `%
 %debug
 ```
 Try to check the value of `a_list` and `local_list` from within the debugger.
+
+> WARNING: you need to quit the debugger before any further commands will run (type `q` into the prompt)!
 
 If you always want to enter the debugger when an error is raised you can call `%pdb on` at any time (call `%pdf off` to rever this)
 
@@ -109,10 +122,10 @@ When failing to provide a backend it will simply use the default (which is usual
 > Keep in mind that as soon as you have started plotting you can no longer change your backend without restarting python.
 
 To do the equivalent in a python script would look like
-```
-import matplotlib as mpl
-mpl.use(<backend>)
-```
+> ```
+> import matplotlib as mpl
+> mpl.use(<backend>)
+> ```
 
 For interactive use it can be handy to have all the `numpy` numeric functions and `matplotlib` plotting functions directly available without importing them explicitly.
 This can be achieved using the `%pylab <backend>` magic command.
@@ -121,11 +134,11 @@ This can be achieved using the `%pylab <backend>` magic command.
 ```
 
 This is equivalent in python code to:
-```
-import matplotlib as mpl
-mpl.use(<backend>)
-from matplotlib.pylab import *
-```
+> ```
+> import matplotlib as mpl
+> mpl.use(<backend>)
+> from matplotlib.pylab import *
+> ```
 
 I start most of my notebooks or terminals with the `%pylab` command, because afterwards I can just do stuff like:
 ```
@@ -164,6 +177,6 @@ We can now run this script
 
 ## Exporting code from the Ipython terminal
 You can access the full history of your session using `%history`.
-To save the history to a file use `%history -f <filename>`
+To save the history to a file use `%history -f <filename>`.
 You will probably have to clean a lot of erroneous commands you typed from that file before you are able to run it as a script.
 

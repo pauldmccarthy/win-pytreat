@@ -14,16 +14,16 @@ empty_string.    # after running the code block above, put your cursor behind th
 ```
 
 * [Reading/writing files](#reading-writing-files)
-* [Creating neew strings](#creating-new-strings)
-** [String syntax](#string-syntax)
-*** [Unicode versus bytes](#unicode-versus-bytes)
-** [Converting objects into strings](#converting-objects-into-strings)
-** [Combining strings](#combining-strings)
-** [String formattings](#string-formatting)
+* [Creating new strings](#creating-new-strings)
+ * [String syntax](#string-syntax)
+  * [Unicode versus bytes](#unicode-versus-bytes)
+ * [Converting objects into strings](#converting-objects-into-strings)
+ * [Combining strings](#combining-strings)
+ * [String formattings](#string-formatting)
 * [Extracting information from strings](#extracting-information-from-strings)
-** [Splitting strings](#splitting-strings)
-** [Converting strings to numbers](#converting-strings-to-numbers)
-** [Regular expressions](#regular-expressions)
+ * [Splitting strings](#splitting-strings)
+ * [Converting strings to numbers](#converting-strings-to-numbers)
+ * [Regular expressions](#regular-expressions)
 * [Exercises](#exercises)
 
 <a class="anchor" id="reading-writing-files"></a>
@@ -137,9 +137,12 @@ Especially in code dealing with strings (e.g., reading/writing of files) many of
 
 By default any file opened in python will be interpreted as unicode. If you want to treat a file as raw bytes, you have to include a 'b' in the `mode` when calling the `open()` function:
 ```
-with open('/usr/local/fsl/data/standard/MNI152_T1_1mm.nii.gz', 'rb') as gzipped_nifti:
+import os.path as op
+with open(op.expandvars('${FSLDIR}/data/standard/MNI152_T1_1mm.nii.gz'), 'rb') as gzipped_nifti:
     print('First few bytes of gzipped NIFTI file:', gzipped_nifti.read(10))
 ```
+> We use the `expandvars()` function here to insert the FSLDIR environmental variable into our string. This function will be presented in the file management practical.
+
 <a class="anchor" id="converting-objects-into-strings"></a>
 ### converting objects into strings
 There are two functions to convert python objects into strings, `repr()` and `str()`.
@@ -157,6 +160,16 @@ print(repr("3"))
 print(repr(3))
 ```
 In both cases you get the value of the object (3), but only the `repr` returns enough information to actually know the type of the object.
+
+Perhaps the difference is clearer with a more advanced object.
+The `datetime` module contains various classes and functions to work with dates (there is also a `time` module).
+Here we will look at the alternative string representations of the `datetime` object itself:
+```
+from datetime import datetime
+print(str(datetime.now())
+print(repr(datetime.now())
+```
+Note that the result from `str()` is human-readable as a date, while the result from `repr()` is more useful if you wanted to recreate the `datetime` object.
 
 <a class="anchor" id="combining-strings"></a>
 ### Combining strings
@@ -209,15 +222,18 @@ b = 1 / 3
 print('{:.3f} = {} + {:.3f}'.format(a + b, a, b))
 print('{total:.3f} = {a} + {b:.3f}'.format(a=a, b=b, total=a+b))
 ```
-Note that the variable `:` delimeter separates the variable identifies on the left from the formatting rules on the right.
+Note that the variable `:` delimiter separates the variable identifies on the left from the formatting rules on the right.
 
-Finally the new, fancy formatted string literals (only available in python 3.6+). This new format is very similar to the recommended style, except that all placeholders are automatically evaluated in the local environment at the time the template is defined. This means that we do not have to explicitly provide the parameters (and we can evaluate the sum inside the string!), although it does mean we also can not re-use the template.
+Finally the new, fancy formatted string literals (only available in python 3.6+).
+This new format is very similar to the recommended style, except that all placeholders are automatically evaluated in the local environment at the time the template is defined.
+This means that we do not have to explicitly provide the parameters (and we can evaluate the sum inside the string!), although it does mean we also can not re-use the template.
 ```
 a = 3
 b = 1/3
 
 print(f'{a + b:.3f} = {a} + {b:.3f}')
 ```
+This code block will fail in fslpython, since it uses python 3.5.
 
 
 <a class="anchor" id="extracting-information-from-strings"></a>
@@ -248,7 +264,7 @@ print('The split() method\trecognizes a wide variety\nof white space'.split())
 To separate a comma separated list we will need to supply the delimiter to the `split()` method. We can then use the `strip()` method to remove any whitespace at the beginning or end of the string:
 ```
 scientific_packages_string = "numpy, scipy, pandas, matplotlib, nibabel"
-list_with_whitespace = scientific_packages_string.split()
+list_with_whitespace = scientific_packages_string.split(',')
 print(list_with_whitespace)
 list_without_whitespace = [individual_string.strip() for individual_string in list_with_whitespace]
 print(list_without_whitespace)
