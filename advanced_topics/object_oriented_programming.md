@@ -1024,6 +1024,11 @@ so.do('concat', '?')
 print(so.run('did you notice that functions are objects too'))
 ```
 
+
+> Simple classes such as the `Notifier` are sometimes referred to as
+  [_mixins_](https://en.wikipedia.org/wiki/Mixin).
+
+
 If you wish to use multiple inheritance in your design, it is important to be
 aware of the mechanism that Python uses to determine how base class methods
 are called (and which base class method will be called, in the case of naming
