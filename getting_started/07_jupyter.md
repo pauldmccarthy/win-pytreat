@@ -25,6 +25,11 @@ import string
 string.capwords?
 ```
 
+This also works for any of the magic commands discussed below
+```
+%run?
+```
+
 Alternatively you can put two questions marks to get the complete code for the method or object class
 ```
 import string
@@ -50,6 +55,18 @@ print('Bounds are ({:.0f}, {:.0f})'.format(r_lower, r_upper))
 
 ---
 
+## Running python scripts
+We could run a python script as a shell command above. However, it will often be more convenient to use `%run` instead.
+> ```
+> %run <python script> <arguments...>
+> ```
+Arguments are provided in exactly the same way as if you called `python` in the shell. The main advantages are:
+- Any top-level variables will be made available to you after the script finishes
+- All the debugging/timing/profiling tools discussed below will be available to you
+A common workflow, when writing a python script is to have an Ipython terminal open next to your text editor and regularly use %run to test the script
+
+---
+
 ## Running other programming languages
 In the notebook you can include a whole code block using another language by using `%%<language>` (for many languages you will have to install a toolkit first, just google your favorite language besides python)
 ```
@@ -61,7 +78,7 @@ done
 
 ---
 
-## Timing code
+## Timing/profiling code
 We can time a line of code with `%time` or a whole code block using `%%time`.
 To get the time needed to calculate the sine of a million random numbers:
 ```
@@ -75,6 +92,13 @@ For very fast evaluation, you might need to run it multiple times to get an accu
 import numpy as np
 numbers = np.random.rand(10)
 %timeit np.sin(numbers)  # this will take a few seconds to run
+```
+
+Finally, if you want to figure out what part of the code is actually slowing you down you can use `%prun`, which gives you an overview of how long the interpreter spent in each method:
+```
+import nibabel as nib
+import os.path as op
+%prun nib.load(op.expandvars('${FSLDIR}/data/standard/FMRIB58_FA_1mm.nii.gz'))
 ```
 
 ---
@@ -170,7 +194,7 @@ print('sin(3) is ', np.sin(3))
 
 We can now run this script
 ```
-!python script_from_notebook.py
+%run script_from_notebook.py
 ```
 
 ---
