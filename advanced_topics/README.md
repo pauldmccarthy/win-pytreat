@@ -14,3 +14,4 @@ Practicals on the following topics are available:
 * Operator overloading
 * Decorators
 * Context managers
+* Testing

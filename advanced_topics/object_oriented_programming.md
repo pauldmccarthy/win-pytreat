@@ -1026,7 +1026,7 @@ print(so.run('did you notice that functions are objects too'))
 
 
 > Simple classes such as the `Notifier` are sometimes referred to as
-  [_mixins_](https://en.wikipedia.org/wiki/Mixin).
+> [_mixins_](https://en.wikipedia.org/wiki/Mixin).
 
 
 If you wish to use multiple inheritance in your design, it is important to be
