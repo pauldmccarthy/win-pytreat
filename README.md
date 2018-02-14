@@ -32,7 +32,7 @@ jupyter:
 # location!
 #
 # One further complication - once you have become root, $FSLDIR may not be set,
-# so either set it as we have ione below, or make sure that it is set, before
+# so either set it as we have done below, or make sure that it is set, before
 # proceeding.
 sudo su
 export FSLDIR=/usr/local/fsl
