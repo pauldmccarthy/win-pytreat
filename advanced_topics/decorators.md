@@ -13,6 +13,22 @@ means that we can do things like:
 These abilities mean that we can do some neat things with functions in Python.
 
 
+* [Overview](#overview)
+* [Decorators on methods](#decorators-on-methods)
+* [Example - memoization](#example-memoization)
+* [Decorators with arguments](#decorators-with-arguments)
+* [Chaining decorators](#chaining-decorators)
+* [Decorator classes](#decorator-classes)
+* [Appendix: Functions are not special](#appendix-functions-are-not-special)
+* [Appendix: Closures](#appendix-closures)
+* [Appendix: Decorators without arguments versus decorators with arguments](#appendix-decorators-without-arguments-versus-decorators-with-arguments)
+* [Appendix: Per-instance decorators](#appendix-per-instance-decorators)
+* [Appendix: Preserving function metadata](#appendix-preserving-function-metadata)
+* [Appendix: Class decorators](#appendix-class-decorators)
+* [Useful references](#useful-references)
+
+
+<a class="anchor" id="overview"></a>
 ## Overview
 
 
@@ -105,9 +121,26 @@ invdata = inverse(data)
 
 Here, we did the following:
 
-1. We defined a function called `inverse`,
-2. We passed the `inverse` function to the `timeFunc` function
-3. We re-assigned the return value of `timeFunc` back to `inverse`.
+
+1. We defined a function called `inverse`:
+
+  > ```
+  > def inverse(a):
+  >     return npla.inv(a)
+  > ```
+
+2. We passed the `inverse` function to the `timeFunc` function, and
+   re-assigned the return value of `timeFunc` back to `inverse`:
+
+  > ```
+  > inverse = timeFunc(inverse)
+  > ```
+
+3. We called the new `inverse` function:
+
+  > ```
+  > invdata = inverse(data)
+  > ```
 
 
 So now the `inverse` variable refers to an instantiation of `wrapperFunc`,
@@ -150,6 +183,7 @@ invdata = inverse(data)
 ```
 
 
+<a class="anchor" id="decorators-on-methods"></a>
 ## Decorators on methods
 
 
@@ -201,11 +235,11 @@ there can be situations where you need each instance of your class to have its
 own unique decorator.
 
 
-If you are interested in solutions to this problem, read the next section on
-[memoization](#example-memoization), and then take a look at the appendix on
-[per-instance decorators](#appendix-per-instance-decorators).
+> If you are interested in solutions to this problem, take a look at the
+> appendix on [per-instance decorators](#appendix-per-instance-decorators).
 
 
+<a class="anchor" id="example-memoization"></a>
 ## Example - memoization
 
 
@@ -300,6 +334,7 @@ for i in range(10):
 > `cache` variable, refer to the [appendix on closures](#appendix-closures).
 
 
+<a class="anchor" id="decorators-with-arguments"></a>
 ## Decorators with arguments
 
 
@@ -370,7 +405,7 @@ def limitedMemoize(maxSize):
 This is starting to look a little complicated - we now have _three_ layers of
 functions. This is necessary when you wish to write a decorator which accepts
 arguments (refer to the
-[appendix](appendix-decorators-without-arguments-versus-decorators-with-arguments)
+[appendix](#appendix-decorators-without-arguments-versus-decorators-with-arguments)
 for more details).
 
 
@@ -418,6 +453,8 @@ print('The result for 10 should no longer be cached')
 fib(10)
 ```
 
+
+<a class="anchor" id="chaining-decorators"></a>
 ## Chaining decorators
 
 
@@ -450,12 +487,13 @@ Now we can see the effect of our memoization layer on performance:
 
 
 ```
+expensiveFunc(0.5)
 expensiveFunc(1)
-expensiveFunc(2)
-expensiveFunc(2)
+expensiveFunc(1)
 ```
 
 
+<a class="anchor" id="decorator-classes"></a>
 ## Decorator classes
 
 
@@ -505,24 +543,26 @@ class TestRegistry(object):
 
     def runTests(self):
         for test in self.testFuncs:
-            print('Running test {:10s} ...'.format(test.__name__), end='')
+            print('Running test {:10s} ... '.format(test.__name__), end='')
             try:
                 test()
                 print('passed!')
             except Exception as e:
                 print('failed!')
 
-# Create a test registry, and
-# alias it to "unitTest" so
-# that we can register tests
-# with a "@unitTest" decorator.
+# Create our test registry
 registry = TestRegistry()
+
+# Alias our registry to "unitTest"
+# so that we can register tests
+# with a "@unitTest" decorator.
 unitTest = registry
 ```
 
-So we've defined a class, `TestRegistry`, which will manage all of our unit
-tests. Now, in order to "mark" any function as being a unit test, we just need
-to use the `unitTest` decorator:
+So we've defined a class, `TestRegistry`, and created an instance of it,
+`registry`, which will manage all of our unit tests. Now, in order to "mark"
+any function as being a unit test, we just need to use the `unitTest`
+decorator (which is simply a reference to our `TestRegistry` instance):
 
 
 ```
@@ -563,6 +603,7 @@ registry.runTests()
 > tests were run.
 
 
+<a class="anchor" id="appendix-functions-are-not-special"></a>
 ## Appendix: Functions are not special
 
 
@@ -668,6 +709,7 @@ as we like.
 > [preserving function metdata](#appendix-preserving-function-metadata).
 
 
+<a class="anchor" id="appendix-closures"></a>
 ## Appendix: Closures
 
 
@@ -740,52 +782,7 @@ languages. So there's your answer,
 [fishbulb](https://www.youtube.com/watch?v=CiAaEPcnlOg).
 
 
-## Appendix: Preserving function metadata
-
-
-TODO `functools.wraps`
-
-
-## Appendix: per-instance decorators
-
-
-Below, we have defined a class called `Multiplier`, which has a method
-`multiply` that multiplies some number by a fixed (but changeable) constant,
-and is memoized via the `@memoize` decorator we [defined
-earlier](#example-memoization).
-
-
-Can you spot the problem with this implementation?
-
-
-```
-class Multiplier(object):
-    def __init__(self):
-        self.__multiplier = 1
-
-    @property
-    def multiplier(self):
-        return self.multiplier
-
-    @multiplier.setter
-    def multiplier(self, m):
-        self.multiplier = m
-
-    @memoize
-    def multiply(self, x):
-        return x * self.multiplier
-```
-
-
-TODO Instanecify
-
-
-## Appendix: class decorators
-
-
-TODO
-
-
+<a class="anchor" id="appendix-decorators-without-arguments-versus-decorators-with-arguments"></a>
 ## Appendix: Decorators without arguments versus decorators with arguments
 
 
@@ -868,11 +865,299 @@ def decorator(*args):
 > ```
 
 
+<a class="anchor" id="appendix-per-instance-decorators"></a>
+## Appendix: Per-instance decorators
+
+
+In the section on [decorating methods](#decorators-on-methods), you saw
+that when a decorator is applied to a method of a class,  that decorator
+is invoked just once, and shared by all instances of the class. Consider this
+example:
+
+
+```
+def decorator(func):
+    print('Decorating {} function'.format(func.__name__))
+    def wrapper(*args, **kwargs):
+        print('Calling decorated function {}'.format(func.__name__))
+        return func(*args, **kwargs)
+    return wrapper
+
+class MiscMaths(object):
+
+    @decorator
+    def add(self, a, b):
+        return a + b
+```
+
+
+Note that `decorator` was called at the time that the `MiscMaths` class was
+defined. Now, all `MiscMaths` instances share the same `wrapper` function:
+
+
+```
+mm1 = MiscMaths()
+mm2 = MiscMaths()
+
+print('1 + 2 =', mm1.add(1, 2))
+print('3 + 4 =', mm2.add(3, 4))
+```
+
+
+This is not an issue in many cases, but it can be problematic in some. Imagine
+if we have a decorator called `ensureNumeric`, which makes sure that arguments
+passed to a function are numbers:
+
+
+```
+def ensureNumeric(func):
+    def wrapper(*args):
+        args = tuple([float(a) for a in args])
+        return func(*args)
+    return wrapper
+```
+
+
+This all looks well and good - we can use it to decorate a numeric function,
+allowing strings to be passed in as well:
+
+
+```
+@ensureNumeric
+def mul(a, b):
+    return a * b
+
+print(mul( 2,   3))
+print(mul('5', '10'))
+```
+
+
+But what will happen when we try to decorate a method of a class?
+
+
+```
+class MiscMaths(object):
+
+    @ensureNumeric
+    def add(self, a, b):
+        return a + b
+
+mm = MiscMaths()
+print(mm.add('5', 10))
+```
+
+
+What happened here?? Remember that the first argument passed to any instance
+method is the instance itself (the `self` argument). Well, the `MiscMaths`
+instance was passed to the `wrapper` function, which then tried to convert it
+into a `float`.  So we can't actually apply the `ensureNumeric` function as a
+decorator on a method in this way.
+
+
+There are a few potential solutions here. We could modify the `ensureNumeric`
+function, so that the `wrapper` ignores the first argument. But this would
+mean that we couldn't use `ensureNumeric` with standalone functions.
+
+
+But we _can_ manually apply the `ensureNumeric` decorator to `MiscMaths`
+instances when they are initialised.  We can't use the nice `@ensureNumeric`
+syntax to apply our decorators, but this is a viable approach:
+
+
+```
+class MiscMaths(object):
+
+    def __init__(self):
+        self.add = ensureNumeric(self.add)
+
+    def add(self, a, b):
+        return a + b
+
+mm = MiscMaths()
+print(mm.add('5', 10))
+```
+
+
+Another approach is to use a second decorator, which dynamically creates the
+real decorator when it is accessed on an instance. This requires the use of an
+advanced Python technique called
+[_descriptors_](https://docs.python.org/3.5/howto/descriptor.html), which is
+beyond the scope of this practical. But if you are interested, you can see an
+implementation of this approach
+[here](https://git.fmrib.ox.ac.uk/fsl/fslpy/blob/1.6.8/fsl/utils/memoize.py#L249).
+
+
+<a class="anchor" id="appendix-preserving-function-metadata"></a>
+## Appendix: Preserving function metadata
+
+
+You may have noticed that when we decorate a function, some of its properties
+are lost. Consider this function:
+
+
+```
+def add2(a, b):
+    """Adds two numbers together."""
+    return a + b
+```
+
+
+The `add2` function is an object which has some attributes, e.g.:
+
+
+```
+print('Name: ', add2.__name__)
+print('Help: ', add2.__doc__)
+```
+
+
+However, when we apply a decorator to `add2`:
+
+
+```
+def decorator(func):
+    def wrapper(*args, **kwargs):
+        """Internal wrapper function for decorator."""
+        print('Calling decorated function {}'.format(func.__name__))
+        return func(*args, **kwargs)
+    return wrapper
+
+
+@decorator
+def add2(a, b):
+    """Adds two numbers together."""
+    return a + b
+```
+
+
+Those attributes are lost, and instead we get the attributes of the `wrapper`
+function:
+
+
+```
+print('Name: ', add2.__name__)
+print('Help: ', add2.__doc__)
+```
+
+
+While this may be inconsequential in most situations, it can be quite annoying
+in some, such as when we are automatically [generating
+documentation](http://www.sphinx-doc.org/) for our code.
+
+
+Fortunately, there is a workaround, available in the built-in
+[`functools`](https://docs.python.org/3.5/library/functools.html#functools.wraps)
+module:
+
+
+```
+import functools
+
+def decorator(func):
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        """Internal wrapper function for decorator."""
+        print('Calling decorated function {}'.format(func.__name__))
+        return func(*args, **kwargs)
+    return wrapper
+
+@decorator
+def add2(a, b):
+    """Adds two numbers together."""
+    return a + b
+```
+
+
+We have applied the `@functools.wraps` decorator to our internal `wrapper`
+function - this will essentially replace the `wrapper` function metdata with
+the metadata from our `func` function. So our `add2` name and documentation is
+now preserved:
+
+
+```
+print('Name: ', add2.__name__)
+print('Help: ', add2.__doc__)
+```
+
+
+<a class="anchor" id="appendix-class-decorators"></a>
+## Appendix: Class decorators
+
+
+> Not to be confused with [_decorator classes_](#decorator-classes)!
+
+
+In this practical, we have shown how decorators can be applied to functions
+and methods. But decorators can in fact also be applied to _classes_. This is
+a fairly niche feature that you are probably not likely to need, so we will
+only cover it briefly.
+
+
+Imagine that we want all objects in our application to have a globally unique
+(within the application) identifier. We could use a decorator which contains
+the logic for generating unique IDs, and defines the interface that we can
+use on an instance to obtain its ID:
+
+
+```
+import random
+
+allIds = set()
+
+def uniqueID(cls):
+    class subclass(cls):
+        def getUniqueID(self):
+
+            uid = getattr(self, '_uid', None)
+
+            if uid is not None:
+                return uid
+
+            while uid is None or uid in set():
+                uid = random.randint(1, 100)
+
+            self._uid = uid
+            return uid
+
+    return subclass
+```
+
+
+Now we can use the `@uniqueID` decorator on any class that we need to
+have a unique ID:
+
+```
+@uniqueID
+class Foo(object):
+    pass
+
+@uniqueID
+class Bar(object):
+    pass
+```
+
+
+All instances of these classes will have a `getUniqueID` method:
+
+
+```
+f1 = Foo()
+f2 = Foo()
+b1 = Bar()
+b2 = Bar()
+
+print('f1: ', f1.getUniqueID())
+print('f2: ', f2.getUniqueID())
+print('b1: ', b1.getUniqueID())
+print('b2: ', b2.getUniqueID())
+```
+
+
+<a class="anchor" id="useful-references"></a>
 ## Useful references
 
 
-* [Decorator tutorial](http://blog.thedigitalcatonline.com/blog/2015/04/23/python-decorators-metaprogramming-with-style/)
-* [Another decorator tutorial](https://realpython.com/blog/python/primer-on-python-decorators/)
+* [Understanding decorators in 12 easy steps](http://simeonfranklin.com/blog/2012/jul/1/python-decorators-in-12-steps/)
 * [The decorators they won't tell you about](https://github.com/hchasestevens/hchasestevens.github.io/blob/master/notebooks/the-decorators-they-wont-tell-you-about.ipynb)
 * [Closures - Wikipedia][wiki-closure]
 * [Closures in Python](https://www.geeksforgeeks.org/python-closures/)
