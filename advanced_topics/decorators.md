@@ -38,7 +38,9 @@ def timeFunc(func, *args, **kwargs):
 ```
 
 
-Ok, this looks like it might do the trick:
+The `timeFunc` function accepts another function, `func`, as its first
+argument. It calls `func`, passing it all of the other arguments, and then
+prints the time taken for `func` to complete:
 
 
 ```
@@ -78,16 +80,11 @@ def timeFunc(func):
 ```
 
 
-The `timeFunc` function is given a function as its sole argument. It then
-creates and returns a new function, `wrapperFunc`. This `wrapperFunc` function
-calls and times the function that was passed to `timeFunc`<sup>1</sup>.  But
-note that when `timeFunc` is called, `wrapperFunc` is _not_ called - it is
-only created and returned.
-
-
-> <sup>1</sup> If you are wondering how the `wrapperFunc` is able to access
-> the `func` argument, refer to the [appendix on
-> closures](#appendix-closures).
+This new `timeFunc` function is again passed a function `func`, but this time
+as its sole argument. It then creates and returns a new function,
+`wrapperFunc`. This `wrapperFunc` function calls and times the function that
+was passed to `timeFunc`.  But note that when `timeFunc` is called,
+`wrapperFunc` is _not_ called - it is only created and returned.
 
 
 Let's use our new `timeFunc` implementation:
@@ -153,6 +150,62 @@ invdata = inverse(data)
 ```
 
 
+## Decorators on methods
+
+
+Applying a decorator to the methods of a class works in the same way:
+
+
+```
+import numpy.linalg as npla
+
+class MiscMaths(object):
+
+    @timeFunc
+    def inverse(self, a):
+        return npla.inv(a)
+```
+
+
+Now, the `inverse` method of all `MiscMaths` instances will be timed:
+
+
+```
+mm1 = MiscMaths()
+mm2 = MiscMaths()
+
+i1 = mm1.inverse(np.random.random((1000, 1000)))
+i2 = mm2.inverse(np.random.random((1500, 1500)))
+```
+
+
+Note that only one `timeFunc` decorator was created here - the `timeFunc`
+function was only called once - when the `MiscMaths` class was defined.  This
+might be clearer if we re-write the above code in the following (equivalent)
+manner:
+
+
+```
+class MiscMaths(object):
+    def inverse(self, a):
+        return npla.inv(a)
+
+MiscMaths.inverse = timeFunc(MiscMaths.inverse)
+```
+
+
+So only one `wrapperFunc` function exists, and this function is _shared_ by
+all instances of the `MiscMaths` class - (such as the `mm1` and `mm2`
+instances in the example above). In many cases this is not a problem, but
+there can be situations where you need each instance of your class to have its
+own unique decorator.
+
+
+If you are interested in solutions to this problem, read the next section on
+[memoization](#example-memoization), and then take a look at the appendix on
+[per-instance decorators](#appendix-per-instance-decorators).
+
+
 ## Example - memoization
 
 
@@ -203,8 +256,8 @@ function.  Let's memoize a function which generates the $n^{th}$ number in the
 @memoize
 def fib(n):
 
-    if n in (1, 2):
-        print('fib({}) = 1'.format(n))
+    if n in (0, 1):
+        print('fib({}) = {}'.format(n, n))
         return 1
 
     twoback = 1
@@ -221,6 +274,7 @@ def fib(n):
 
     return val
 ```
+
 
 For a given input, when `fib` is called the first time, it will calculate the
 $n^{th}$ Fibonacci number:
@@ -240,6 +294,10 @@ and instead the result is retrieved from the memoization cache:
 for i in range(10):
     fib(i)
 ```
+
+
+> If you are wondering how the `wrapper` function is able to access the
+> `cache` variable, refer to the [appendix on closures](#appendix-closures).
 
 
 ## Decorators with arguments
@@ -400,12 +458,109 @@ expensiveFunc(2)
 
 ## Decorator classes
 
-> not to be confused with _class decorators_ - see the
-> [appendix](#appendix-class-decorators)
+
+By now, you will have gained the impression that a decorator is a function
+which _decorates_ another function. But if you went through the practical on
+operator overloading, you might remember the special `__call__` method, that
+allows an object to be called as if it were a function.
 
 
+This feature allows us to write our decorators as classes, instead of
+functions. This can be handy if you are writing a decorator that has
+complicated behaviour, and/or needs to maintain some sort of state which
+cannot be easily or elegantly written using nested functions.
 
 
+As an example, let's say we are writing a framework for unit testing. We want
+to be able to "mark" our test functions like so, so they can be easily
+identified and executed:
+
+
+> ```
+> @unitTest
+> def testblerk():
+>     """tests the blerk algorithm."""
+>     ...
+> ```
+
+
+With a decorator like this, we wouldn't need to worry about where our tests
+are located - they will all be detected because we have marked them as test
+functions. What does this `unitTest` decorator look like?
+
+
+```
+class TestRegistry(object):
+
+    def __init__(self):
+        self.testFuncs = []
+
+    def __call__(self, func):
+        self.testFuncs.append(func)
+
+    def listTests(self):
+        print('All registered tests:')
+        for test in self.testFuncs:
+            print(' ', test.__name__)
+
+    def runTests(self):
+        for test in self.testFuncs:
+            print('Running test {:10s} ...'.format(test.__name__), end='')
+            try:
+                test()
+                print('passed!')
+            except Exception as e:
+                print('failed!')
+
+# Create a test registry, and
+# alias it to "unitTest" so
+# that we can register tests
+# with a "@unitTest" decorator.
+registry = TestRegistry()
+unitTest = registry
+```
+
+So we've defined a class, `TestRegistry`, which will manage all of our unit
+tests. Now, in order to "mark" any function as being a unit test, we just need
+to use the `unitTest` decorator:
+
+
+```
+@unitTest
+def testFoo():
+    assert 'a' in 'bcde'
+
+@unitTest
+def testBar():
+    assert 1 > 0
+
+@unitTest
+def testBlerk():
+    assert 9 % 2 == 0
+```
+
+
+Now that these functions have been registered with our `TestRegistry`
+instance, we can run them all:
+
+```
+registry.listTests()
+registry.runTests()
+```
+
+
+> Unit testing is something which you must do! This is __especially__
+> important in an interpreted language such as Python, where there is no
+> compiler to catch all of your mistakes.
+>
+> Python has a built-in
+> [`unittest`](https://docs.python.org/3.5/library/unittest.html) module,
+> however the third-party [`pytest`](https://docs.pytest.org/en/latest/) and
+> [`nose`](http://nose2.readthedocs.io/en/latest/) are popular.  It is also
+> wise to combine your unit tests with
+> [`coverage`](https://coverage.readthedocs.io/en/coverage-4.5.1/), which
+> tells you how much of your code was executed, or _covered_ when your
+> tests were run.
 
 
 ## Appendix: Functions are not special
@@ -451,8 +606,8 @@ upon the list<sup>2</sup>.
 
 
 If you are familiar with C or C++, you can think of a variable in Python as
-like a `void *` pointer - it is just a pointer of an undefined type, which is
-pointing to some item in memory (which does have a specific type). Deleting
+like a `void *` pointer - it is just a pointer of an unspecified type, which
+is pointing to some item in memory (which does have a specific type). Deleting
 the pointer does not have any effect upon the item to which it was pointing.
 
 
@@ -508,9 +663,81 @@ as we like.
 
 
 > If it bothers you that `print(inv2)` resulted in
-> `<function inverse at ...>`, and not `<function inv2 at ...>`, then keep
-> going straight through to the
-> [next appendix](#appendix-preserving-function-metadata).
+> `<function inverse at ...>`, and not `<function inv2 at ...>`, then refer to
+> the appendix on
+> [preserving function metdata](#appendix-preserving-function-metadata).
+
+
+## Appendix: Closures
+
+
+Whenever we define or use a decorator, we are taking advantage of a concept
+called a [_closure_][wiki-closure]. Take a second to re-familiarise yourself
+with our `memoize` decorator function from earlier - when `memoize` is called,
+it creates and returns a function called `wrapper`:
+
+
+[wiki-closure]: https://en.wikipedia.org/wiki/Closure_(computer_programming)
+
+
+```
+def memoize(func):
+
+    cache = {}
+
+    def wrapper(*args):
+
+        # is there a value in the cache
+        # for this set of inputs?
+        cached = cache.get(args, None)
+
+        # If not, call the function,
+        # and cache the result.
+        if cached is None:
+            cached      = func(*args)
+            cache[args] = cached
+        else:
+            print('Cached {}({}): {}'.format(func.__name__, args, cached))
+
+        return cached
+
+    return wrapper
+```
+
+
+Then `wrapper` is executed at some arbitrary point in the future. But how does
+it have access to `cache`, defined within the scope of the `memoize` function,
+after the execution of `memoize` has ended?
+
+
+```
+def nby2(n):
+    return n * 2
+
+# wrapper function is created here (and
+# assigned back to the nby2 reference)
+nby2 = memoize(nby2)
+
+# wrapper function is executed here
+print('nby2(2): ', nby2(2))
+print('nby2(2): ', nby2(2))
+```
+
+
+The trick is that whenever a nested function is defined in Python, the scope
+in which it is defined is preserved for that function's lifetime. So `wrapper`
+has access to all of the variables within the `memoize` function's scope, that
+were defined at the time that `wrapper` was created (which was when we called
+`memoize`).  This is why `wrapper` is able to access `cache`, even though at
+the time that `wrapper` is called, the execution of `memoize` has long since
+finished.
+
+
+This is what is known as a
+[_closure_](https://www.geeksforgeeks.org/python-closures/). Closures are a
+fundamental, and extremely powerful, aspect of Python and other high level
+languages. So there's your answer,
+[fishbulb](https://www.youtube.com/watch?v=CiAaEPcnlOg).
 
 
 ## Appendix: Preserving function metadata
@@ -519,66 +746,44 @@ as we like.
 TODO `functools.wraps`
 
 
-## Appendix: Closures
+## Appendix: per-instance decorators
 
 
-
-Whenever we define or use a decorator, we are taking advantage of a concept
-called a [_closure_](https://www.geeksforgeeks.org/python-closures/). Take a
-second to re-familiarise yourself with our `timeFunc` decorator function from
-earlier - when `timeFunc` is called, it creates and returns `wrapperFunc`:
-
-
-```
-import time
-def timeFunc(func):
-
-    def wrapperFunc(*args, **kwargs):
-
-        start  = time.time()
-        retval = func(*args, **kwargs)
-        end    = time.time()
-
-        print('Ran {} in {:0.2f} seconds'.format(func.__name__, end - start))
-
-        return retval
-
-    return wrapperFunc
-```
+Below, we have defined a class called `Multiplier`, which has a method
+`multiply` that multiplies some number by a fixed (but changeable) constant,
+and is memoized via the `@memoize` decorator we [defined
+earlier](#example-memoization).
 
 
-Then `wrapperFunc` is executed at some arbitrary point in the future. But how
-does it have access to `func`, defined within the scope of the `timeFunc`
-function, after the execution of `timeFunc` has ended?
+Can you spot the problem with this implementation?
 
 
 ```
-def pause(secs):
-    print('Pausing for {} seconds ...'.format(secs))
-    time.sleep(secs)
-    print('Finished pausing')
+class Multiplier(object):
+    def __init__(self):
+        self.__multiplier = 1
 
-# wrapperFunc is created here
-pause = timeFunc(pause)
+    @property
+    def multiplier(self):
+        return self.multiplier
 
-# wrapperFunc is executed here
-pause(2)
+    @multiplier.setter
+    def multiplier(self, m):
+        self.multiplier = m
+
+    @memoize
+    def multiply(self, x):
+        return x * self.multiplier
 ```
 
 
-The trick is that whenever a nested function is defined in Python, the scope
-in which it is defined is preserved for that function's lifetime. So
-`wrapperFunc` has access to all of the variables within the `timeFunc`
-function's scope, that were defined at the time that `wrapperFunc` was created
-(which was when we called `timeFunc`).  This is why `wrapperFunc` is able to
-access `func`, even though at the time that `wrapperFunc` is called, the
-execution of `timeFunc` has long since finished.
+TODO Instanecify
 
 
-This is what is known as a _closure_. Closures are a fundamental, and
-extremely powerful, aspect of Python and other high level languages such as
-Javascript. So there's your answer,
-[fishbulb](https://www.youtube.com/watch?v=CiAaEPcnlOg).
+## Appendix: class decorators
+
+
+TODO
 
 
 ## Appendix: Decorators without arguments versus decorators with arguments
@@ -587,9 +792,9 @@ Javascript. So there's your answer,
 There are three ways to invoke a decorator with the `@` notation:
 
 
-1. Naming it (e.g. `@mydecorator`)
-2. Calling it (e.g. `@mydecorator()`)
-3. Calling it, and passing it arguments (e.g. `@mydecorator(1, 2, 3)`)
+1. Naming it, e.g. `@mydecorator`
+2. Calling it, e.g. `@mydecorator()`
+3. Calling it, and passing it arguments, e.g. `@mydecorator(1, 2, 3)`
 
 
 Python expects a decorator function to behave differently in the second and
@@ -663,16 +868,14 @@ def decorator(*args):
 > ```
 
 
-## Appendix: class decorators
-
-
-TODO
-
-
 ## Useful references
 
 
 * [Decorator tutorial](http://blog.thedigitalcatonline.com/blog/2015/04/23/python-decorators-metaprogramming-with-style/)
 * [Another decorator tutorial](https://realpython.com/blog/python/primer-on-python-decorators/)
+* [The decorators they won't tell you about](https://github.com/hchasestevens/hchasestevens.github.io/blob/master/notebooks/the-decorators-they-wont-tell-you-about.ipynb)
+* [Closures - Wikipedia][wiki-closure]
 * [Closures in Python](https://www.geeksforgeeks.org/python-closures/)
 * [Garbage collection in Python](https://www.quora.com/How-does-garbage-collection-in-Python-work-What-are-the-pros-and-cons)
+
+[wiki-closure]: https://en.wikipedia.org/wiki/Closure_(computer_programming)
