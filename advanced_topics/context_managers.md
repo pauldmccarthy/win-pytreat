@@ -98,10 +98,10 @@ logic in one place, and re-use it as many times as you want.
 ## Uses for context managers
 
 
-We have alraedy talked about how context managers can be used to perform any
-task which requires some initialistion logic, and/or some clean-up logic. As an
-example, here is a context manager which creates a temporary directory,
-and then makes sure that it is deleted afterwards.
+We have already talked about how context managers can be used to perform any
+task which requires some initialistion and/or clean-up logic. As an example,
+here is a context manager which creates a temporary directory, and then makes
+sure that it is deleted afterwards.
 
 
 ```
@@ -268,13 +268,13 @@ with MyContextManager():
 ## Functions as context managers
 
 
-In fact, there is another method of defining a context manager in Python. The
+In fact, there is another way to create context managers in Python. The
 built-in [`contextlib`
 module](https://docs.python.org/3.5/library/contextlib.html#contextlib.contextmanager)
-has a decorator called `contextmanager`, which allows us to turn __any__
-function into a context manager. The only requirement is that the function must
-have a `yield` statement<sup>1</sup>. So we could rewrite our `TempDir` class
-from above as a function:
+has a decorator called `@contextmanager`, which allows us to turn __any__
+function into a context manager.  The only requirement is that the function
+must have a `yield` statement<sup>1</sup>. So we could rewrite our `TempDir`
+class from above as a function:
 
 
 ```
@@ -311,12 +311,21 @@ print('Back in directory: {}'.format(os.getcwd()))
 ```
 
 
+> <sup>1</sup> The `yield` keyword is used in _generator functions_.
+> Functions which are used with the `@contextmanager` decorator must be
+> generator functions which yield exactly one value.
+> [Generators](https://www.python.org/dev/peps/pep-0289/) and [generator
+> functions](https://docs.python.org/3.5/glossary.html#term-generator) are
+> beyond the scope of this practical.
 
 
+Since it is possible to write a function which is a context manager, it is of
+course also possible to write a _method_ which is a context manager.
 
-> <sup>1</sup>
 
-> https://docs.python.org/3.5/howto/functional.html#generators
+```
+TODO suppress notification example
+```
 
 
 ## Nesting context managers
@@ -324,7 +333,8 @@ print('Back in directory: {}'.format(os.getcwd()))
 
 
 
-Useful references
+## Useful references
 
-* [Context manager clases](https://docs.python.org/3.5/reference/datamodel.html#context-managers)
+
+* [Context manager classes](https://docs.python.org/3.5/reference/datamodel.html#context-managers)
 * The [`contextlib` module](https://docs.python.org/3.5/library/contextlib.html)
