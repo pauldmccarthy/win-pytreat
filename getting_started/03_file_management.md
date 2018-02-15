@@ -615,7 +615,16 @@ pattern matching logic.
   and `fnmatch.filter` functions to identify which paths match your pattern.
 
 
+Note that the syntax used by `glob` and `fnmatch` is similar, but __not__
+identical to the syntax that you are used to from `bash`. Refer to the
+[`fnmatch` module](https://docs.python.org/3.5/library/fnmatch.html)
+documentation for details. If you need more complicated pattern matching, you
+can use regular expressions, available via the [`re`
+module](https://docs.python.org/3.5/library/re.html).
+
+
 For example, let's retrieve all images that are in our data set:
+
 
 ```
 allimages = glob(op.join('raw_mri_data', '**', '*.nii*'), recursive=True)
