@@ -52,10 +52,6 @@ other sections as a reference. You might miss out on some neat tricks though.
 * [Exercises](#exercises)
  * [Re-name subject directories](#re-name-subject-directories)
  * [Re-organise a data set](#re-organise-a-data-set)
- * [Re-name subject files](#re-name-subject-files)
- * [Compress all uncompressed images](#compress-all-uncompressed-images)
- * [Write your own `os.path.splitext`](#write-your-own-os-path-splitext)
- * [Write a function to return a specific image file](#write-a-function-to-return-a-specific-image-file)
  * [Solutions](#solutions)
 
 
@@ -126,13 +122,13 @@ command):
 cwd = os.getcwd()
 listing = os.listdir(cwd)
 print('Directory listing: {}'.format(cwd))
-print('\n'.join([p for p in listing]))
+print('\n'.join(listing))
 print()
 
 datadir = 'raw_mri_data'
 listing = os.listdir(datadir)
 print('Directory listing: {}'.format(datadir))
-print('\n'.join([p for p in listing]))
+print('\n'.join(listing))
 ```
 
 
@@ -248,7 +244,7 @@ for root, dirs, files in os.walk('raw_mri_data', topdown=False):
 
 > Here we have explicitly named the `topdown` argument when passing it to the
 > `os.walk` function. This is referred to as a a _keyword argument_ - unnamed
-> arguments aqe referred to as _positional arguments_. We'll give some more
+> arguments are referred to as _positional arguments_. We'll give some more
 > examples of positional and keyword arguments below.
 
 
@@ -338,12 +334,8 @@ it exists at all, then the `os.path` module has got your back with its
 `isfile`, `isdir`, and `exists` functions. Let's define a silly function which
 will tell us what a path is:
 
+
 ```
-# This function takes an optional keyword
-# argument "existonly", which controls
-# whether the path is only tested for
-# existence. We can call it either with
-# or without this argument.
 def whatisit(path, existonly=False):
 
     print('Does {} exist? {}'.format(path, op.exists(path)))
@@ -354,11 +346,53 @@ def whatisit(path, existonly=False):
 ```
 
 
-Now let's use that function to test some paths.
+> This is the first time in this series of practicals that we have defined our
+> own function, [hooray!](https://www.youtube.com/watch?v=zQiibNVIvK4) All
+> function definitions in Python begin with the `def` keyword:
+>
+> ```
+> def myfunction():
+>     function_body
+> ```
+>
+> Just like with other control flow tools, such as `if`, `for`, and `while`
+> statements, the body of a function must be indented (with four spaces
+> please!).
+>
+> Python functions can be written to accept any number of arguments:
+>
+> ```
+> def myfunction(arg1, arg2, arg3):
+>     function_body
+> ```
+>
+> Arguments can also be given default values:
+>
+> ```
+> def myfunction(arg1, arg2, arg3=False):
+>     function_body
+> ```
+>
+> In our `whatisit` function above, we gave the `existonly` argument (which
+> controls whether the path is only tested for existence) a default value.
+> This makes the `existonly` argument optional - we can call `whatisit` either
+> with or without this argument.
+>
+> To return a value from a function, use the `return` keyword:
+>
+> ```
+> def add(n1, n2):
+>     return n1 + n2
+> ```
+>
+> Take a look at the [official Python
+> tutorial](https://docs.python.org/3.5/tutorial/controlflow.html#defining-functions)
+> for more details on defining your own functions.
 
 
-> Here we are using the `op.join` function to construct paths - it is [covered
-> below](#cross-platform-compatbility).
+Now let's use that function to test some paths. Here we are using the
+`op.join` function to construct paths - it is [covered
+below](#cross-platform-compatbility):
 
 
 ```
@@ -483,18 +517,18 @@ files, based on unix-style wildcard pattern matching.
 
 
 ```
-import glob
+from glob import glob
 
 root = 'raw_mri_data'
 
 # find all niftis for subject 1
-images = glob.glob(op.join(root, 'subj_1', '*.nii*'))
+images = glob(op.join(root, 'subj_1', '*.nii*'))
 
 print('Subject #1 images:')
 print('\n'.join(['  {}'.format(i) for i in images]))
 
 # find all subject directories
-subjdirs = glob.glob(op.join(root, 'subj_*'))
+subjdirs = glob(op.join(root, 'subj_*'))
 
 print('Subject directories:')
 print('\n'.join(['  {}'.format(d) for d in subjdirs]))
@@ -502,7 +536,7 @@ print('\n'.join(['  {}'.format(d) for d in subjdirs]))
 
 
 As with [`os.walk`](walking-a-directory-tree), the order of the results
-returned by `glob.glob` is arbitrary. Unfortunately the undergraduate who
+returned by `glob` is arbitrary. Unfortunately the undergraduate who
 acquired this specific data set did not think to use zero-padded subject IDs
 (you'll be pleased to know that this student was immediately kicked out of his
 college and banned from ever returning), so we can't simply sort the paths
@@ -550,13 +584,21 @@ print('Subject directories, sorted by ID:')
 print('\n'.join(['  {}'.format(d) for d in subjdirs]))
 ```
 
-As of Python 3.5, `glob.glob` also supports recursive pattern matching via the
+
+> Note that in Python, we can pass a function around just like any other
+> variable - we passed the `get_subject_id` function as an argument to the
+> `sorted` function. This is possible (and normal) because functions are
+> [first class citizens](https://en.wikipedia.org/wiki/First-class_citizen) in
+> Python!
+
+
+As of Python 3.5, `glob` also supports recursive pattern matching via the
 `recursive` flag. Let's say we want a list of all resting-state scans in our
 data set:
 
 
 ```
-rscans = glob.glob('raw_mri_data/**/rest.nii.gz', recursive=True)
+rscans = glob('raw_mri_data/**/rest.nii.gz', recursive=True)
 
 print('Resting state scans:')
 print('\n'.join(rscans))
@@ -576,7 +618,7 @@ pattern matching logic.
 For example, let's retrieve all images that are in our data set:
 
 ```
-allimages = glob.glob(op.join('raw_mri_data', '**', '*.nii*'), recursive=True)
+allimages = glob(op.join('raw_mri_data', '**', '*.nii*'), recursive=True)
 print('All images in experiment:')
 
 # Let's just print the first and last few
@@ -627,8 +669,8 @@ for filename in uncompressed:
 
 You have [already been
 introduced](#querying-and-changing-the-current-directory) to the
-`op.expanduser` function. Another handy function  is the `op.expandvars` function.
-which will expand expand any environment variables in a path:
+`op.expanduser` function. Another handy function is the `op.expandvars`
+function, which will expand expand any environment variables in a path:
 
 
 ```
@@ -709,72 +751,8 @@ parameters:
  - A list of lists, with each list containing the subject IDs for one group.
 
 
-<a class="anchor" id="re-name-subject-files"></a>
-### Re-name subject files
-
-
-Write a function which, given a subject directory, renames all of the image
-files for this subject so that they are prefixed with `[group]_subj_[id]`,
-where `[group]` is either `CON` or `PAT`, and `[id]` is the (zero-padded)
-subject ID.
-
-
-This function should accept the following parameters:
- - The subject directory
- - The subject group
-
-
-**Bonus 1** Make your function work with both `.nii` and `.nii.gz` files.
-
-**Bonus 2** If you completed [the previous exercise](#re-organise-a-data-set),
-write a second function which accepts the data set directory as a sole
-parameter, and then calls the first function for every subject.
-
-
-<a class="anchor" id="compress-all-uncompressed-images"></a>
-### Compress all uncompressed images
-
-
-Write a function which recursively scans a directory, and replaces all `.nii`
-files with `.nii.gz` files, using the built-in
-[`gzip`](https://docs.python.org/3.5/library/gzip.html) library to perform
-the compression.
-
-
-<a class="anchor" id="write-your-own-os-path-splitext"></a>
-### Write your own `os.path.splitext`
-
-
-Write an implementation of `os.path.splitext` which works with compressed or
-uncompressed NIFTI images.
-
-
-> Hint: you know what suffixes to expect!
-
-
-<a class="anchor" id="write-a-function-to-return-a-specific-image-file"></a>
-### Write a function to return a specific image file
-
-
-Assuming that you have completed the previous exercises, and re-organised
-`raw_mri_data` so that it has the structure:
-
-  `raw_mri_data/[group]/subj_[id]/[group]_subj_[id]_[modality].nii.gz`
-
-write a function which is given:
-
- - the data set directory
- - a group label
- - integer ubject ID
- - modality (`'t1'`, `'t2'`, `'task'`, `'rest'`)
-
-and which returns the fully resolved path to the relevant image file.
-
- > Hint: Python has [regular
-   expressions](https://docs.python.org/3.5/library/re.html) - you might want
-   to use one to cope with zero-padding.
-
-**Bonus** Modify the function so the group label does not need to be passed in.
+__Extra exercises:__ If you are looking for something more to do, you can find
+some more exercises in the file `03_file_management_extra.md`.
 
 
 <a class="anchor" id="solutions"></a>
