@@ -1055,7 +1055,7 @@ print(d)
 
 
 But if you are writing a script or application using Numpy, I implore you to
-Numpy (and its commonly used sub-modules) like this instead:
+import Numpy (and its commonly used sub-modules) like this instead:
 
 
 ```
@@ -1124,12 +1124,12 @@ print(np.atleast_2d(r).T)
 By now you should be aware that a Numpy `array` does not behave in quite the
 same way as a Matlab matrix. The primary difference between Numpy and Matlab
 is that in Numpy, the `*` operator denotes element-wise multiplication,
-gwhereas in Matlab, `*` denotes matrix multiplication.
+whereas in Matlab, `*` denotes matrix multiplication.
 
 
 Numpy does support the `@` operator for matrix multiplication, but if this is
-a complete show-stopper for you - if you just can't bring yourself to write `A
-@ B` to denote the matrix product of `A` and `B` - if you _must_ have your
+a complete show-stopper for you - if you just can't bring yourself to write
+`A @ B` to denote the matrix product of `A` and `B` - if you _must_ have your
 code looking as Matlab-like as possible, then you should look into the Numpy
 [`matrix`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.matrix.html)
 data type.
