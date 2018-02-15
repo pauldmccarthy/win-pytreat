@@ -52,7 +52,7 @@ Note that no new line characters get added automatically. We can investigate the
 ```
 !cat 02_text_io/my_file
 ```
-> Any lines starting with `!` will be interpreted as shell commands by ipython. It is great when playing around in the ipython notebook or in the ipython terminal, however it is an ipython-only feature and hence is not available when writing python scripts. How to call shell commands from python will be discusses in the `scripts` practical.
+> Any lines starting with `!` will be interpreted as shell commands by ipython. It is great when playing around in the ipython notebook or in the ipython terminal, however it is an ipython-only feature and hence is not available when writing python scripts. How to call shell commands from python will be discussed in the `scripts` practical.
 
 If we want to add to the existing file we can open it in the append mode:
 ```
@@ -166,8 +166,8 @@ The `datetime` module contains various classes and functions to work with dates 
 Here we will look at the alternative string representations of the `datetime` object itself:
 ```
 from datetime import datetime
-print(str(datetime.now())
-print(repr(datetime.now())
+print('str(): ', str(datetime.now()))
+print('repr(): ', repr(datetime.now()))
 ```
 Note that the result from `str()` is human-readable as a date, while the result from `repr()` is more useful if you wanted to recreate the `datetime` object.
 
@@ -222,7 +222,7 @@ b = 1 / 3
 print('{:.3f} = {} + {:.3f}'.format(a + b, a, b))
 print('{total:.3f} = {a} + {b:.3f}'.format(a=a, b=b, total=a+b))
 ```
-Note that the variable `:` delimiter separates the variable identifies on the left from the formatting rules on the right.
+Note that the variable `:` delimiter separates the variable identifiers on the left from the formatting rules on the right.
 
 Finally the new, fancy formatted string literals (only available in python 3.6+).
 This new format is very similar to the recommended style, except that all placeholders are automatically evaluated in the local environment at the time the template is defined.
@@ -269,7 +269,7 @@ print(list_with_whitespace)
 list_without_whitespace = [individual_string.strip() for individual_string in list_with_whitespace]
 print(list_without_whitespace)
 ```
-> We use the syntax `[<expr> for <element> in <sequence>]` here which applies the `expr` to each `element` in the `sequence` and returns the resulting list. This is a convenient form in python to create a new list from the old one.
+> We use the syntax `[<expr> for <element> in <sequence>]` here which applies the `expr` to each `element` in the `sequence` and returns the resulting list. This is a list comprehension - a convenient form in python to create a new list from the old one.
 
 <a class="anchor" id="converting-strings-to-numbers"></a>
 ### Converting strings to numbers

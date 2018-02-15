@@ -130,7 +130,7 @@ Try to check the value of `a_list` and `local_list` from within the debugger.
 
 > WARNING: you need to quit the debugger before any further commands will run (type `q` into the prompt)!
 
-If you always want to enter the debugger when an error is raised you can call `%pdb on` at any time (call `%pdf off` to rever this)
+If you always want to enter the debugger when an error is raised you can call `%pdb on` at any time (call `%pdf off` to reverse this)
 
 ---
 
@@ -143,7 +143,7 @@ When failing to provide a backend it will simply use the default (which is usual
 ```
 %matplotlib nbagg
 ```
-> Keep in mind that as soon as you have started plotting you can no longer change your backend without restarting python.
+> Keep in mind that as soon as you have started plotting you can no longer change your backend without exiting the python interpreter and restarting `python` (note that in the jupyter notebook you can just press `Restart` in the `Kernel` menu).
 
 To do the equivalent in a python script would look like
 > ```
@@ -163,6 +163,7 @@ This is equivalent in python code to:
 > mpl.use(<backend>)
 > from matplotlib.pylab import *
 > ```
+> The last line imports everything from the matplotlib.pylab module into the namespace.
 
 I start most of my notebooks or terminals with the `%pylab` command, because afterwards I can just do stuff like:
 ```
@@ -170,6 +171,8 @@ x = linspace(0, pi, 301)
 y = sin(x)
 plot(x, y, 'r-')
 ```
+The main disadvantage is that it will not be obvious to the naive reader of this code, whether functions like `linspace`, `sin`, or `plot` are originate from numpy, matplotlib, or are built-in.
+This is why we dont recommend `from <module> import *` statements in any longer code or code you intend to share.
 
 ---
 
