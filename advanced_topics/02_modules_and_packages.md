@@ -14,7 +14,7 @@ understandable manner.
 
 For this practical we have prepared a handful of example files - you can find
 them alongside this notebook file, in a directory called
-`modules_and_packages/`.
+`02_modules_and_packages/`.
 
 
 ## Contents
@@ -33,7 +33,7 @@ them alongside this notebook file, in a directory called
 
 ```
 import os
-os.chdir('modules_and_packages')
+os.chdir('02_modules_and_packages')
 ```
 
 <a class="anchor" id="what-is-a-module"></a>
@@ -41,8 +41,8 @@ os.chdir('modules_and_packages')
 
 
 Any file ending with `.py` is considered to be a module in Python. Take a look
-at `modules_and_packages/numfuncs.py` - either open it in your editor, or run
-this code block:
+at `02_modules_and_packages/numfuncs.py` - either open it in your editor, or
+run this code block:
 
 
 ```
@@ -256,7 +256,7 @@ fact, there no difference between a _module_ and a _script_ - any `.py` file
 can be executed as a script, or imported as a module, or both.
 
 
-Have a look at the file `modules_and_packages/module_and_script.py`:
+Have a look at the file `02_modules_and_packages/module_and_script.py`:
 
 
 ```
@@ -272,7 +272,7 @@ that allows you to add code to a file that is _only executed when the module is
 called as a script_. Try it in a terminal now:
 
 
-> `python modules_and_packages/module_and_script.py`
+> `python 02_modules_and_packages/module_and_script.py`
 
 
 But if we `import` this module from another file, or from an interactive
@@ -351,9 +351,9 @@ from knowing that it is needed. But you can use `__init__.py` to perform some
 package-specific initialisation, and/or to customise the package's namespace.
 
 
-As an example, take a look the `modules_and_packages/fsleyes/__init__.py` file
-in our mock FSLeyes package. We have imported the `fsleyes_main` function from
-the `fsleyes.main` module, making it available at the package level. So
+As an example, take a look the `02_modules_and_packages/fsleyes/__init__.py`
+file in our mock FSLeyes package. We have imported the `fsleyes_main` function
+from the `fsleyes.main` module, making it available at the package level. So
 instead of importing the `fsleyes.main` module, we could instead just import
 the `fsleyes` package:
 

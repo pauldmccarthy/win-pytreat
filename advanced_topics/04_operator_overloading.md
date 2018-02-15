@@ -168,10 +168,14 @@ appropriate method, for example:
 - Exclusive or (`^`): `__xor__`
 
 
-Take a look at the [official
+When an operator is applied to operands of different types, a set of fall-back
+rules are followed depending on the set of methods implemented on the
+operands. For example, in the expression `a + b`, if `a.__add__` is not
+implemented, but but `b.__radd__` is implemented, then the latter will be
+called.  Take a look at the [official
 documentation](https://docs.python.org/3.5/reference/datamodel.html#emulating-numeric-types)
-for a full list of the arithmetic and logical operators that your classes can
-support.
+for further details, including a full list of the arithmetic and logical
+operators that your classes can support.
 
 
 <a class="anchor" id="equality-and-comparison-operators"></a>
@@ -241,7 +245,7 @@ l2 = Label(2, 'Occipital', (  0, 255,   0))
 l3 = Label(3, 'Temporal',  (  0,   0, 255))
 
 print('{} >  {}: {}'.format(l1, l2, l1  > l2))
-print('{} <  {}: {}'.format(l1, l3, l1  < l3))
+print('{} <  {}: {}'.format(l1, l3, l1 <= l3))
 print('{} != {}: {}'.format(l2, l3, l2 != l3))
 print(sorted((l3, l1, l2)))
 ```
@@ -545,7 +549,7 @@ v = Vector((1, 2, 3))
 
 print('v:   ', v)
 print('xyz: ', v.xyz)
-print('yz:  ', v.zy)
+print('zy:  ', v.zy)
 print('xx:  ', v.xx)
 
 v.xz = 10, 30

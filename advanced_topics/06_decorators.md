@@ -292,11 +292,11 @@ def fib(n):
 
     if n in (0, 1):
         print('fib({}) = {}'.format(n, n))
-        return 1
+        return n
 
     twoback = 1
     oneback = 1
-    val     = 0
+    val     = 1
 
     for _ in range(2, n):
 
@@ -417,13 +417,13 @@ earlier `memoize` decorator:
 @limitedMemoize(5)
 def fib(n):
 
-    if n in (1, 2):
+    if n in (0, 1):
         print('fib({}) = 1'.format(n))
-        return 1
+        return n
 
     twoback = 1
     oneback = 1
-    val     = 0
+    val     = 1
 
     for _ in range(2, n):
 
