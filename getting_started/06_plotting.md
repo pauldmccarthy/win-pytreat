@@ -81,6 +81,8 @@ plt.ylim(min(allsamps),max(allsamps))
 
 ### Subplots
 
+These are very similar to matlab:
+
 ```
 plt.subplot(2, 1, 1)
 plt.plot(x,cosx, '.-')
@@ -93,6 +95,8 @@ plt.ylabel('Subsampled')
 ```
 
 ### Displaying images
+
+The main command for displaying images is `imshow()`
 
 ```
 import nibabel as nib
