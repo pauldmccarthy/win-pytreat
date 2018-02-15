@@ -5,7 +5,7 @@ The recommended way to open a file in Python is via the `with` statement:
 
 
 ```
-with open('context_managers.md', 'rt') as f:
+with open('05_context_managers.md', 'rt') as f:
     firstlines = f.readlines()[:4]
     firstlines = [l.strip() for l in firstlines]
     print('\n'.join(firstlines))

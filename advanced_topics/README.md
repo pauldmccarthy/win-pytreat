@@ -9,10 +9,10 @@ some of the more advanced features of the language.
 Practicals on the following topics are available. They can be viewed in any
 order, but we recommend going through them in this order:
 
-* Function inputs and outputs
-* Modules and packages
-* Testing
-* Object-oriented programming
-* Operator overloading
-* Context managers
-* Decorators
+1. Function inputs and outputs
+2. Modules and packages
+3. Object-oriented programming
+4. Operator overloading
+5. Context managers
+6. Decorators
+7. Testing
