@@ -68,8 +68,10 @@ we can use instead of `plt`
 
 ```
 fig, ax = plt.subplots()
-ssize = 100*abs(samp1-samp2)  # just an arbitrary example
+# setup some sizes for each point (arbitrarily example here)
+ssize = 100*abs(samp1-samp2) + 10 
 ax.scatter(samp1, samp2, s=ssize, alpha=0.5)
+# now add the y=x line
 allsamps = np.hstack((samp1,samp2))
 ax.plot([min(allsamps),max(allsamps)],[min(allsamps),max(allsamps)], color='red', linestyle='--')
 plt.xlim(min(allsamps),max(allsamps))
