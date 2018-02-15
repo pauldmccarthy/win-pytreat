@@ -21,6 +21,18 @@ these internals are in fact quite straightforward, and are known as [_context
 managers_](https://docs.python.org/3.5/reference/datamodel.html#context-managers).
 
 
+* [Anatomy of a context manager](#anatomy-of-a-context-manager)
+ * [Why not just use `try ... finally`?](#why-not-just-use-try-finally)
+* [Uses for context managers](#uses-for-context-managers)
+ * [Handling errors in `__exit__`](#handling-errors-in-exit)
+ * [Suppressing errors with `__exit__`](#suppressing-errors-with-exit)
+* [Nesting context managers](#nesting-context-managers)
+* [Functions as context managers](#functions-as-context-managers)
+* [Methods as context managers](#methods-as-context-managers)
+* [Useful references](#useful-references)
+
+
+<a class="anchor" id="anatomy-of-a-context-manager"></a>
 ## Anatomy of a context manager
 
 
@@ -71,6 +83,7 @@ This means that we can use context managers to perform any sort of clean up or
 finalisation logic that we always want to have executed.
 
 
+<a class="anchor" id="why-not-just-use-try-finally"></a>
 ### Why not just use `try ... finally`?
 
 
@@ -95,6 +108,7 @@ But context managers have the advantage that you can implement your clean-up
 logic in one place, and re-use it as many times as you want.
 
 
+<a class="anchor" id="uses-for-context-managers"></a>
 ## Uses for context managers
 
 
@@ -162,6 +176,7 @@ with TempDir():
 ```
 
 
+<a class="anchor" id="handling-errors-in-exit"></a>
 ### Handling errors in `__exit__`
 
 
@@ -220,6 +235,7 @@ So when an error occurs, the `__exit__` method is passed the following:
   number).
 
 
+<a class="anchor" id="suppressing-errors-with-exit"></a>
 ### Suppressing errors with `__exit__`
 
 
@@ -265,6 +281,32 @@ with MyContextManager():
 ```
 
 
+<a class="anchor" id="nesting-context-managers"></a>
+## Nesting context managers
+
+
+It is possible to nest `with` statements:
+
+```
+with open('05_context_managers.md', 'rt') as inf:
+    with TempDir():
+        with open('05_context_managers.md.copy', 'wt') as outf:
+            outf.write(inf.read())
+```
+
+
+You can also use multiple context managers in a single `with` statement:
+
+
+```
+with open('05_context_managers.md', 'rt') as inf, \
+     TempDir(), \
+     open('05_context_managers.md.copy', 'wt') as outf:
+    outf.write(inf.read())
+```
+
+
+<a class="anchor" id="functions-as-context-managers"></a>
 ## Functions as context managers
 
 
@@ -285,17 +327,18 @@ import contextlib
 
 @contextlib.contextmanager
 def tempdir():
-    testdir = tempfile.mkdtemp()
+    tdir    = tempfile.mkdtemp()
     prevdir = os.getcwd()
     try:
 
-        os.chdir(testdir)
-        yield testdir
+        os.chdir(tdir)
+        yield tdir
 
     finally:
         os.chdir(prevdir)
-        shutil.rmtree(testdir)
+        shutil.rmtree(tdir)
 ```
+
 
 This new `tempdir` function is used in exactly the same way as our `TempDir`
 class:
@@ -304,11 +347,16 @@ class:
 ```
 print('In directory:      {}'.format(os.getcwd()))
 
-with tempdir():
+with tempdir() as tmp:
     print('Now in directory:  {}'.format(os.getcwd()))
 
 print('Back in directory: {}'.format(os.getcwd()))
 ```
+
+
+The `yield tdir` statement in our `tempdir` function causes the `tdir` value
+to be passed to the `with` statement, so in the line `with tempdir() as tmp`,
+the variable `tmp` will be given the value `tdir`.
 
 
 > <sup>1</sup> The `yield` keyword is used in _generator functions_.
@@ -319,6 +367,7 @@ print('Back in directory: {}'.format(os.getcwd()))
 > beyond the scope of this practical.
 
 
+<a class="anchor" id="methods-as-context-managers"></a>
 ## Methods as context managers
 
 
@@ -412,10 +461,6 @@ instances:
 ```
 import matplotlib.pyplot as plt
 
-# this line is only necessary when
-# working in jupyer notebook/ipython
-%matplotlib
-
 class Plotter(object):
     def __init__(self, axis):
         self.__axis   = axis
@@ -451,6 +496,10 @@ the `matplotlib` plot will open in a separate window):
 
 
 ```
+# this line is only necessary when
+# working in jupyer notebook/ipython
+%matplotlib
+
 fig     = plt.figure()
 ax      = fig.add_subplot(111)
 plotter = Plotter(ax)
@@ -556,11 +605,7 @@ with plotter.holdUpdates():
 ```
 
 
-## Nesting context managers
-
-
-
-
+<a class="anchor" id="useful-references"></a>
 ## Useful references
 
 
