@@ -271,8 +271,8 @@ with MyContextManager():
 In fact, there is another way to create context managers in Python. The
 built-in [`contextlib`
 module](https://docs.python.org/3.5/library/contextlib.html#contextlib.contextmanager)
-has a decorator called `@contextmanager`, which allows us to turn __any__
-function into a context manager.  The only requirement is that the function
+has a decorator called `@contextmanager`, which allows us to turn __any
+function__ into a context manager.  The only requirement is that the function
 must have a `yield` statement<sup>1</sup>. So we could rewrite our `TempDir`
 class from above as a function:
 
@@ -319,12 +319,240 @@ print('Back in directory: {}'.format(os.getcwd()))
 > beyond the scope of this practical.
 
 
+## Methods as context managers
+
+
 Since it is possible to write a function which is a context manager, it is of
-course also possible to write a _method_ which is a context manager.
+course also possible to write a _method_ which is a context manager. Let's
+play with another example. We have a `Notifier` class which can be used to
+notify interested listeners when an event occurs. Listeners can be registered
+for notification via the `register` method:
 
 
 ```
-TODO suppress notification example
+from collections import OrderedDict
+
+class Notifier(object):
+    def __init__(self):
+        super().__init__()
+        self.listeners = OrderedDict()
+
+    def register(self, name, func):
+        self.listeners[name] = func
+
+    def notify(self):
+        for listener in self.listeners.values():
+            listener()
+```
+
+
+Now, let's build a little plotting application. First of all, we have a `Line`
+class, which represents a line plot. The `Line` class is a sub-class of
+`Notifier`, so whenever its display properties (`colour`, `width`, or `name`)
+change, it emits a notification, and whatever is drawing it can refresh the
+display:
+
+
+```
+import numpy as np
+
+class Line(Notifier):
+
+    def __init__(self, data):
+        super().__init__()
+        self.__data   = data
+        self.__colour = '#000000'
+        self.__width  = 1
+        self.__name   = 'line'
+
+    @property
+    def xdata(self):
+        return np.arange(len(self.__data))
+
+    @property
+    def ydata(self):
+        return np.copy(self.__data)
+
+    @property
+    def colour(self):
+        return self.__colour
+
+    @colour.setter
+    def colour(self, newColour):
+        self.__colour = newColour
+        print('Line: colour changed: {}'.format(newColour))
+        self.notify()
+
+    @property
+    def width(self):
+        return self.__width
+
+    @width.setter
+    def width(self, newWidth):
+        self.__width = newWidth
+        print('Line: width changed: {}'.format(newWidth))
+        self.notify()
+
+    @property
+    def name(self):
+        return self.__name
+
+    @name.setter
+    def name(self, newName):
+        self.__name = newName
+        print('Line: name changed: {}'.format(newName))
+        self.notify()
+```
+
+
+Now let's write a `Plotter` class, which can plot one or more `Line`
+instances:
+
+
+```
+import matplotlib.pyplot as plt
+
+# this line is only necessary when
+# working in jupyer notebook/ipython
+%matplotlib
+
+class Plotter(object):
+    def __init__(self, axis):
+        self.__axis   = axis
+        self.__lines  = []
+
+    def addData(self, data):
+        line = Line(data)
+        self.__lines.append(line)
+        line.register('plot', self.lineChanged)
+        self.draw()
+        return line
+
+    def lineChanged(self):
+        self.draw()
+
+    def draw(self):
+        print('Plotter: redrawing plot')
+
+        ax = self.__axis
+        ax.clear()
+        for line in self.__lines:
+            ax.plot(line.xdata,
+                    line.ydata,
+                    color=line.colour,
+                    linewidth=line.width,
+                    label=line.name)
+        ax.legend()
+```
+
+
+Let's create a `Plotter` object, and add a couple of lines to it (note that
+the `matplotlib` plot will open in a separate window):
+
+
+```
+fig     = plt.figure()
+ax      = fig.add_subplot(111)
+plotter = Plotter(ax)
+l1      = plotter.addData(np.sin(np.linspace(0, 6 * np.pi, 50)))
+l2      = plotter.addData(np.cos(np.linspace(0, 6 * np.pi, 50)))
+
+fig.show()
+```
+
+
+Now, when we change the properties of our `Line` instances, the plot will be
+automatically updated:
+
+
+```
+l1.colour = '#ff0000'
+l2.colour = '#00ff00'
+l1.width  = 2
+l2.width  = 2
+l1.name   = 'sine'
+l2.name   = 'cosine'
+```
+
+
+Pretty cool! However, this seems very inefficient - every time we change the
+properties of a `Line`, the `Plotter` will refresh the plot. If we were
+plotting large amounts of data, this would be unacceptable, as plotting would
+simply take too long.
+
+
+Wouldn't it be nice if we were able to perform batch-updates of `Line`
+properties, and only refresh the plot when we are done? Let's add an extra
+method to the `Plotter` class:
+
+
+```
+import contextlib
+
+class Plotter(object):
+    def __init__(self, axis):
+        self.__axis        = axis
+        self.__lines       = []
+        self.__holdUpdates = False
+
+    def addData(self, data):
+        line = Line(data)
+        self.__lines.append(line)
+        line.register('plot', self.lineChanged)
+
+        if not self.__holdUpdates:
+            self.draw()
+        return line
+
+    def lineChanged(self):
+        if not self.__holdUpdates:
+            self.draw()
+
+    def draw(self):
+        print('Plotter: redrawing plot')
+
+        ax = self.__axis
+        ax.clear()
+        for line in self.__lines:
+            ax.plot(line.xdata,
+                    line.ydata,
+                    color=line.colour,
+                    linewidth=line.width,
+                    label=line.name)
+        ax.legend()
+
+    @contextlib.contextmanager
+    def holdUpdates(self):
+        self.__holdUpdates = True
+        try:
+            yield
+            self.draw()
+        finally:
+            self.__holdUpdates = False
+```
+
+
+This new `holdUpdates` method allows us to temporarily suppress notifications
+from all `Line` instances. So now, we can update many `Line` properties
+without performing any redundant redraws:
+
+
+```
+fig     = plt.figure()
+ax      = fig.add_subplot(111)
+plotter = Plotter(ax)
+
+plt.show()
+
+with plotter.holdUpdates():
+    l1        = plotter.addData(np.sin(np.linspace(0, 6 * np.pi, 50)))
+    l2        = plotter.addData(np.cos(np.linspace(0, 6 * np.pi, 50)))
+    l1.colour = '#0000ff'
+    l2.colour = '#ffff00'
+    l1.width  = 1
+    l2.width  = 1
+    l1.name   = '$sin(x)$'
+    l2.name   = '$cos(x)$'
 ```
 
 
