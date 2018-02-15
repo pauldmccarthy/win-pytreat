@@ -3,6 +3,26 @@
 The main plotting module in python is `matplotlib`.  There is a lot
 that can be done with it - see the [webpage](https://matplotlib.org/gallery/index.html)
 
+
+## Contents
+
+
+If you are impatient, feel free to dive straight in to the exercises, and use the
+other sections as a reference. You might miss out on some neat tricks though.
+
+
+* [Running inside a notebook](#inside-notebook)
+ * [2D plots](#2D-plots)
+ * [Histograms and Bar Plots](#histograms)
+ * [Scatter plots](#scatter-plots)
+ * [Subplots](#subplots)
+ * [Displaying Images](#displaying-images)
+ * [3D plots](#3D-plots)
+* [Running in a standalone script](#plotting-in-scripts)
+* [Exercise](#exercise)
+
+
+<a class="anchor" id="inside-notebook"></a>
 ## Inside a notebook
 
 Inside a jupyter notebook you get access to this in a slightly
@@ -14,17 +34,20 @@ different way, compared to other modules:
 
 This only needs to be done once in a notebook, like for standard imports.
 
-> There are also interactive versions - see the practical on Jupyter notebooks for more information about this.
+> There are also other alternatives, including interactive versions - see the practical on Jupyter notebooks for more information about this.
 
 
 The library works very similarly to plotting in matlab.  Let's start
 with some simple examples.
 
+<a class="anchor" id="2D-plots"></a>
 ### 2D plots
 
 ```
 import matplotlib.pyplot as plt
 import numpy as np
+
+plt.style.use('bmh')
 
 x = np.linspace(-np.pi, np.pi, 256)
 cosx, sinx = np.cos(x), np.sin(x)
@@ -35,8 +58,12 @@ plt.plot(x, sinx**2)
 plt.xlim(-np.pi, np.pi)
 plt.title('Our first plots')
 ```
+> Note that the `plt.style.use('bmh')` command is not necessary, but it
+> does make nicer looking plots in general.  You can use `ggplot`
+> instead of `bmh` if you want something resembling plots made by R.
+> For a list of options run: `print(plt.style.available)`
 
-
+<a class="anchor" id="histograms"></a>
 ### Histograms and bar charts
 
 For a simple histogram you can do this:
@@ -45,27 +72,30 @@ r = np.random.rand(1000)
 n,bins,_ = plt.hist((r-0.5)**2, bins=30)
 ```
 where it also returns the number of elements in each bin, as `n`, and
-the bin centres, as `bins`.  The `_` in the third part on the left
-hand side is a shorthand for just throwing away the corresponding part
-of the return structure.
+the bin centres, as `bins`.
+
+> The `_` in the third part on the left
+> hand side is a shorthand for just throwing away the corresponding part
+> of the return structure.
 
 
 There is also a call for doing bar plots:
 ```
-fig, ax = plt.subplots()
 samp1 = r[0:10]
 samp2 = r[10:20]
 bwidth = 0.3
 xcoord = np.arange(10)
-ax.bar(xcoord-bwidth, samp1, width=bwidth, color='red', label='Sample 1')
-ax.bar(xcoord, samp2, width=bwidth, color='blue', label='Sample 2')
-ax.legend(loc='upper left')
+plt.bar(xcoord-bwidth, samp1, width=bwidth, color='red', label='Sample 1')
+plt.bar(xcoord, samp2, width=bwidth, color='blue', label='Sample 2')
+plt.legend(loc='upper left')
 ```
-Note that the first line returns a handle to the axis, as `ax`, that
-we can use instead of `plt`
 
+
+<a class="anchor" id="scatter-plots"></a>
 ### Scatter plots
 
+It would be possible to use `plot()` to create a scatter plot, but
+there is also an alternative: `scatter()`
 ```
 fig, ax = plt.subplots()
 # setup some sizes for each point (arbitrarily example here)
@@ -78,7 +108,13 @@ plt.xlim(min(allsamps),max(allsamps))
 plt.ylim(min(allsamps),max(allsamps))
 ```
 
+> Note that in this case we use the first line return to get a handle to
+> the axis, `ax`, and the figure ,`fig`. The axis can be used instead of
+> `plt` in most cases, although the `xlim()` and `ylim()` calls can only
+> be done through `plt`.
 
+
+<a class="anchor" id="subplots"></a>
 ### Subplots
 
 These are very similar to matlab:
@@ -94,6 +130,7 @@ plt.xlim(-np.pi, np.pi)
 plt.ylabel('Subsampled')
 ```
 
+<a class="anchor" id="displaying-images"></a>
 ### Displaying images
 
 The main command for displaying images is `imshow()`
@@ -108,6 +145,7 @@ plt.colorbar()
 ```
 
 
+<a class="anchor" id="3D-plots"></a>
 ### 3D plots
 
 ```
@@ -128,14 +166,28 @@ ax.plot_wireframe(X, Y, Z, rstride=10, cstride=10)
 Surface renderings are many other plots are possible - see 3D examples on
 the [matplotlib webpage](https://matplotlib.org/gallery/index.html#mplot3d-examples-index)
 
+---
+
+<a class="anchor" id="plotting-in-scripts"></a>
 ## Plotting from standalone scripts
 
 When running from a standalone script, the same `matplotlib` import is required,
 but the line `%matplotlib <backend>` should *not* be used.
 
-In a script it is necessary to also _finish_ with `plt.show()` as
+In a script it is also necessary to  _finish_ with `plt.show()` as
 otherwise nothing is actually displayed.  For example, the above
 examples would setup a plot but the actual graphic would only appear
 after the `plt.show()` command was executed.  Furthermore, control is
 not returned to the script immediately as the plot is interactive by default.
+
+---
+
+<a class="anchor" id="exercise"></a>
+## Exercise
+
+Find a different type of plot (e.g., boxplot, violin plot, quiver
+plot, pie chart, etc.), look up
+the documentation and then write _your own code that calls this_ to create a plot
+from some data that you create yourself (i.e., don't just blindly copy example code from the docs).
+
 
