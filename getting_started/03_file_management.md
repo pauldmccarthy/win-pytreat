@@ -346,9 +346,12 @@ def whatisit(path, existonly=False):
 ```
 
 
-> This is the first time in this series of practicals that we have defined our
-> own function, [hooray!](https://www.youtube.com/watch?v=zQiibNVIvK4) All
-> function definitions in Python begin with the `def` keyword:
+> This is the first time in a while that we have defined our own function,
+> [hooray!](https://www.youtube.com/watch?v=zQiibNVIvK4). Here's a quick
+> refresher on how to write functions in Python, in case you have forgotten.
+>
+> First of all, all function definitions in Python begin with the `def`
+> keyword:
 >
 > ```
 > def myfunction():
@@ -424,10 +427,10 @@ print('Directory and base names: {}'.format(op.split(   path)))
 ```
 
 
-> Note here that `op.split` returns both the directory and base names - it is
-> super easy to define a Python function that returns multiple values, simply by
-> having it return a tuple. For example, the implementation of `op.split` might
-> look something like this:
+> Note here that `op.split` returns both the directory and base names - remember
+> that it is super easy to define a Python function that returns multiple values,
+> simply by having it return a tuple. For example, the implementation of
+> `op.split` might look something like this:
 >
 >
 > ```
