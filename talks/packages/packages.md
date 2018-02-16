@@ -194,6 +194,36 @@ if __name__ == '__main__':
 %run test_argparse.py 3 8.5 -q
 ```
 
+Alternatives:
+- [docopt](http://docopt.org/): You write a usage string, docopt will generate the parser
+> ```
+> # example from https://realpython.com/blog/python/comparing-python-command-line-parsing-libraries-argparse-docopt-click/
+> """Greeter.
+>
+> Usage:
+>   commands.py hello
+>   commands.py goodbye
+>   commands.py -h | --help
+>
+> Options:
+>   -h --help     Show this screen.
+> """
+> from docopt import docopt
+>
+> if __name__ == '__main__':
+>     arguments = docopt(__doc__)
+> ```
+- [clize](http://clize.readthedocs.io/en/stable/why.html): You write a function, clize will generate the parser
+> ```
+> from clize import run
+>
+> def echo(word):
+>     return word
+>
+> if __name__ == '__main__':
+>     run(echo)
+> ```
+
 ### [Gooey](https://github.com/chriskiehl/Gooey): GUI from command line tool
 ```
 %%writefile test_gooey.py
@@ -226,7 +256,11 @@ if __name__ == '__main__':
 !gcoord_gui
 ```
 
-## [Jinja2](http://jinja.pocoo.org/docs/2.10/): HTML generation
+## [Jinja2](http://jinja.pocoo.org/docs/2.10/): Templating language
+Jinja2 allows to create templates of files with placeholders, where future content will go.
+This allows for the creation of a large number of similar files.
+
+This can for example be used to produce static HTML output in a highly flexible manner.
 ```
 %%writefile image_list.jinja2
 <!DOCTYPE html>
@@ -418,6 +452,8 @@ if __name__ == '__main__':
   - keras
 
 ## [Pycuda](https://documen.tician.de/pycuda/): Programming the GPU
+Wrapper around [Cuda](https://developer.nvidia.com/cuda-zone).
+The alternative [Pyopencl](https://documen.tician.de/pyopencl/) provides a very similar wrapper around [OpenCL](https://www.khronos.org/opencl/).
 ```
 import pycuda.autoinit
 import pycuda.driver as drv
@@ -444,6 +480,7 @@ multiply_them(
 print(dest-a*b)
 ```
 
+Also see [pyopenGL](http://pyopengl.sourceforge.net/): graphics programming in python (used in FSLeyes)
 ## Testing
 - [unittest](https://docs.python.org/3.6/library/unittest.html): python built-in testing
 > ```
@@ -536,3 +573,33 @@ Linters check the code for any syntax errors, [style errors](https://www.python.
 - [pyflake](https://pypi.python.org/pypi/pyflakes): if you think pylint is too strict
 - [pep8](https://pypi.python.org/pypi/pep8): just checks for style errors
 - [mypy](http://mypy-lang.org/): adding explicit typing to python
+
+## Web frameworks
+- [Django2](https://www.djangoproject.com/): includes the most features, but also forces you to do things their way
+- [Pyramid](https://trypyramid.com): Intermediate options
+- [Flask](http://flask.pocoo.org/): Bare-bone web framework, but many extensions available
+
+There are also many, many libraries to interact with databases, but you will have to google those yourself.
+
+# Several honourable mentions
+- [trimesh](https://github.com/mikedh/trimesh): Triangular mesh algorithms
+- [Pillow](https://pillow.readthedocs.io/en/latest/): Read/write/manipulate a wide variety of images (png, jpg, tiff, etc.)
+- [psychopy](http://www.psychopy.org/): equivalent of psychtoolbox (workshop coming up in April in Nottingham)
+- [Buit-in libraries](https://docs.python.org/3/py-modindex.html)
+    - [collections](https://docs.python.org/3.6/library/collections.html): deque, OrderedDict, namedtuple, and more
+    - [datetime](https://docs.python.org/3/library/datetime.html): Basic date and time types
+    - [enum](https://docs.python.org/3/library/enum.html): Enumerators
+    - [fractions](https://docs.python.org/3/library/fractions.html): rational numbers
+    - [functools](https://docs.python.org/3/library/functools.html): caching, decorators, and support for functional programming
+    - [json](https://docs.python.org/3/library/json.html)/[ipaddress](https://docs.python.org/3/library/ipaddress.html)/[xml](https://docs.python.org/3/library/xml.html#module-xml): parsing/writing
+    - [itertools](https://docs.python.org/3/library/itertools.html): more tools to loop over sequences
+    - [logging](https://docs.python.org/3/library/logging.htm): log your output to stdout or a file (more flexible than print statements)
+    - [multiprocessing](https://docs.python.org/3/library/multiprocessing.html)
+    - [os](https://docs.python.org/3/library/os.html#module-os)/[sys](https://docs.python.org/3/library/sys.html): Miscellaneous operating system interfaces
+    - [os.path](https://docs.python.org/3/library/os.path.html)/[pathlib](https://docs.python.org/3/library/pathlib.html): utilities to deal with filesystem paths (latter provides an object-oriented interface)
+    - [pickle](https://docs.python.org/3/library/pickle.html): Store/load any python object
+    - [shutil](https://docs.python.org/3/library/shutil.html): copy/move files
+    - [subprocess](https://docs.python.org/3/library/subprocess.html): call shell commands
+    - [time](https://docs.python.org/3/library/time.html)/[timeit](https://docs.python.org/3/library/timeit.html): keeping track of it
+    - [turtule](https://docs.python.org/3/library/turtle.html#module-turtle): teach python to your kids!
+    - [warnings](https://docs.python.org/3/library/warnings.html#module-warnings): tell people they are not using your code properly
