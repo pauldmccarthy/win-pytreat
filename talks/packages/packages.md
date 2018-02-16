@@ -300,50 +300,6 @@ with open('image_list.html', 'w') as f:
 ## Neuroimage packages
 The [nipy](http://nipy.org/) ecosystem covers most of these.
 
-### [CIFTI](https://github.com/MichielCottaar/cifti): easy creation/manipulation
-```
-import nibabel
-thickness = nibabel.load('100307/fsaverage_LR32k/100307.L.thickness.32k_fs_LR.shape.gii').darrays[0].data
-thickness
-```
-
-```
-import cifti
-ctx = thickness != 0
-arr = np.random.rand(ctx.sum())
-
-bm_ctx = cifti.BrainModel.from_mask(ctx, name='CortexLeft')
-sc = cifti.Scalar.from_names(['random'])
-cifti.write('random_ctx.dscalar.nii', arr[None, :], (sc, bm_ctx))
-```
-
-```
-!wb_view 100307/fsaverage_LR32k/100307.*.32k_fs_LR.surf.gii random_ctx.dscalar.nii
-```
-
-```
-img = nibabel.load('100307/aparc+aseg.nii.gz')
-cerebellum = img.get_data() == 8
-
-bm = bm_ctx + cifti.BrainModel.from_mask(cerebellum, name='CerebellumLeft', affine=img.affine)
-sc = cifti.Scalar.from_names(['random'])
-arr = np.random.rand(len(bm))
-cifti.write('random_ctx_cerebellum.dscalar.nii', arr[None, :], (sc, bm))
-```
-
-```
-!wb_view 100307/fsaverage_LR32k/100307.*.32k_fs_LR.surf.gii 100307/aparc+aseg.nii.gz random_ctx_cerebellum.dscalar.nii
-```
-
-```
-arr = abs(thickness[ctx, None] - thickness[None, ctx])
-cifti.write('diff_thickness.dconn.nii', arr, (bm_ctx, bm_ctx))
-```
-
-```
-!wb_view 100307/fsaverage_LR32k/100307.*.32k_fs_LR.surf.gii diff_thickness.dconn.nii
-```
-
 ## [networkx](https://networkx.github.io/): graph theory
 
 ## GUI
