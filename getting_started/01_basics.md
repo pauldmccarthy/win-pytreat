@@ -680,7 +680,7 @@ You will often see python functions called with these named arguments.
 ---
 
 <a class="anchor" id="exercise"></a>
-## Exercises
+## Exercise
 
 Let's say you are given a single string with comma separated elements
 that represent filenames and ID codes: e.g., `/vols/Data/pytreat/AAC, 165873, /vols/Data/pytreat/AAG, 170285, ...`

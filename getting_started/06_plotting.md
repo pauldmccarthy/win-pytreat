@@ -6,11 +6,6 @@ that can be done with it - see the [webpage](https://matplotlib.org/gallery/inde
 
 ## Contents
 
-
-If you are impatient, feel free to dive straight in to the exercises, and use the
-other sections as a reference. You might miss out on some neat tricks though.
-
-
 * [Running inside a notebook](#inside-notebook)
  * [2D plots](#2D-plots)
  * [Histograms and Bar Plots](#histograms)
@@ -20,6 +15,8 @@ other sections as a reference. You might miss out on some neat tricks though.
  * [3D plots](#3D-plots)
 * [Running in a standalone script](#plotting-in-scripts)
 * [Exercise](#exercise)
+
+---
 
 
 <a class="anchor" id="inside-notebook"></a>
@@ -62,6 +59,19 @@ plt.title('Our first plots')
 > does make nicer looking plots in general.  You can use `ggplot`
 > instead of `bmh` if you want something resembling plots made by R.
 > For a list of options run: `print(plt.style.available)`
+
+You can also save the objects and interrogate/set their properties, as
+well as those for the general axes:
+```
+hdl = plt.plot(x, cosx)
+print(hdl[0].get_color())
+hdl[0].set_color('#707010')
+hdl[0].set_linewidth(0.5)
+plt.grid('off')
+```
+
+Use `dir()` or `help()` or the online docs to get more info on what
+you can do with these.
 
 <a class="anchor" id="histograms"></a>
 ### Histograms and bar charts
@@ -113,6 +123,9 @@ plt.ylim(min(allsamps),max(allsamps))
 > `plt` in most cases, although the `xlim()` and `ylim()` calls can only
 > be done through `plt`.
 
+> In general, figures and subplots can be created in matplotlib in a
+> similar fashion to matlab, but they do not have to be explicitly
+> invoked as you can see from the earlier examples.
 
 <a class="anchor" id="subplots"></a>
 ### Subplots
@@ -142,6 +155,7 @@ nim = nib.load(op.expandvars('${FSLDIR}/data/standard/MNI152_T1_1mm.nii.gz'), mm
 imdat = nim.get_data().astype(float)
 plt.imshow(imdat[:,:,70], cmap=plt.cm.gray)
 plt.colorbar()
+plt.grid('off')
 ```
 
 
@@ -188,6 +202,11 @@ not returned to the script immediately as the plot is interactive by default.
 Find a different type of plot (e.g., boxplot, violin plot, quiver
 plot, pie chart, etc.), look up
 the documentation and then write _your own code that calls this_ to create a plot
-from some data that you create yourself (i.e., don't just blindly copy example code from the docs).
+from some data that you create yourself (i.e., don't just blindly copy
+example code from the docs).
+
+```
+# Make up some data and do the funky plot
+```
 
 

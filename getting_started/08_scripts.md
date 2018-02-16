@@ -2,8 +2,20 @@
 
 In this tutorial we will cover how to write simple stand-alone scripts in python that can be used as alternatives to bash scripts.
 
-There are some code blocks within this webpage, but we recommend that you write the code in an IDE or editor instead and then run the scripts from a terminal.
+There are some code blocks within this webpage, but for this practical we _**strongly
+recommend that you write the code in an IDE or editor**_ instead and then run the scripts from a terminal.
 
+## Contents
+
+* [Basic script](#basic-script)
+* [Calling other executables](#calling-other-executables)
+* [Command line arguments](#command-line-arguments)
+* [Example script](#example-script)
+* [Exercise](#exercise)
+
+---
+
+<a class="anchor" id="basic-script"></a>
 ## Basic script
 
 The first line of a python script is usually:
@@ -19,6 +31,7 @@ For FSL scripts we use an alternative, to ensure that we pick up the version of 
 
 After this line the rest of the file just uses regular python syntax, as in the other tutorials.  Make sure you make the file executable - just like a bash script.
 
+<a class="anchor" id="calling-other-executables"></a>
 ## Calling other executables
 
 The most essential call that you need to use to replicate the way a bash script calls executables is `subprocess.run()`.  A simple call looks like this:
@@ -77,6 +90,7 @@ for cmd in commands.split('\n'):
 ```
 
 
+<a class="anchor" id="command-line-arguments"></a>
 ## Command line arguments
 
 The simplest way of dealing with command line arguments is use the module `sys`, which gives access to an `argv` list:
@@ -88,7 +102,9 @@ print(sys.argv[0])
 
 For more sophisticated argument parsing you can use `argparse` -  good documentation and examples of this can be found on the web.
 
+---
 
+<a class="anchor" id="example-script"></a>
 ## Example script
 
 Here is a simple bash script (it masks an image and calculates volumes - just as a random example). DO NOT execute the code blocks here within the notebook/webpage:
@@ -133,4 +149,15 @@ vol_mm = float(sout.split()[1])
 print('Volumes are: ', vol_vox, ' in voxels and ', vol_mm, ' in mm')
 ```
 
+---
+
+<a class="anchor" id="exercise"></a>
+## Exercise
+
+Write a simple version of fslstats that is able to calculate either a
+mean or a _sum_ (and hence can do something that fslstats cannot!)
+
+```
+# Don't write anything here - do it in a standalone script!
+```
 
