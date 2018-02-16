@@ -15,7 +15,10 @@ import numpy as np
 
 Numpy includes support for:
 - N-dimensional arrays with various datatypes
-- basic functions (e.g., polynomials)
+  - masked arrays
+  - matrices
+  - structured/record array
+- basic functions (e.g., sin, log, arctan, polynomials)
 - basic linear algebra
 - random number generation
 
