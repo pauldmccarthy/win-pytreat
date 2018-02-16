@@ -4,12 +4,46 @@ This tutorial is aimed at briefly introducing you to the main language
 features of python, with emphasis on some of the common difficulties
 and pitfalls that are commonly encountered when moving to python.
 
-When going through this make sure that you _run_ each code block
-and look at the output, as these are crucial for understanding the
-explanations. You can run each block by using _shift + enter_ (including the text blocks, so you can just move down the document with shift + enter).
+When going through this make sure that you _run_ each code block and
+look at the output, as these are crucial for understanding the
+explanations. You can run each block by using _shift + enter_
+(including the text blocks, so you can just move down the document
+with shift + enter).
+
+It is also possible to _change_ the contents of each code block (these pages are completely interactive) so do experiment with the code you see and try some variations!
+
+## Contents
+
+* [Basic types](#Basic-types)
+ - [Strings](#Strings)
+   + [Format](#Format)
+   + [String manipulation](#String-manipulation)
+ - [Tuples and lists](#Tuples-and-lists)
+   + [Adding to a list](#Adding-to-a-list)
+   + [Indexing](#Indexing)
+   + [Slicing](#Slicing)
+ - [List operations](#List-operations)
+   + [Looping over elements in a list (or tuple)](#Looping)
+   + [Getting help](#Getting-help)
+ - [Dictionaries](#Dictionaries)
+   + [Adding to a dictionary](#Adding-to-a-dictionary)
+   + [Removing elements from a dictionary](#Removing-elements-dictionary)
+   + [Looping over everything in a dictionary](#Looping-dictionary)
+ - [Copying and references](#Copying-and-references)
+* [Control flow](#Control-flow)
+  - [Boolean operators](#Boolean-operators)
+  - [If statements](#If-statements)
+  - [For loops](#For-loops)
+  - [While loops](#While-loops)
+  - [A quick intro to conditional expressions and list comprehensions](#quick-intro)
+   + [Conditional expressions](#Conditional-expressions)
+   + [List comprehensions](#List-comprehensions)
+* [Functions](#functions)
+* [Exercise](#exercise)
 
 ---
 
+<a class="anchor" id="Basic-types"></a>
 # Basic types
 
 Python has many different types and variables are dynamic and can change types (like MATLAB).  Some of the most commonly used in-built types are:
@@ -45,6 +79,7 @@ print(a, b, c)
 
 ---
 
+<a class="anchor" id="Strings"></a>
 ## Strings
 
 Strings can be specified using single quotes *or* double quotes - as long as they are matched.
@@ -66,6 +101,7 @@ multiple lines
 print(s3)
 ```
 
+<a class="anchor" id="Format"></a>
 ### Format
 
 More interesting strings can be created using the `format` statement, which is very useful in print statements:
@@ -77,8 +113,9 @@ print(s)
 print('A name is {} and a number is {}'.format(y, x))
 ```
 
-There are also other options along these lines, but this is the more modern version, although you will see plenty of the other alternatives in old code (i.e., code written before last week). 
+There are also other options along these lines, but this is the more modern version, although you will see plenty of the other alternatives in "old" code (to python coders this means anything written before last week).
 
+<a class="anchor" id="String-manipulation"></a>
 ### String manipulation
 
 The methods `lower()` and `upper()` are useful for strings.  For example:
@@ -95,6 +132,13 @@ s2 = s.replace('Test', 'Better')
 print(s2)
 ```
 
+Strings can be concatenated just by using the `+` operator:
+
+```
+s3 = s + ' :: ' + s2
+print(s3)
+```
+
 If you like regular expressions then you're in luck as these are well supported in python using the `re` module.  To use this (like many other "extensions" - called _modules_ in Python - you need to `import` it).  For example:
 ```
 import re
@@ -106,17 +150,46 @@ where the `r` before the quote is used to force the regular expression specifica
 
 For more information on matching and substitutions, look up the regular expression module on the web.
 
+Two common and convenient string methods are `strip()` and `split()`.  The first will remove any whitespace at the beginning and end of a string:
 
-You can also split, or tokenize, a string (to turn it into a list) like this:
+```
+s2 = '   A very    spacy   string       '
+print('*' + s2 + '*')
+print('*' + s2.strip() + '*')
+```
+
+With `split()` we can tokenize a string (to turn it into a list of strings) like this:
 ```
 print(s.split())
+print(s2.split())
 ```
+
+By default it splits at whitespace, but it can also split at a specified delimiter:
+```
+s4 = '  This is,  as you can    see ,   a very  weirdly spaced and punctuated    string ...  '
+print(s4.split(','))
+```
+
+There are more powerful ways of dealing with this like csv files/strings, which are covered in later practicals, but even this can get you a long way.
 
 > Note that strings in python 3 are _unicode_ so can represent Chinese characters, etc, and is therefore very flexible.  However, in general you can just be blissfully ignorant of this fact.
 
+Strings can be converted to integer or floating-point values by using the `int()` and `float()` calls:
+
+```
+sint='23'
+sfp='2.03'
+print(sint + sfp)
+print(int(sint) + float(sfp))
+print(float(sint) + float(sfp))
+```
+
+> Note that calling `int()` on a non-integer (e.g., on `sfp` above) will raise an error.
+
 ---
 
-## Tuples and Lists
+<a class="anchor" id="Tuples-and-lists"></a>
+## Tuples and lists
 
 Both tuples and lists are builtin python types and are like vectors, 
 but for numerical vectors and arrays it is much better to use _numpy_
@@ -138,6 +211,7 @@ print('x2 is: ', x2)
 print('x3 is: ', x3)
 ```
 
+<a class="anchor" id="Adding-to-a-list"></a>
 ### Adding to a list
 
 This is easy:
@@ -148,6 +222,7 @@ a +=  [80]
 print(a)
 ```
 
+<a class="anchor" id="Indexing"></a>
 ### Indexing
 
 Square brackets are used to index tuples, lists, dictionaries, etc.  For example:
@@ -195,6 +270,7 @@ but *not* an index like b[0, 1].
 > Note that `len` will only give the length of the top level.
 > In general, numpy arrays should be preferred to nested lists when the contents are numerical.
 
+<a class="anchor" id="Slicing"></a>
 ### Slicing
 
 A range of values for the indices can be specified to extract values from a list.  For example:
@@ -223,6 +299,7 @@ b = [3, 4]
 print(a[b])
 ```
 
+<a class="anchor" id="List-operations"></a>
 ### List operations
 
 Multiplication can be used with lists, where multiplication implements replication.
@@ -242,6 +319,7 @@ d.pop(0)
 print(d)
 ```
 
+<a class="anchor" id="Looping"></a>
 ### Looping over elements in a list (or tuple)
 
 ```
@@ -252,6 +330,7 @@ for x in d:
 
 > Note that the indentation within the loop is _*crucial*_.  All python control blocks are delineated purely by indentation.
 
+<a class="anchor" id="Getting-help"></a>
 ### Getting help
 
 The function `help()` can be used to get information about any variable/object/function in python.   It lists the possible operations. In `ipython` you can also just type `?<blah>` or `<blah>?` instead:
@@ -272,6 +351,7 @@ dir(d)
 
 ---
 
+<a class="anchor" id="Dictionaries"></a>
 ## Dictionaries
 
 These store key-value pairs.  For example:
@@ -287,6 +367,7 @@ The keys and values can take on almost any type, even dictionaries!
 Python is nothing if not flexible.  However, each key must be unique
 and the dictionary must be "hashable".
 
+<a class="anchor" id="Adding-to-a-dictionary"></a>
 ### Adding to a dictionary
 
 This is very easy:
@@ -295,7 +376,7 @@ e['c'] = 555   # just like in Biobank!  ;)
 print(e)
 ```
 
-
+<a class="anchor" id="Removing-elements-dictionary"></a>
 ### Removing elements from a dictionary
 
 There are two main approaches - `pop` and `del`:
@@ -306,6 +387,7 @@ del e['c']
 print(e)
 ```
 
+<a class="anchor" id="Looping-dictionary"></a>
 ### Looping over everything in a dictionary
 
 Several variables can jointly work as loop variables in python, which is very convenient.  For example:
@@ -329,6 +411,7 @@ for k in e:
 
 ---
 
+<a class="anchor" id="Copying-and-references"></a>
 ## Copying and references 
 
 In python there are immutable types (e.g. numbers) and mutable types (e.g. lists). The main thing to know is that assignment can sometimes create separate copies and sometimes create references (as in C++). In general, the more complicated types are assigned via references. For example:
@@ -393,10 +476,16 @@ foo3(a)
 print(a)
 ```
 
+> Note that we have defined some functions here - and the syntax
+> should be relatively intuitive.  See <a href="#functions">below</a>
+> for a bit more detail on function definitions.
+
 ---
 
+<a class="anchor" id="Control-flow"></a>
 ## Control flow
 
+<a class="anchor" id="Boolean-operators"></a>
 ### Boolean operators
 
 There is a boolean type in python that can be `True` or `False` (note the capitals). Other values can also be used for True or False (e.g., 1 for True; 0 or None or [] or {} or "") although they are not considered 'equal' in the sense that the operator `==` would consider them the same.
@@ -420,7 +509,7 @@ print('of' in 'a number of words')
 print(3 in [1, 2, 3, 4])
 ```
 
-
+<a class="anchor" id="If-statements"></a>
 ### If statements
 
 The basic syntax of `if` statements is fairly standard, though don't forget that you _*must*_ indent the statements within the conditional/loop block as this is the way of delineating blocks of code in python.  For example:
@@ -446,6 +535,7 @@ This can be useful for functions where a variety of possible input types are bei
 
 ---
 
+<a class="anchor" id="For-loops"></a>
 ### For loops
 
 The `for` loop works like in bash:
@@ -480,6 +570,7 @@ for x, y in zip(alist, blist):
 
 This type of loop can be used with any two lists (or similar) to iterate over them jointly.
 
+<a class="anchor" id="While-loops"></a>
 ### While loops
 
 The syntax for this is pretty standard:
@@ -499,10 +590,12 @@ You can also use `continue` as in other languages.
 
 ---
 
+<a class="anchor" id="quick-intro"></a>
 ### A quick intro to conditional expressions and list comprehensions
 
 These are more advanced bits of python but are really useful and common, so worth having a little familiarity with at this stage.
 
+<a class="anchor" id="Conditional-expressions"></a>
 #### Conditional expressions
 
 A general expression that can be used in python is: A `if` condition `else` B
@@ -515,7 +608,7 @@ y = x**2 if x<0.5 else (1 - x)**2
 print(x, y)
 ```
 
-
+<a class="anchor" id="List-comprehensions"></a>
 #### List comprehensions
 
 This is a shorthand syntax for building a list like a for loop but doing it in one line, and is very popular in python.  It is quite similar to mathematical set notation.  For example:
@@ -529,6 +622,83 @@ print(v2)
 You'll find that python programmers use this kind of construction _*a lot*_.
 
 
+---
 
+<a class="anchor" id="functions"></a>
+## Functions
+
+You will find functions pretty familiar in python to start with,
+although they have a few options which are really handy and different
+from C++ or matlab (to be covered in a later practical).  To start
+with we'll look at a simple function but note a few key points:
+ * you _must_ indent everything inside the function (it is a code
+   block and indentation is the only way of determining this - just
+   like for the guts of a loop)
+ * you can return _whatever you want_ from a python function, but only
+ a single object - it is usual to package up multiple things in a
+ tuple or list, which is easily unpacked by the calling invocation:
+ e.g., `a, b, c = myfunc(x)`
+ * parameters are passed by reference (see section on <a
+    href="#Copying-and-references">copying and references</a>)
+
+```
+def myfunc(x, y, z=0):
+    r2 = x*x + y*y + z*z
+    r = r2**0.5
+    return (r,  r2)
+
+rad = myfunc(10, 20)
+print(rad)
+rad, dummy = myfunc(10, 20, 30)
+print(rad)
+rad, _ = myfunc(10,20,30)
+print(rad)
+```
+
+> Note that the `_` is used as shorthand here for a dummy variable
+> that you want to throw away.
+
+One nice feature of python functions is that you can name the
+arguments when you call them, rather than only doing it by position.
+For example:
+```
+def myfunc(x, y, z=0, flag=''):
+   if flag=='L1':
+       r = abs(x) + abs(y) + abs(z)
+   else:
+       r = (x*x + y*y + z*z)**0.5
+   return r
+
+rA = myfunc(10, 20)
+rB = myfunc(10, 20, flag='L1')
+rC = myfunc(10, 20, flag='L1', z=30)
+print(rA, rB, rC)
+```
+
+You will often see python functions called with these named arguments.
+
+---
+
+<a class="anchor" id="exercise"></a>
+## Exercises
+
+Let's say you are given a single string with comma separated elements
+that represent filenames and ID codes: e.g., `/vols/Data/pytreat/AAC, 165873, /vols/Data/pytreat/AAG, 170285, ...`
+
+Write some code to do the following: 
+ * separate out the filenames and ID codes into separate lists (ID's
+ should be numerical values, not strings)
+ * loop over the two and generate a _string_ that could be used to
+   rename the directories (e.g., `mv /vols/Data/pytreat/AAC /vols/Data/pytreat/S165873`) - we will cover how to actually execute these in a later practical
+ * convert your dual lists into a dictionary, with ID as the key
+ * write a small function to determine if an ID is present in this
+ set of not, and also return the filename if it is
+ * write a for loop to create a list of all the odd-numbered IDs (you can use the `%` operator for modulus - i.e., `5 % 2` is 1)
+ * re-write the for loop as a list comprehension
+ * now generate a list of the filenames corresponding to these odd-numbered IDs
+
+```
+mstr = '/vols/Data/pytreat/AAC, 165873,  /vols/Data/pytreat/AAG,   170285, /vols/Data/pytreat/AAH, 196792, /vols/Data/pytreat/AAK, 212577, /vols/Data/pytreat/AAQ, 385376, /vols/Data/pytreat/AB, 444600, /vols/Data/pytreat/AC6, 454578, /vols/Data/pytreat/V8, 501502,   /vols/Data/pytreat/2YK, 667688, /vols/Data/pytreat/C3PO, 821971'
+```
 
 
