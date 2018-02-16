@@ -2,7 +2,10 @@
 
 
 This repository contains Jupyter notebooks and data for the 2018 WIN PyTreat.
-It contains two sets of practicals:
+It contains the following:
+
+- The `talks` directory contains some (but not all) of the _Topyc_ talks that
+  will be given throughout the week.
 
 - The `getting_started` directory contains a series of practicals intended
   for those of you who are new to the Python programming language, or need
@@ -14,7 +17,7 @@ It contains two sets of practicals:
   about the language.
 
 
-These practicals have been written under the assumption that FSL 5.0.10 is
+The practicals have been written under the assumption that FSL 5.0.10 is
 installed.
 
 
@@ -52,6 +55,21 @@ git clone git@git.fmrib.ox.ac.uk:fsl/pytreat-2018-practicals.git
 cd pytreat-2018-practicals
 fsljupyter notebook
 ```
+
+
+Throughout the week we might make changes to this repository. When this
+happens, we will ask you to update your local clone of the repository with the
+following command:
+
+
+```
+git reset --hard HEAD
+git pull origin master
+```
+
+
+> Note that this will overwrite any changes that you have made to the
+> files in your repository!
 
 
 Have fun!
