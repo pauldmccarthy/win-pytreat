@@ -1,7 +1,7 @@
 # Main scientific python libraries
 See https://scipy.org/
 
-Most of these packages have or are in thr progress of dropping support for python2.
+Most of these packages have or are in the progress of dropping support for python2.
 So use python3!
 
 ## [Numpy](http://www.numpy.org/): arrays
