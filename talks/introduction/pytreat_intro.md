@@ -468,7 +468,7 @@ Working with git and gitlab generally involves these steps:
 1. Add new files to your local repository, or make changes to existing files.
 2. Run `git add` on the new/changed files to _stage_ them.
 3. Run `git commit` to commit all staged changes to your local repository.
-4. Run `git push` to push those changes to your gitlab repository.
+4. Run `git push` to push those commits to your gitlab repository.
 
 
 When you start working on a new project (or if you have an existing project
