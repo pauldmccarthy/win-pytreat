@@ -124,7 +124,9 @@ print(sys.argv[0])
 ```
 
 For more sophisticated argument parsing you can use `argparse` -  good documentation and examples of this can be found on the web.
+
 > argparse can automatically produce help text for the user, validate input etc., so it is strongly recommended.
+
 ---
 
 <a class="anchor" id="example-script"></a>
