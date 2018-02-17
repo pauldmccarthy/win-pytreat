@@ -93,7 +93,7 @@ fsldirpath = os.getenv('FSLDIR')
 commands = commands.format(t1 = 't1.nii.gz', t1_mask = 't1_mask', t2 = 't2', t2_masked = 't2_masked', fsldir = fsldirpath)
 
 sout=[]
-for cmd in commands.split('\n'):
+for cmd in commands.splitlines():
     if cmd:   # avoids empty strings getting passed to sp.run()
         print('Running command: ', cmd)
         spobj = sp.run(shlex.split(cmd), stdout = sp.PIPE)
