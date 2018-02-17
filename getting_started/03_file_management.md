@@ -53,6 +53,8 @@ other sections as a reference. You might miss out on some neat tricks though.
  * [Re-name subject directories](#re-name-subject-directories)
  * [Re-organise a data set](#re-organise-a-data-set)
  * [Solutions](#solutions)
+* [Appendix: Exceptions](#appendix-exceptions)
+
 
 
 <a class="anchor" id="managing-files-and-directories"></a>
@@ -799,3 +801,272 @@ def print_solution(extitle):
         formatter.get_style_defs('.highlight'),
         highlight(code, PythonLexer(), formatter)))
 ```
+
+
+<a class="anchor" id="appendix-exceptions"></a>
+## Appendix: Exceptions
+
+
+At some point in your life, a piece of code that you write is inevitably going
+to fail, and you are going to have to deal with it. This is particularly
+relevant to file management tasks - many of the functions that have been
+introduced in this practical can fail for all kinds of reasons, such as
+incorrect permissions or ownership, lack of disk space, or a network file
+system going down.
+
+
+Any statement in Python can potentially result in an error. When a line of
+code triggers an error, we say that it _raises_ the error (a.k.a. _throws_ in
+other languages). When an error occurs, an `Exception` object is raised,
+causing execution to stop at the line that caused the error:
+
+
+```
+a = [1, 2, 3]
+a.remove(4)
+```
+
+
+The word `Exception` is used instead of `Error` because not all exceptions are
+errors. For example, when you type CTRL+C into a running Python program, a
+`KeyboardInterrupt` exception will be raised.
+
+
+> There are many different types of exceptions in Python - a list of all the
+> built-in ones can be found
+> [here](https://docs.python.org/3.5/library/exceptions.html). It is also easy
+> to define your own exceptions by creating a sub-class of `Exception` (beyond
+> the scope of this practical).
+
+
+Fortunately Python gives us the capability to _catch_ exceptions when they are
+raised, using the `try` and `except` keywords. As an example, let's say that
+the user asked our program to create a directory somewhere on the file system.
+A real program would need to handle situations in which that directory cannot
+be created - we might do it like this in Python:
+
+
+```
+import os
+
+dirpath = '/sbin/foo'
+
+try:
+    os.mkdir(dirpath)
+
+except OSError as e:
+    print('Could not create {}! Reason: {}'.format(dirpath, e))
+```
+
+
+In this example, we have put the `os.mkdir` call inside a `try:` block. Now,
+if it raises an `Exception` of type `OSError`, that `OSError` will be _caught_
+and passed to the `except:` block. A `try` block must always followed by an
+`except` block (and/or a `finally` block - keep reading).
+
+
+The `except OSError as e:` line means: _if any code in the `try` block raises
+an `Exception` of type `OSError`, then catch it, assign it to a variable
+called `e`, and pass it to the code inside the `except` block._
+
+
+### Catching different types of exceptions
+
+
+It is common for a piece of code to have the potential to raise different
+types of exceptions. Python allows you to have multiple `except` blocks
+associated with a single `try` block, so you can handle different types of
+exceptions in different ways. For example, you might want to print a useful
+error message so the user knows what has gone wrong:
+
+
+```
+numerator   = '123'
+denominator = 0
+
+try:
+    numerator = float(numerator)
+    print(numerator / denominator)
+
+except TypeError as e:
+    print('Numerator and/or denominator are of the wrong type!')
+    print('  ', e)
+
+except ValueError as e:
+    print('Numerator is not a float!')
+    print('  ', e)
+
+# Note that specifying a variable to refer
+# to the Exception object is optional.
+except ZeroDivisionError:
+    print('Denominator is zero!')
+```
+
+
+Experiment with the above code block - try out different values for the
+`numerator` and `denominator`, and see what happens.
+
+
+You can also specify different types of exceptions in a single `except`
+statement:
+
+
+```
+numerator   = '123'
+denominator = 0
+try:
+    numerator = float(numerator)
+    print(numerator / denominator)
+
+except (TypeError, ZeroDivisionError) as e:
+    print('Numerator and/or denominator are of the '
+          'wrong type, or the denominator is zero!')
+    print('  ', e)
+```
+
+
+### The catch-all approach
+
+
+Instead of specifying all of the different types of exceptions that could
+occur, it is possible to simply use a single `except` block to catch all
+exceptions of type `Exception`:
+
+
+```
+numerator   = 'abc'
+denominator = 1
+
+try:
+    numerator = float(numerator)
+    print(numerator / denominator)
+
+except Exception as e:
+    print('Something is wrong with numerator or denominator!')
+    print('  ', e)
+
+```
+
+
+It is generally better practice to be as specific as possible when you are
+catching exceptions, but sometimes all you care about is whether your code
+worked or didn't, and in this case the you can simply use this catch-all
+approach.
+
+
+__Warning:__ Even though it is possible to, you should __never__ write a
+`try`-`except` block like this:
+
+
+```
+try:
+    # do stuff
+    pass
+
+except:
+    # handle exceptions
+    pass
+```
+
+
+You don't actually have to specify any exception type in an `except`
+statement.  But you should never do this!  As we have already mentioned, not
+all exceptions are errors. The above code will catch _all_ exceptions, even
+those which do not inherit from the standard `Exception` class. This includes
+important exceptions such as `KeyboardInterrupt` and `SystemExit`, which
+control important aspects of your program's behaviour.
+
+
+So you should always, at the very least, specify the `Exception` type:
+
+
+```
+try:
+    # do stuff
+    pass
+
+except Exception:
+    # handle exceptions
+    pass
+```
+
+
+### The `finally` keyword
+
+
+Sometimes, when you are performing a task, you might have some clean-up logic
+that must be executed regardless of whether the task succeeded or failed. The
+canonical example here is that if you open a file, you must make sure that to
+close it when you are finished, otherwise its contents may be corrupted.
+
+
+```
+f = open('raw_mri_data/subj_1/t1.nii', 'rb')
+try:
+    f.write('ho hum')
+
+except IOError as e:
+    print('Error occurred!: ', e)
+finally:
+    print('Closing file')
+    f.close()
+```
+
+
+It is possible to use `try` and `finally` without an `except` block. This is
+useful if you have some code that needs some clean-up logic, but you don't
+actually want to catch the exception - sometimes it is better for a program
+to crash, rather than for errors to be silently suppressed, because it can
+be easier to figure out what went wrong:
+
+
+```
+f = open('raw_mri_data/subj_1/t1.nii', 'rb')
+
+try:
+    f.write('ho hum')
+
+finally:
+    print('Closing file')
+    f.close()
+```
+
+
+> The above was just an example - it is generally better practice to use the
+> `with` statement when opening files.
+
+
+You can read more about handling exceptions in Python
+[here](https://docs.python.org/3.5/tutorial/errors.html).
+
+
+### Raising exceptions
+
+
+It is possible to generate your own exception at any point by using the
+`raise` keyword, and passing it an `Exception` object:
+
+
+```
+raise Exception('Kaboom!')
+```
+
+
+This can be useful if your code detects that something has gone wrong, and
+needs to abort.
+
+
+You can also raise an existing `Exception` from within an `except` block:
+
+
+```
+try:
+    print(1 / 0)
+
+except Exception:
+    print('Some error occurred!')
+    raise
+```
+
+This can be useful if you want to print a message when an exception occurs,
+but also allow the execption to be propagated upwards.
