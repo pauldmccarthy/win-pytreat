@@ -38,9 +38,11 @@ The most essential call that you need to use to replicate the way a bash script 
 
 ```
 import subprocess as sp
+import shlex
 sp.run(['ls', '-la'])
 ```
-
+> Passing the arguments as a list is good practice and improves the safety of
+> the call.
 
 To suppress the output do this:
 
@@ -51,12 +53,21 @@ spobj = sp.run(['ls'], stdout = sp.PIPE)
 To store the output do this:
 
 ```
-spobj = sp.run('ls -la'.split(), stdout = sp.PIPE)
+spobj = sp.run(shlex.split('ls -la'), stdout = sp.PIPE)
 sout = spobj.stdout.decode('utf-8')
 print(sout)
 ```
 
-> Note that the `decode` call in the middle line converts the string from a byte string to a normal string. In Python 3 there is a distinction between strings (sequences of characters, possibly using multiple bytes to store each character) and bytes (sequences of bytes). The world has moved on from ASCII, so in this day and age, this distinction is absolutely necessary, and Python does a fairly good job of it.
+> shlex.split and shlex.quote are functions designed to break up and quote
+> (respectively) shell command lines and arguments. Quoting of user provided
+> arguments helps to prevent unintended consequences from inappropriate inputs.
+>
+> Note that the `decode` call in the middle line converts the string from a byte
+> string to a normal string. In Python 3 there is a distinction between strings 
+> (sequences of characters, possibly using multiple bytes to store each 
+> character) and bytes (sequences of bytes). The world has moved on from ASCII, 
+> so in this day and age, this distinction is absolutely necessary, and Python 
+> does a fairly good job of it.
 
 If the output is numerical then this can be extracted like this:
 ```
@@ -70,10 +81,9 @@ vol_mm = float(results[1])
 print('Volumes are: ', vol_vox, ' in voxels and ', vol_mm, ' in mm')
 ```
 
-
-
 An alternative way to run a set of commands would be like this:
 ```
+import shlex
 commands = """
 {fsldir}/bin/fslmaths {t1} -bin {t1_mask}
 {fsldir}/bin/fslmaths {t2} -mas {t1_mask} {t2_masked}
@@ -86,10 +96,22 @@ sout=[]
 for cmd in commands.split('\n'):
     if cmd:   # avoids empty strings getting passed to sp.run()
         print('Running command: ', cmd)
-        spobj = sp.run(cmd.split(), stdout = sp.PIPE)
+        spobj = sp.run(shlex.split(cmd), stdout = sp.PIPE)
         sout.append(spobj.stdout.decode('utf-8'))
 ```
 
+> Don't be tempted to use the shell=True argument to subprocess.run, especially 
+> if you are dealing with user input - if the user gave
+> *myfile; rm -f ~*
+> as a file name and you called the command with shell=True **and** you
+> passed the command in as a string then bad things happen!
+>
+> The safe way to use these kinds of inputs is to pass them through shlex.quote()
+> before sending.
+>
+> ```a = shlex.quote('myfile; rm -f ~')
+> cmd = "ls {}".format(a)
+> sp.run(shlex.split(cmd))```
 
 <a class="anchor" id="command-line-arguments"></a>
 ## Command line arguments
