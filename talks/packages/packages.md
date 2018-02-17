@@ -33,8 +33,8 @@ The main strength in scipy lies in its sub-packages:
 ```
 from scipy import optimize
 def costfunc(params):
-    return params[0] ** 2 * (params[1] - 3) ** 2 + (params[0] - 2) ** 2
-optimize.minimize(costfunc, x0=[0, 0], method='l-bfgs-b')
+    return (params[0] - 3) ** 2
+optimize.minimize(costfunc, x0=[0], method='l-bfgs-b')
 ```
 
 Tutorials for all sub-packages can be found [here](https://docs.scipy.org/doc/scipy-1.0.0/reference/).
@@ -69,6 +69,40 @@ Alternatives:
 - [Bokeh](https://bokeh.pydata.org/en/latest/) among many others: interactive plots in the browser (i.e., in javascript)
 
 ## [Ipython](http://ipython.org/)/[Jupyter](https://jupyter.org/) notebook: interactive python environments
+Supports:
+- setting up matplotlib
+```
+%matplotlib nbagg
+```
+- run code in multiple languages
+```
+%%bash
+for name in python ruby ; do
+    echo $name
+done
+```
+
+- debugging
+```
+from scipy import optimize
+def costfunc(params):
+    return 1 / params[0] ** 2
+optimize.minimize(costfunc, x0=[0], method='l-bfgs-b')
+```
+```
+%debug
+```
+
+- timing/profiling
+```
+%%prun
+plt.plot([0, 3])
+```
+
+- [and much more...](https://ipython.readthedocs.io/en/stable/interactive/magics.html)
+
+The next generation is already out: [jupyterlab](https://jupyterlab.readthedocs.io/en/latest/)
+
 There are many [useful extensions available](https://github.com/ipython-contrib/jupyter_contrib_nbextensions).
 
 ## [Pandas](https://pandas.pydata.org/): Analyzing "clean" data
@@ -78,11 +112,11 @@ Pandas has excellent support for:
 - fast IO to many tabular formats
 - accurate handling of missing data
 - Many, many routines to handle data
-  - group by categorical data (i.e., male/female, or age groups)
-  - joining/merging data
+  - group by categorical data (e.g., male/female)
+  - joining/merging data (all SQL-like operations and much more)
   - time series support
 - statistical models through [statsmodels](http://www.statsmodels.org/stable/index.html)
-- plotting though seaborn [seaborn](https://seaborn.pydata.org/)
+- plotting though [seaborn](https://seaborn.pydata.org/)
 - Use [dask](https://dask.pydata.org/en/latest/) if your data is too big for memory (or if you want to run in parallel)
 
 You should also install `numexpr` and `bottleneck` for optimal performance.
@@ -341,7 +375,6 @@ The [nipy](http://nipy.org/) ecosystem covers most of these.
 - [wxpython](https://www.wxpython.org/): Wrapper around the C++ wxWidgets library
 ```
 %%writefile wx_hello_world.py
-#!/usr/bin/env python
 """
 Hello World, but with more meat.
 """
@@ -443,7 +476,7 @@ if __name__ == '__main__':
 ```
 
 ```
-%run wx_hello_world.py
+!python.app wx_hello_world.py
 ```
 
 ## Machine learning
@@ -572,7 +605,29 @@ Linters check the code for any syntax errors, [style errors](https://www.python.
 - [pylint](https://pypi.python.org/pypi/pylint): most extensive linter
 - [pyflake](https://pypi.python.org/pypi/pyflakes): if you think pylint is too strict
 - [pep8](https://pypi.python.org/pypi/pep8): just checks for style errors
-- [mypy](http://mypy-lang.org/): adding explicit typing to python
+### Static typing
+Optional static typing:
+- Document how your method/function should be called
+  - Static checking of whether your type hints are still up to date
+  - Static checking of whether you call your own function correctly
+- Even if you don't assign types yourself, static type checking can still check whether you call typed functions/methods from other packages correctly.
+
+```
+from typing import List
+
+def greet_all(names: List[str]) -> None:
+    for name in names:
+        print('Hello, {}'.format(name))
+
+greet_all(['python', 'ruby'])  # type checker will be fine with this
+
+greet_all('some name')  # this will actually run fine, but type checker will raise an error
+```
+
+Packages to use this:
+- [typing](https://docs.python.org/3/library/typing.html): built-in library containing generics, unions, etc.
+- [mypy](http://mypy-lang.org/): linter doing static type checking
+- [pyAnnotate](https://github.com/dropbox/pyannotate): automatically assign types to most of your functions/methods based on runtime
 
 ## Web frameworks
 - [Django2](https://www.djangoproject.com/): includes the most features, but also forces you to do things their way
@@ -588,8 +643,6 @@ There are also many, many libraries to interact with databases, but you will hav
 - [Buit-in libraries](https://docs.python.org/3/py-modindex.html)
     - [collections](https://docs.python.org/3.6/library/collections.html): deque, OrderedDict, namedtuple, and more
     - [datetime](https://docs.python.org/3/library/datetime.html): Basic date and time types
-    - [enum](https://docs.python.org/3/library/enum.html): Enumerators
-    - [fractions](https://docs.python.org/3/library/fractions.html): rational numbers
     - [functools](https://docs.python.org/3/library/functools.html): caching, decorators, and support for functional programming
     - [json](https://docs.python.org/3/library/json.html)/[ipaddress](https://docs.python.org/3/library/ipaddress.html)/[xml](https://docs.python.org/3/library/xml.html#module-xml): parsing/writing
     - [itertools](https://docs.python.org/3/library/itertools.html): more tools to loop over sequences
@@ -601,5 +654,5 @@ There are also many, many libraries to interact with databases, but you will hav
     - [shutil](https://docs.python.org/3/library/shutil.html): copy/move files
     - [subprocess](https://docs.python.org/3/library/subprocess.html): call shell commands
     - [time](https://docs.python.org/3/library/time.html)/[timeit](https://docs.python.org/3/library/timeit.html): keeping track of it
-    - [turtule](https://docs.python.org/3/library/turtle.html#module-turtle): teach python to your kids!
+    - [turtle](https://docs.python.org/3/library/turtle.html#module-turtle): teach python to your kids!
     - [warnings](https://docs.python.org/3/library/warnings.html#module-warnings): tell people they are not using your code properly
