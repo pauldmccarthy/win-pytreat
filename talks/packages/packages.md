@@ -70,10 +70,6 @@ Alternatives:
 
 ## [Ipython](http://ipython.org/)/[Jupyter](https://jupyter.org/) notebook: interactive python environments
 Supports:
-- setting up matplotlib
-```
-%matplotlib nbagg
-```
 - run code in multiple languages
 ```
 %%bash
@@ -97,6 +93,11 @@ optimize.minimize(costfunc, x0=[0], method='l-bfgs-b')
 ```
 %%prun
 plt.plot([0, 3])
+```
+
+- getting help
+```
+plt.plot?
 ```
 
 - [and much more...](https://ipython.readthedocs.io/en/stable/interactive/magics.html)
@@ -225,7 +226,7 @@ if __name__ == '__main__':
 ```
 
 ```
-%run test_argparse.py 3 8.5 -q
+%run test_argparse.py 3 8.5
 ```
 
 Alternatives:
@@ -283,7 +284,7 @@ if __name__ == '__main__':
 ```
 
 ```
-%run test_gooey.py
+!python.app test_gooey.py
 ```
 
 ```
@@ -327,6 +328,10 @@ This can for example be used to produce static HTML output in a highly flexible 
 ```
 
 ```
+import numpy as np
+import matplotlib.pyplot as plt
+plt.ioff()
+
 def plot_sine(amplitude, frequency):
     x = np.linspace(0, 2 * np.pi, 100)
     y = amplitude * np.sin(frequency * x)
@@ -342,6 +347,7 @@ def plot_sine(amplitude, frequency):
 !mkdir plots
 amplitudes = [plot_sine(A, 1.) for A in [0.1, 0.3, 0.7, 1.0]]
 frequencies = [plot_sine(1., F) for F in [1, 2, 3, 4, 5, 6]]
+plt.ion()
 ```
 
 ```
@@ -484,6 +490,71 @@ if __name__ == '__main__':
 - theano/tensorflow/pytorch
   - keras
 
+## [pymc3](http://docs.pymc.io/): Pobabilstic programming
+```
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Initialize random number generator
+np.random.seed(123)
+
+# True parameter values
+alpha, sigma = 1, 1
+beta = [1, 2.5]
+
+# Size of dataset
+size = 100
+
+# Predictor variable
+X1 = np.random.randn(size)
+X2 = np.random.randn(size) * 0.2
+
+# Simulate outcome variable
+Y = alpha + beta[0]*X1 + beta[1]*X2 + np.random.randn(size)*sigma
+```
+
+```
+import pymc3 as pm
+basic_model = pm.Model()
+
+with basic_model:
+
+    # Priors for unknown model parameters
+    alpha = pm.Normal('alpha', mu=0, sd=10)
+    beta = pm.Normal('beta', mu=0, sd=10, shape=2)
+    sigma = pm.HalfNormal('sigma', sd=1)
+
+    # Expected value of outcome
+    mu = alpha + beta[0]*X1 + beta[1]*X2
+
+    # Likelihood (sampling distribution) of observations
+    Y_obs = pm.Normal('Y_obs', mu=mu, sd=sigma, observed=Y)
+```
+
+```
+with basic_model:
+
+    # obtain starting values via MAP
+    start = pm.find_MAP(fmin=optimize.fmin_powell)
+
+    # instantiate sampler
+    step = pm.Slice()
+
+    # draw 5000 posterior samples
+    trace = pm.sample(5000, step=step, start=start)
+```
+
+```
+_ = pm.traceplot(trace)
+```
+
+```
+pm.summary(trace)
+```
+
+Alternative: [pystan](https://pystan.readthedocs.io/en/latest/): wrapper around the [Stan](http://mc-stan.org/users/) probabilistic programming language.
+
+
 ## [Pycuda](https://documen.tician.de/pycuda/): Programming the GPU
 Wrapper around [Cuda](https://developer.nvidia.com/cuda-zone).
 The alternative [Pyopencl](https://documen.tician.de/pyopencl/) provides a very similar wrapper around [OpenCL](https://www.khronos.org/opencl/).
@@ -516,87 +587,87 @@ print(dest-a*b)
 Also see [pyopenGL](http://pyopengl.sourceforge.net/): graphics programming in python (used in FSLeyes)
 ## Testing
 - [unittest](https://docs.python.org/3.6/library/unittest.html): python built-in testing
-> ```
-> import unittest
->
-> class TestStringMethods(unittest.TestCase):
->
->     def test_upper(self):
->         self.assertEqual('foo'.upper(), 'FOO')
->
->     def test_isupper(self):
->         self.assertTrue('FOO'.isupper())
->         self.assertFalse('Foo'.isupper())
->
->     def test_split(self):
->         s = 'hello world'
->         self.assertEqual(s.split(), ['hello', 'world'])
->         # check that s.split fails when the separator is not a string
->         with self.assertRaises(TypeError):
->             s.split(2)
->
-> if __name__ == '__main__':
->     unittest.main()
-> ```
+```
+import unittest
+
+class TestStringMethods(unittest.TestCase):
+
+    def test_upper(self):
+        self.assertEqual('foo'.upper(), 'FOO')
+
+    def test_isupper(self):
+        self.assertTrue('FOO'.isupper())
+        self.assertFalse('Foo'.isupper())
+
+    def test_split(self):
+        s = 'hello world'
+        self.assertEqual(s.split(), ['hello', 'world'])
+        # check that s.split fails when the separator is not a string
+        with self.assertRaises(TypeError):
+            s.split(2)
+
+if __name__ == '__main__':
+    unittest.main()
+```
 - [doctest](https://docs.python.org/3.6/library/doctest.html): checks the example usage in the documentation
-> ```
-> def factorial(n):
->     """Return the factorial of n, an exact integer >= 0.
->
->     >>> [factorial(n) for n in range(6)]
->     [1, 1, 2, 6, 24, 120]
->     >>> factorial(30)
->     265252859812191058636308480000000
->     >>> factorial(-1)
->     Traceback (most recent call last):
->         ...
->     ValueError: n must be >= 0
->
->     Factorials of floats are OK, but the float must be an exact integer:
->     >>> factorial(30.1)
->     Traceback (most recent call last):
->         ...
->     ValueError: n must be exact integer
->     >>> factorial(30.0)
->     265252859812191058636308480000000
->
->     It must also not be ridiculously large:
->     >>> factorial(1e100)
->     Traceback (most recent call last):
->         ...
->     OverflowError: n too large
->     """
->
->     import math
->     if not n >= 0:
->         raise ValueError("n must be >= 0")
->     if math.floor(n) != n:
->         raise ValueError("n must be exact integer")
->     if n+1 == n:  # catch a value like 1e300
->         raise OverflowError("n too large")
->     result = 1
->     factor = 2
->     while factor <= n:
->         result *= factor
->         factor += 1
->     return result
->
->
-> if __name__ == "__main__":
->     import doctest
->     doctest.testmod()
-> ```
+```
+def factorial(n):
+    """Return the factorial of n, an exact integer >= 0.
+
+    >>> [factorial(n) for n in range(6)]
+    [1, 1, 2, 6, 24, 120]
+    >>> factorial(30)
+    265252859812191058636308480000000
+    >>> factorial(-1)
+    Traceback (most recent call last):
+        ...
+    ValueError: n must be >= 0
+
+    Factorials of floats are OK, but the float must be an exact integer:
+    >>> factorial(30.1)
+    Traceback (most recent call last):
+        ...
+    ValueError: n must be exact integer
+    >>> factorial(30.0)
+    265252859812191058636308480000000
+
+    It must also not be ridiculously large:
+    >>> factorial(1e100)
+    Traceback (most recent call last):
+        ...
+    OverflowError: n too large
+    """
+
+    import math
+    if not n >= 0:
+        raise ValueError("n must be >= 0")
+    if math.floor(n) != n:
+        raise ValueError("n must be exact integer")
+    if n+1 == n:  # catch a value like 1e300
+        raise OverflowError("n too large")
+    result = 1
+    factor = 2
+    while factor <= n:
+        result *= factor
+        factor += 1
+    return result
+
+
+if __name__ == "__main__":
+    import doctest
+    doctest.testmod()
+```
 Two external packages provide more convenient unit tests:
 - [py.test](https://docs.pytest.org/en/latest/)
 - [nose2](http://nose2.readthedocs.io/en/latest/usage.html)
-> ```
-> # content of test_sample.py
-> def inc(x):
->     return x + 1
->
-> def test_answer():
->     assert inc(3) == 5
-> ```
+```
+# content of test_sample.py
+def inc(x):
+    return x + 1
+
+def test_answer():
+    assert inc(3) == 5
+```
 
 - [coverage](https://coverage.readthedocs.io/en/coverage-4.5.1/): measures which part of the code is covered by the tests
 
@@ -605,8 +676,7 @@ Linters check the code for any syntax errors, [style errors](https://www.python.
 - [pylint](https://pypi.python.org/pypi/pylint): most extensive linter
 - [pyflake](https://pypi.python.org/pypi/pyflakes): if you think pylint is too strict
 - [pep8](https://pypi.python.org/pypi/pep8): just checks for style errors
-### Static typing
-Optional static typing:
+### Optional static typing
 - Document how your method/function should be called
   - Static checking of whether your type hints are still up to date
   - Static checking of whether you call your own function correctly
@@ -619,12 +689,12 @@ def greet_all(names: List[str]) -> None:
     for name in names:
         print('Hello, {}'.format(name))
 
-greet_all(['python', 'ruby'])  # type checker will be fine with this
+greet_all(['python', 'java', 'C++'])  # type checker will be fine with this
 
-greet_all('some name')  # this will actually run fine, but type checker will raise an error
+greet_all('matlab')  # this will actually run fine, but type checker will raise an error
 ```
 
-Packages to use this:
+Packages:
 - [typing](https://docs.python.org/3/library/typing.html): built-in library containing generics, unions, etc.
 - [mypy](http://mypy-lang.org/): linter doing static type checking
 - [pyAnnotate](https://github.com/dropbox/pyannotate): automatically assign types to most of your functions/methods based on runtime
@@ -636,7 +706,7 @@ Packages to use this:
 
 There are also many, many libraries to interact with databases, but you will have to google those yourself.
 
-# Several honourable mentions
+# Quick mentions
 - [trimesh](https://github.com/mikedh/trimesh): Triangular mesh algorithms
 - [Pillow](https://pillow.readthedocs.io/en/latest/): Read/write/manipulate a wide variety of images (png, jpg, tiff, etc.)
 - [psychopy](http://www.psychopy.org/): equivalent of psychtoolbox (workshop coming up in April in Nottingham)
@@ -653,6 +723,24 @@ There are also many, many libraries to interact with databases, but you will hav
     - [pickle](https://docs.python.org/3/library/pickle.html): Store/load any python object
     - [shutil](https://docs.python.org/3/library/shutil.html): copy/move files
     - [subprocess](https://docs.python.org/3/library/subprocess.html): call shell commands
-    - [time](https://docs.python.org/3/library/time.html)/[timeit](https://docs.python.org/3/library/timeit.html): keeping track of it
+    - [time](https://docs.python.org/3/library/time.html)/[timeit](https://docs.python.org/3/library/timeit.html): Timing your code
     - [turtle](https://docs.python.org/3/library/turtle.html#module-turtle): teach python to your kids!
     - [warnings](https://docs.python.org/3/library/warnings.html#module-warnings): tell people they are not using your code properly
+
+```
+from turtle import *
+color('red', 'yellow')
+begin_fill()
+speed(10)
+while True:
+    forward(200)
+    left(170)
+    if abs(pos()) < 1:
+        break
+end_fill()
+done()
+```
+
+```
+import this
+```
