@@ -51,7 +51,7 @@ Python has many different types and variables are dynamic and can change types (
 * strings
 * tuples
 * lists
-* dictionary
+* dictionaries
 
 N-dimensional arrays and other types are supported through common modules (e.g., numpy, scipy, scikit-learn).  These will be covered in a subsequent exercise.
 
@@ -146,7 +146,7 @@ s = 'This is a test of a Test String'
 s1 = re.sub(r'a [Tt]est', "an example", s)
 print(s1)
 ```
-where the `r` before the quote is used to force the regular expression specification to be a `raw string`.
+where the `r` before the quote is used to force the regular expression specification to be a `raw string` (see [here](https://docs.python.org/3.5/library/re.html) for more info).
 
 For more information on matching and substitutions, look up the regular expression module on the web.
 
@@ -195,7 +195,7 @@ Both tuples and lists are builtin python types and are like vectors,
 but for numerical vectors and arrays it is much better to use _numpy_
 arrays (or matrices), which are covered in a later tutorial.
 
-A tuple is like a list or a vector, but with less flexibility than a full list, however anything can be stored in either a list or tuple, without any consistency being required.  For example:
+A tuple is like a list or a vector, but with less flexibility than a full list (tuples are immutable), however anything can be stored in either a list or tuple, without any consistency being required.  Tuples are defined using round brackets and lists are defined using square brackets. For example:
 ```
 xtuple = (3, 7.6, 'str')
 xlist = [1, 'mj', -5.4]
@@ -222,10 +222,12 @@ a +=  [80]
 print(a)
 ```
 
+> Similar things can be done for tuples, except for the last one: that is, a += (80) as a tuple is immutable so cannot be changed like this. 
+
 <a class="anchor" id="Indexing"></a>
 ### Indexing
 
-Square brackets are used to index tuples, lists, dictionaries, etc.  For example:
+Square brackets are used to index tuples, lists, strings, dictionaries, etc.  For example:
 ```
 d = [10, 20, 30]
 print(d[1])
@@ -265,7 +267,7 @@ b = [[10, 20, 30], [40, 50, 60]]
 print(b[0][1])
 print(b[1][0])
 ```
-but *not* an index like b[0, 1].
+but *not* an index like `b[0, 1]`. However, numpy arrays (covered in a later practical) can be indexed like `b[0, 1]` and similarly for higher dimensions.
 
 > Note that `len` will only give the length of the top level.
 > In general, numpy arrays should be preferred to nested lists when the contents are numerical.
@@ -299,6 +301,23 @@ b = [3, 4]
 print(a[b])
 ```
 
+In python you can leave the start and end values implicit, as it will assume these are the beginning and the end.  For example:
+```
+print(a[:3])
+print(a[1:])
+print(a[:-1])
+```
+in the last example remember that negative indices are subject to wrap around so that `a[:-1]` represents all elements up to the penultimate one.
+
+You can also change the step size, which is specified by the third value (not the second one, as in MATLAB).  For example:
+```
+print(a[0:4:2])
+print(a[::2])
+print(a[::-1])
+```
+the last example is a simple way to reverse a sequence.
+
+
 <a class="anchor" id="List-operations"></a>
 ### List operations
 
@@ -313,11 +332,17 @@ There are also other operations such as:
 ```
 d.append(40)
 print(d)
+d.extend([50, 60])
+print(d)
+d = d + [70, 80]
+print(d)
 d.remove(20)
 print(d)
 d.pop(0)
 print(d)
 ```
+
+> Note that `d.append([50,60])` would run but instead of adding two extra elements it only adds a single element, where this element is a list of length two, making a messy list. Try it and see if this is not clear.
 
 <a class="anchor" id="Looping"></a>
 ### Looping over elements in a list (or tuple)
@@ -328,7 +353,7 @@ for x in d:
     print(x)
 ```
 
-> Note that the indentation within the loop is _*crucial*_.  All python control blocks are delineated purely by indentation.
+> Note that the indentation within the loop is _*crucial*_.  All python control blocks are delineated purely by indentation. We recommend using **four spaces** and no tabs, as this is a standard practice and will help a lot when collaborating with others.
 
 <a class="anchor" id="Getting-help"></a>
 ### Getting help
@@ -347,7 +372,7 @@ dir(d)
 ```
 
 
-> Note that google is often more helpful!
+> Note that google is often more helpful!  At least, as long as you find pages relating to the right version of python - we use python 3 for FSL, so check that what you find is appropriate for that.
 
 ---
 
@@ -365,7 +390,7 @@ print(e['a'])
 
 The keys and values can take on almost any type, even dictionaries!
 Python is nothing if not flexible.  However, each key must be unique
-and the dictionary must be "hashable".
+and [hashable](https://docs.python.org/3.5/glossary.html#term-hashable).
 
 <a class="anchor" id="Adding-to-a-dictionary"></a>
 ### Adding to a dictionary
@@ -394,7 +419,7 @@ Several variables can jointly work as loop variables in python, which is very co
 ```
 e = {'a' : 10, 'b': 20, 'c':555}
 for k, v in e.items():
-   print((k, v))
+    print((k, v))
 ```
 
 The print statement here constructs a tuple, which is often used in python.
@@ -407,7 +432,7 @@ for k in e:
 
 > Note that in both cases the order is arbitrary. The `sorted` function can be used if you want keys in a sorted order; e.g. `for k in sorted(e):` ...
 >
-> There are also other options if you want a dictionary with ordering.
+> There are also [other options](https://docs.python.org/3.5/library/collections.html#collections.OrderedDict) if you want a dictionary with ordering.
 
 ---
 
@@ -446,7 +471,7 @@ a[0] = 8888
 print(b)
 ```
 
-There is a constructor for each type and this con be useful for converting between types:
+There is a constructor for each type and this can be useful for converting between types:
 ```
 xt = (2, 5, 7)
 xl = list(xt)
@@ -460,20 +485,24 @@ print(xl)
 
 ```
 def foo1(x):
-   x.append(10)
+    x.append(10)
+    print('x: ', x)
 def foo2(x):
-   x = x + [10]
+    x = x + [10]
+    print('x: ', x)
 def foo3(x):
-   return x + [10]
+    print('return value: ', x + [10])
+    return x + [10]
 
 a = [5]
-print(a)
+print('a: ', a)
 foo1(a)
-print(a)
+print('a: ', a)
 foo2(a)
-print(a)
-foo3(a)
-print(a)
+print('a: ', a)
+b = foo3(a)
+print('a: ', a)
+print('b: ', b)
 ```
 
 > Note that we have defined some functions here - and the syntax
@@ -509,6 +538,10 @@ print('of' in 'a number of words')
 print(3 in [1, 2, 3, 4])
 ```
 
+
+A useful keyword is `None`, which is a bit like "null". This can be a default value for a variable and should be tested with the `is` operator rather than `==` (for technical reasons that it isn't worth going into here). For example: `a is None` or `a is not None` are the preferred tests.
+
+
 <a class="anchor" id="If-statements"></a>
 ### If statements
 
@@ -518,18 +551,18 @@ import random
 a = random.uniform(-1, 1)
 print(a)
 if a>0:
-   print('Positive')
+    print('Positive')
 elif a<0:
-   print('Negative')
+    print('Negative')
 else:
-   print('Zero')
+    print('Zero')
 ```
 
 Or more generally:
 ```
 a = []    # just one of many examples
 if not a:
-   print('Variable is true, or at least not empty')
+    print('Variable is true, or at least not empty')
 ```
 This can be useful for functions where a variety of possible input types are being dealt with. 
 
@@ -541,7 +574,7 @@ This can be useful for functions where a variety of possible input types are bei
 The `for` loop works like in bash:
 ```
 for x in [2, 'is', 'more', 'than', 1]:
-   print(x)
+    print(x)
 ```
 where a list or any other sequence (e.g. tuple) can be used.
 
@@ -565,7 +598,7 @@ alist = ['Some', 'set', 'of', 'items']
 blist = list(range(len(alist)))
 print(list(zip(alist, blist)))
 for x, y in zip(alist, blist):
-   print(y, x)
+    print(y, x)
 ```
 
 This type of loop can be used with any two lists (or similar) to iterate over them jointly.
@@ -579,14 +612,16 @@ import random
 n = 0
 x = 0
 while n<100:
-   x += random.uniform(0, 1)**2   # where ** is a power operation
-   if x>50:
-      break
-   n += 1
+    x += random.uniform(0, 1)**2   # where ** is a power operation
+    if x>50:
+        break
+    n += 1
 print(x)
 ```
 
 You can also use `continue` as in other languages.
+
+> Note that there is no `do ... while` construct.
 
 ---
 
@@ -645,7 +680,7 @@ with we'll look at a simple function but note a few key points:
 def myfunc(x, y, z=0):
     r2 = x*x + y*y + z*z
     r = r2**0.5
-    return (r,  r2)
+    return r,  r2
 
 rad = myfunc(10, 20)
 print(rad)
@@ -657,17 +692,19 @@ print(rad)
 
 > Note that the `_` is used as shorthand here for a dummy variable
 > that you want to throw away.
+>
+> The return statement implicitly creates a tuple to return and is equivalent to `return (r, r2)`
 
 One nice feature of python functions is that you can name the
 arguments when you call them, rather than only doing it by position.
 For example:
 ```
 def myfunc(x, y, z=0, flag=''):
-   if flag=='L1':
-       r = abs(x) + abs(y) + abs(z)
-   else:
-       r = (x*x + y*y + z*z)**0.5
-   return r
+    if flag=='L1':
+        r = abs(x) + abs(y) + abs(z)
+    else:
+        r = (x*x + y*y + z*z)**0.5
+    return r
 
 rA = myfunc(10, 20)
 rB = myfunc(10, 20, flag='L1')
@@ -675,7 +712,7 @@ rC = myfunc(10, 20, flag='L1', z=30)
 print(rA, rB, rC)
 ```
 
-You will often see python functions called with these named arguments.
+You will often see python functions called with these named arguments. In fact, for functions with more than 2 or 3 variables this naming of arguments is recommended, because it clarifies what each of the arguments does for anyone reading the code.
 
 ---
 
@@ -687,7 +724,7 @@ that represent filenames and ID codes: e.g., `/vols/Data/pytreat/AAC, 165873, /v
 
 Write some code to do the following: 
  * separate out the filenames and ID codes into separate lists (ID's
- should be numerical values, not strings)
+ should be numerical values, not strings) - you may need several steps for this
  * loop over the two and generate a _string_ that could be used to
    rename the directories (e.g., `mv /vols/Data/pytreat/AAC /vols/Data/pytreat/S165873`) - we will cover how to actually execute these in a later practical
  * convert your dual lists into a dictionary, with ID as the key
@@ -699,6 +736,7 @@ Write some code to do the following:
 
 ```
 mstr = '/vols/Data/pytreat/AAC, 165873,  /vols/Data/pytreat/AAG,   170285, /vols/Data/pytreat/AAH, 196792, /vols/Data/pytreat/AAK, 212577, /vols/Data/pytreat/AAQ, 385376, /vols/Data/pytreat/AB, 444600, /vols/Data/pytreat/AC6, 454578, /vols/Data/pytreat/V8, 501502,   /vols/Data/pytreat/2YK, 667688, /vols/Data/pytreat/C3PO, 821971'
+
 ```
 
 

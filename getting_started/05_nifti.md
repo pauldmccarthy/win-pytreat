@@ -117,7 +117,7 @@ If the voxel size of the image is different, then extra modifications will be re
 <a class="anchor" id="exercise"></a>
 ## Exercise
 
-Write some code to read in a 4D fMRI image (you can find one [here] if
+Write some code to read in a 4D fMRI image (you can find one [here](http://www.fmrib.ox.ac.uk/~mark/files/av.nii.gz) if
 you don't have one handy), calculate the tSNR and then save the 3D result.
 
 ```
