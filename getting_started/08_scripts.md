@@ -64,8 +64,9 @@ import os
 fsldir = os.getenv('FSLDIR')
 spobj = sp.run([fsldir+'/bin/fslstats', fsldir+'/data/standard/MNI152_T1_1mm_brain', '-V'], stdout = sp.PIPE)
 sout = spobj.stdout.decode('utf-8')
-vol_vox = float(sout.split()[0])
-vol_mm = float(sout.split()[1])
+results = sout.split()
+vol_vox = float(results[0])
+vol_mm = float(results[1])
 print('Volumes are: ', vol_vox, ' in voxels and ', vol_mm, ' in mm')
 ```
 
@@ -144,8 +145,9 @@ spobj = sp.run([fsldir+'/bin/fslmaths', infile, '-mas', fsldir+'/data/standard/M
 # calculate volumes of masked image  
 spobj = sp.run([fsldir+'/bin/fslstats', outfile, '-V'], stdout = sp.PIPE)
 sout = spobj.stdout.decode('utf-8')
-vol_vox = float(sout.split()[0])
-vol_mm = float(sout.split()[1])
+results = sout.split()
+vol_vox = float(results[0])
+vol_mm = float(results[1])
 print('Volumes are: ', vol_vox, ' in voxels and ', vol_mm, ' in mm')
 ```
 
