@@ -4,13 +4,15 @@
 Program: https://docs.google.com/document/d/10CwLEhUi-YiwfC2F40QCVm6eEVwKiaXkfTKz67xWAfM/edit?usp=sharing
 
 
-__Get your laptop ready!__
+__We need to do some setting up, so get your laptop ready!__
 
 __Make sure you have FSL 5.0.10 installed and working!__
 
+__End all sentences with an exclamation mark!__
+
 __Open this page in your web browser!__
 
-https://git.fmrib.ox.ac.uk/fsl/pytreat-2018-practicals/tree/master/talks/introduction/pytreat_intro.ipynb
+https://git.fmrib.ox.ac.uk/fsl/pytreat-2018-practicals/tree/master/talks/introduction/pytreat_intro.md
 
 
 ## Overview
@@ -98,7 +100,7 @@ will work in FSL!
 ## Running Python scripts
 
 
-Here's a basic Python script:
+Here's a basic Python script - a _Hello world_ for neuroimaging:
 
 
 > ```
@@ -110,56 +112,37 @@ Here's a basic Python script:
 > # Python script, you should use this line
 > # instead: #!/usr/bin/env python
 >
->
 > # In Python, we need to "import" libraries
 > # (called modules) before we can use them.
 > import sys
 > import nibabel as nib
 >
-> # Python uses indentation instead of braces
-> # for all of its control structures - if
-> # while, and for statements, functions and
-> # classes, and so on and so forth.
-> #
-> # The standard convention for indentation
-> # is four spaces. Please don't use tab
-> # characters!
-> def main():
+> # We can get to our command
+> # line arguments via sys.argv
+> fpath = sys.argv[1]
 >
->     # We can get to our command
->     # line arguments via sys.argv
->     fpath = sys.argv[1]
+> # We can use nibabel to load
+> # NIFTI images (and other
+> # neuroimaging data formats)
+> img = nib.load(fpath)
+> data = img.get_data()
 >
->     # We can use nibabel to load
->     # NIFTI images (and other
->     # neuroimaging data formats)
->     img = nib.load(fpath)
->     data = img.get_data()
+> # Now we're working with a
+> # numpy array.
+> nzmean = data[data != 0].mean()
 >
->     # Now we're working with a
->     # numpy array.
->     nzmean = data[data != 0].mean()
->
->     print('mean:', nzmean)
->
->     sys.exit(0)
->
->
-> # This bit is the Python equivalent of
-> # "int main()" in a C or C++ program.
-> if __name__ == '__main__':
->     main()
+> print('mean:', nzmean)
 > ```
 
 
 __Exercise__ Save the above code to a file called `script.py`, then run this
-in a terminal (replace `/path/to/some/image.nii.gz` with a path to some image
-on your computer):
+in a terminal (replace `/path/to/some/image/on/your/computer.nii.gz` with a
+path to some image on your computer):
 
 
 > ```
 > chmod a+x script.py
-> ./script.py /path/to/some/image.nii.gz
+> ./script.py /path/to/some/image/on/your/computer.nii.gz
 > ```
 
 
@@ -183,12 +166,10 @@ instead! It is already installed in `fslpython`, but we just need to create a
 link to it - do this now in a terminal:
 
 
-> ```
-> # You might need to "sudo" this
-> # if your version of FSL needs
-> # admin privileges to modify.
-> ln -s $FSLDIR/fslpython/envs/fslpython/bin/ipython $FSLDIR/bin/fslipython
-> ```
+> You might need to "sudo" this if your version of FSL needs admin privileges
+> to modify.
+>
+>     ln -s $FSLDIR/fslpython/envs/fslpython/bin/ipython $FSLDIR/bin/fslipython
 
 
 Now if you want to do some interactive work, you can use `fslipython` in a
@@ -265,6 +246,20 @@ work, then you might like Spyder. If you spend most of your time writing code
 rather than experimenting, then go with PyCharm.
 
 
+Importantly, both PyCharm and Spyder will correctly indent your Python code!
+
+
+> If you are going to stick with Emacs for your Python development, then it
+> should correctly indent Python code by default.  But if it isn't, add
+> the following to your `~/.emacs` file:
+>
+>     (defun my-python-mode-hook ()
+>         (setq indent-tabs-mode     nil)
+>         (setq python-indent        4)  ; for versions prior to 24.3
+>         (setq python-indent-offset 4)) ; for versions 24.3 or newer
+>     (add-hook 'python-mode-hook   'my-python-mode-hook)
+
+
 ### Spyder
 
 
@@ -280,15 +275,16 @@ project management tools, or integration with version control (i.e. `git`).
 Spyder can be installed directly into `fslpython`:
 
 
-> ```
-> # If your FSL installation requires
-> # administrative privileges to modify,
-> # you will need to prefix these
-> # commands with sudo.
-> $FSLDIR/fslpython/bin/conda install -n fslpython -y spyder
-> ln -s $FSLDIR/fslpython/envs/fslpython/bin/spyder $FSLDIR/bin/fslspyder
-> ```
+> If your FSL installation requires administrative privileges to modify, you
+> will need to prefix these commands with sudo.
+>
+> Install Spyder:
+>
+>     $FSLDIR/fslpython/bin/conda install -n fslpython -y spyder
 
+> Create a link so you can call it easily:
+>
+>     ln -s $FSLDIR/fslpython/envs/fslpython/bin/spyder $FSLDIR/bin/fslspyder
 
 Now to run Spyder, you can just type:
 
@@ -320,10 +316,10 @@ plt.plot([1, 2, 3], [4, 5, 6])
 ### PyCharm
 
 
-PyCharm is a general-purpose Python development environment. Unlike Spyder, it
-does not have an integrated console or variable explorer. But it has more
-tools to help you write code, and better file management/version control
-integration.
+PyCharm is a general-purpose Python development environment. When compared to
+Spyder, it is less geared towards interactive analysis, but has better code
+editing tools (e.g. autocomplete and refactoring), and better file
+management/version control integration.
 
 
 And it is also easy to install - simply download the Community edition from
@@ -396,12 +392,14 @@ __Exercise__ Install Jupyter into `fslpython` - run these commands in a
 terminal:
 
 
-> ```
-> # Remember to prefix with sudo if your
-> # FSL install needs admin to modify.
-> $FSLDIR/fslpython/bin/conda install -n fslpython -y jupyter
-> ln -s $FSLDIR/fslpython/envs/fslpython/bin/jupyter $FSLDIR/bin/fsljupyter
-> ```
+
+> Remember to prefix with sudo if your FSL install needs admin to modify.
+>
+>     $FSLDIR/fslpython/bin/conda install -n fslpython -y jupyter
+
+> And add a link so you can call it easily:
+>
+>     ln -s $FSLDIR/fslpython/envs/fslpython/bin/jupyter $FSLDIR/bin/fsljupyter
 
 
 <a class="anchor" id="git"></a>
@@ -409,7 +407,8 @@ terminal:
 
 
 All the cool kids these days use [git](https://git-scm.com/) to
-collaboratively work on their Python code.
+collaboratively work on their Python code. The PyTreat is a great opportunity
+to start learning and using it for your own work!
 
 
 Git is different from CVS and SVN in that it is _distributed_. In CVS and SVN,
@@ -475,46 +474,13 @@ When you start working on a new project (or if you have an existing project
 that you want to put into git):
 
 
-__1. Create a project directory__
-
-Or navigate to your existing project directory.
+__1. Organise all of your project files into their own folder__
 
 
-__2. Turn the directory into a git repository__
-
-> ```
-> cd path/to/super/cool/project
-> git init
-> ```
+This sounds obvious, but just to be sure.
 
 
-__3. Add your files to git__
-
-If you want to add all of the files in your project directory into git, type
-this:
-
-> ```
-> git add .
-> ```
-
-
-Otherwise, if you only want certain files in git, then `git add` them one by
-one (or with standard bash file patterns).
-
-You should avoid putting large binary files or data files into git - it works
-best with source code. Talk to the FMRIB IT people if you really need to store
-large files in git, as they can help you with this.
-
-
-__4. Commit your changes__
-
-
-> ```
-> git commit -m "A useful message describing the changes you are committing."
-> ```
-
-
-__5. Create a repository for your project on gitlab__
+__2. Create a repository for your project on gitlab__
 
 
 Log in to gitlab (https://git.fmrib.ox.ac.uk/), then click on the _+_ button
@@ -523,11 +489,31 @@ choose its visiblity (note that _Public_ means your project will be visible to
 the world).
 
 
-Now, follow the instructions under __Existing Git repository__ to "link" your
-local project repository to the one on gitlab.
+__3. Turn your project folder into a git repository__
 
 
-__6. Develop your super cool project!__
+Now, follow the instructions that are listd on your gitlab project home page,
+under __Existing folder__ (repeated here):
+
+
+>     cd existing_folder
+>     git init
+>     git remote add origin git@git.fmrib.ox.ac.uk:username/project.git
+>     git add .
+>     git commit -m "Initial commit"
+>     git push -u origin master
+
+
+The `git add .` line will add _all_ of the files in your project directory
+into git. If you only want certain files in git, then `git add` them one by
+one (or use standard bash file patterns, e.g. `git add *.py`).
+
+You should avoid putting large binary files or data files into git - it works
+best with plain text. Talk to the FMRIB IT people if you really need to store
+large files in git, as they can help you with this.
+
+
+__4. Develop your super cool project!__
 
 
 Now you can get to work! Whenever you make changes to your code that you want
