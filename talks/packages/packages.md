@@ -72,22 +72,17 @@ Alternatives:
 - [Bokeh](https://bokeh.pydata.org/en/latest/) among many others: interactive plots in the browser (i.e., in javascript)
 
 ## [Ipython](http://ipython.org/)/[Jupyter](https://jupyter.org/) notebook: interactive python environments
-Supports:
-- run code in multiple languages
-```
-%%bash
-for name in python ruby ; do
-    echo $name
-done
-```
-
+Features:
 - debugging
 ```
 from scipy import optimize
 def costfunc(params):
-    return 1 / params[0] ** 2
-optimize.minimize(costfunc, x0=[0], method='l-bfgs-b')
+    if params[0] <= 0:
+        raise ValueError('Input variable is too low')
+    return 1 / params[0]
+optimize.minimize(costfunc, x0=[3], method='l-bfgs-b')
 ```
+
 ```
 %debug
 ```
@@ -564,6 +559,7 @@ Alternatives:
 Wrapper around [Cuda](https://developer.nvidia.com/cuda-zone).
 - The alternative [Pyopencl](https://documen.tician.de/pyopencl/) provides a very similar wrapper around [OpenCL](https://www.khronos.org/opencl/).
 - Also see [pyopenGL](http://pyopengl.sourceforge.net/): graphics programming in python (used in FSLeyes)
+
 ## Testing
 - [unittest](https://docs.python.org/3.6/library/unittest.html): python built-in testing
 ```
@@ -655,6 +651,7 @@ Linters check the code for any syntax errors, [style errors](https://www.python.
 - [pylint](https://pypi.python.org/pypi/pylint): most extensive linter
 - [pyflake](https://pypi.python.org/pypi/pyflakes): if you think pylint is too strict
 - [pep8](https://pypi.python.org/pypi/pep8): just checks for style errors
+
 ### Optional static typing
 - Document how your method/function should be called
   - Static checking of whether your type hints are still up to date
