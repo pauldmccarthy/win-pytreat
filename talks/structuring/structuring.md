@@ -25,6 +25,10 @@ directory.
 * [Appendix: Cookiecutter](#appendix-cookiecutter)
 
 
+Official documentation:
+https://packaging.python.org/tutorials/distributing-packages/
+
+
 <a class="anchor" id="recommended-project-structure"></a>
 ## Recommended project structure
 
