@@ -15,4 +15,4 @@ order, but we recommend going through them in this order:
 4. Operator overloading
 5. Context managers
 6. Decorators
-7. Testing
+7. Threading and parallel processing
