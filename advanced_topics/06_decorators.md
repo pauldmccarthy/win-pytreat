@@ -493,6 +493,11 @@ expensiveFunc(1)
 ```
 
 
+> Note that in Python 3.2 and newer you can use the
+> [`functools.lru_cache`](https://docs.python.org/3/library/functools.html#functools.lru_cache)
+> to memoize your functions.
+
+
 <a class="anchor" id="decorator-classes"></a>
 ## Decorator classes
 
