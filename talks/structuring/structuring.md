@@ -7,8 +7,26 @@ can stop reading now.
 
 
 However, if you are intending to make your code available for others to use,
-you will make their lives easier if you spend a little time organising your
-project directory.
+either as end users, or as a dependency of their own code, you will make their
+lives much easier if you spend a little time organising your project
+directory.
+
+
+* [Recommended project structure](#recommended-project-structure)
+ * [The `mypackage/` directory](#the-mypackage-directory)
+ * [`README`](#readme)
+ * [`LICENSE`](#license)
+ * [`requirements.txt`](#requirements-txt)
+ * [`setup.py`](#setup-py)
+* [Appendix: Tests](#appendix-tests)
+* [Appendix: Versioning](#appendix-versioning)
+ * [Include the version in your code](#include-the-version-in-your-code)
+ * [Deprecate, don't remove!](#deprecate-dont-remove)
+* [Appendix: Cookiecutter](#appendix-cookiecutter)
+
+
+<a class="anchor" id="recommended-project-structure"></a>
+## Recommended project structure
 
 
 A Python project directory should, at the very least, have a structure that
@@ -27,7 +45,12 @@ resembles the following:
 > ```
 
 
-## The `mypackage/` directory
+This example structure is in the `example_project/` sub-directory - have a
+look through it if you like.
+
+
+<a class="anchor" id="the-mypackage-directory"></a>
+### The `mypackage/` directory
 
 
 The first thing you should do is make sure that all of your python code is
@@ -42,7 +65,8 @@ Check out the `advanced_topics/02_modules_and_packages.ipynb` practical for
 more details on packages in Python.
 
 
-## `README`
+<a class="anchor" id="readme"></a>
+### `README`
 
 
 Every project should have a README file. This is simply a plain text file
@@ -54,23 +78,125 @@ for a README file to be written in plain text,
 (`README.md`).
 
 
-## `LICENSE`
+<a class="anchor" id="license"></a>
+### `LICENSE`
 
 
 Having a LICENSE file makes it easy for people to understand the constraints
 under which your code can be used.
 
 
-## `requirements.txt`
+<a class="anchor" id="requirements-txt"></a>
+### `requirements.txt`
 
 
 This file is not strictly necessary, but is very common in Python projects.
 It contains a list of the Python-based dependencies of your project, in a
-standardised syntax.
+standardised syntax. You can specify the exact version, or range of versions,
+that your project requires. For example:
 
 
-## Tests
+>     six==1.*
+>     numpy==1.*
+>     scipy>=0.18,<2
+>     nibabel==2.*
 
+
+If your project has optional dependencies, i.e. libraries which are not
+critical but, if present, will allow your project to offer some extra
+features, you can list them in a separate requirements file called, for
+example, `requirements-extra.txt`.
+
+
+Having all your dependencies listed in a file in this way makes it easy for
+others to install the dependencies needed by your project, simply by running:
+
+
+>     pip install -r requirements.txt
+
+
+<a class="anchor" id="setup-py"></a>
+### `setup.py`
+
+
+This is the most important file (apart from your code, of course). Python
+projects are installed using
+[`setuptools`](https://setuptools.readthedocs.io/en/latest/), which is used
+internally during both the creation of, and installation of Python libraries.
+
+
+The `setup.py` file in a Python project is akin to a `Makefile` in a C/C++
+project. But `setup.py` is also the location where you can define project
+metadata (e.g. name, author, URL, etc) in a standardised format and, if
+necessary, customise aspects of the build process for your library.
+
+
+You generally don't need to worry about, or interact with `setuptools` at all.
+With one exception - `setup.py` is a Python script, and its main job is to
+call the `setuptools.setup` function, passing it information about your
+project.
+
+
+The `setup.py` for our example project might look like this:
+
+
+> ```
+> #!/usr/bin/env python
+>
+> from setuptools import setup
+>
+> # Import version number from
+> # the project package (see
+> # the section on versioning).
+> from mypackage import __version__
+>
+> # Read in requirements from
+> # the requirements.txt file.
+> with open('requirements.txt', 'rt') as f:
+>     requirements = [l.strip() for l in f.readlines()]
+>
+> setup(
+>
+>     name='Example project',
+>     description='Example Python project for PyTreat',
+>     url='https://git.fmrib.ox.ac.uk/fsl/pytreat-2018-practicals/',
+>     author='Paul McCarthy',
+>     author_email='pauldmccarthy@gmail.com',
+>     license='Apache License Version 2.0',
+>
+>     version=__version__,
+>
+>     install_requires=requirements,
+>
+>     classifiers=[
+>         'Development Status :: 3 - Alpha',
+>         'Intended Audience :: Developers',
+>         'License :: OSI Approved :: Apache Software License',
+>         'Programming Language :: Python :: 2.7',
+>         'Programming Language :: Python :: 3.4',
+>         'Programming Language :: Python :: 3.5',
+>         'Programming Language :: Python :: 3.6',
+>         'Topic :: Software Development :: Libraries :: Python Modules'],
+> )
+> ```
+
+
+The `setup` function gets passed all of your project's metadata, including its
+version number, depedencies, and licensing information. The `classifiers`
+argument should contain a list of
+[classifiers](https://pypi.python.org/pypi?%3Aaction=list_classifiers) which
+are applicable to your project. Classifiers are purely for descriptive
+purposes - they can be used to aid people in finding your project on
+[`PyPI`](https://pypi.python.org/pypi), if you release it there.
+
+
+See
+[here](https://packaging.python.org/tutorials/distributing-packages/#setup-args)
+for more details on `setup.py` and the `setup` function.
+
+
+<a class="anchor" id="appendix-tests"></a>
+## Appendix: Tests
 
 
 There are no strict rules for where to put your tests (you have tests,
@@ -107,17 +233,19 @@ Or, you can store your test files _alongside_ your package directory:
 
 If you want your test code to be completely independent of your project's
 code, then go with the second option.  However, if you would like your test
-code to be distributed as part of your project (so that e.g. end users can run
+code to be distributed as part of your project (e.g. so that end users can run
 them), then the first option is probably the best.
 
 
 But in the end, the standard Python unit testing frameworks
 ([`pytest`](https://docs.pytest.org/en/latest/) and
 [`nose`](http://nose2.readthedocs.io/en/latest/)) are pretty good at finding
-your test functions no matter where you've hidden them.
+your test functions no matter where you've hidden them, so the choice is
+really up to you.
 
 
-## Versioning
+<a class="anchor" id="appendix-versioning"></a>
+## Appendix: Versioning
 
 
 If you are intending to make your project available for public use (e.g. on
@@ -173,14 +301,34 @@ If you like to automate things,
 you can use to help manage your version number.
 
 
+<a class="anchor" id="include-the-version-in-your-code"></a>
+### Include the version in your code
+
+
+While the version of a library is ultimately defined in `setup.py`, it is
+standard practice for a Python library to contain a version string called
+`__version__` in the `__init__.py` file of the top-level package. For example,
+our `example_project/mypackage/__init__.py` file contains this line:
+
+
+>     __version__ = '0.1.0'
+
+
+This makes a library's version number programmatically accessible and
+queryable.
+
+
+<a class="anchor" id="deprecate-dont-remove"></a>
 ### Deprecate, don't remove!
 
 
 If you really want to change your API, but can't bring yourself to increment
-your major release number, consider _deprecating_ the old API, and postponing
-its removal until you are ready for a major release. This will allow you to
-change your API, but retain backwards-compatilbiity with the old API until it
-can safely be removed at the next major release.
+your major release number, consider
+[_deprecating_](https://en.wikipedia.org/wiki/Deprecation#Software_deprecation)
+the old API, and postponing its removal until you are ready for a major
+release. This will allow you to change your API, but retain
+backwards-compatilbiity with the old API until it can safely be removed at the
+next major release.
 
 
 You can use the built-in
@@ -190,7 +338,8 @@ module to warn about uses of deprecated items. There are also some
 it easy to mark a function, method or class as being deprecated.
 
 
-## Cookiecutter
+<a class="anchor" id="appendix-cookiecutter"></a>
+## Appendix: Cookiecutter
 
 
 It is worth mentioning
@@ -212,16 +361,16 @@ Here is how to create a skeleton project directory based off the minimal
 Python packagetemplate:
 
 
-```
-pip install cookiecutter
-
-# tell cookiecutter to create a directory
-# from the pypackage-minimal template
-cookiecutter https://github.com/kragniz/cookiecutter-pypackage-minimal.git
-
-# cookiecutter will then prompt you for
-# basic information (e.g. projectname,
-# author name/email), and then create a
-# new directory containing the project
-# skeleton.
-```
+> ```
+> pip install cookiecutter
+>
+> # tell cookiecutter to create a directory
+> # from the pypackage-minimal template
+> cookiecutter https://github.com/kragniz/cookiecutter-pypackage-minimal.git
+>
+> # cookiecutter will then prompt you for
+> # basic information (e.g. projectname,
+> # author name/email), and then create a
+> # new directory containing the project
+> # skeleton.
+> ```
