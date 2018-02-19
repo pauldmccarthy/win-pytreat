@@ -545,7 +545,7 @@ So let's go get them!
 
 
 > ```
-> git clone git@git.fmrib.ox.ac.uk:fsl/pytreat-2018-practicals.git
+> git clone https://git.fmrib.ox.ac.uk/fsl/pytreat-2018-practicals.git
 > cd pytreat-2018-practicals
 > fsljupyter notebook
 > ```
