@@ -1,11 +1,21 @@
 #!/usr/bin/env python
 
 from setuptools import setup
+from setuptools import find_packages
 
+# Import version number from
+# the project package (see
+# the section on versioning).
 from mypackage import __version__
 
+# Read in requirements from
+# the requirements.txt file.
 with open('requirements.txt', 'rt') as f:
     requirements = [l.strip() for l in f.readlines()]
+
+# Generate a list of all of the
+# packages that are in your project.
+packages = find_packages()
 
 setup(
 
@@ -15,6 +25,8 @@ setup(
     author='Paul McCarthy',
     author_email='pauldmccarthy@gmail.com',
     license='Apache License Version 2.0',
+
+    packages=packages,
 
     version=__version__,
 
