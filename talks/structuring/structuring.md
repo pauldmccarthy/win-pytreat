@@ -148,6 +148,7 @@ The `setup.py` for our example project might look like this:
 > #!/usr/bin/env python
 >
 > from setuptools import setup
+> from setuptools import find_packages
 >
 > # Import version number from
 > # the project package (see
@@ -159,6 +160,10 @@ The `setup.py` for our example project might look like this:
 > with open('requirements.txt', 'rt') as f:
 >     requirements = [l.strip() for l in f.readlines()]
 >
+> # Generate a list of all of the
+> # packages that are in your project.
+> packages = find_packages()
+>
 > setup(
 >
 >     name='Example project',
@@ -167,6 +172,8 @@ The `setup.py` for our example project might look like this:
 >     author='Paul McCarthy',
 >     author_email='pauldmccarthy@gmail.com',
 >     license='Apache License Version 2.0',
+>
+>     packages=packages,
 >
 >     version=__version__,
 >
