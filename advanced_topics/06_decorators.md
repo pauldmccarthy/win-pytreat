@@ -383,8 +383,10 @@ def limitedMemoize(maxSize):
                 # remove the oldest item. In practice
                 # it would make more sense to remove
                 # the item with the oldest access
-                # time, but this is good enough for
-                # an introduction!
+                # time (or remove the least recently
+                # used item, as the built-in
+                # @functools.lru_cache does), but this
+                # is good enough for now!
                 if len(cache) >= maxSize:
                     cache.popitem(last=False)
 
