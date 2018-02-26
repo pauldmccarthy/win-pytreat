@@ -243,8 +243,8 @@ This code block will fail in fslpython, since it uses python 3.5.
 The simplest way to extract a sub-string is to use slicing
 ```
 a_string = 'abcdefghijklmnopqrstuvwxyz'
-print(a_string[10])  # create a string containing only the 10th character
-print(a_string[20:])  # create a string containing the 20th character onward
+print(a_string[10])  # create a string containing only the 11th character
+print(a_string[20:])  # create a string containing the 21st character onward
 print(a_string[::-1])  # creating the reverse string
 ```
 
@@ -306,8 +306,8 @@ with open(output_filename, 'w') as output_file:
 
 ### String formatting and regular expressions
 Given a template for MRI files:
-s<subject_id>/<modality>_<res>mm.nii.gz
-where <subject_id> is a 6-digit subject-id, <modality> is one of T1w, T2w, or PD, and <res> is the resolution of the image (up to one digits behind the dot, e.g. 1.5)
+`s<subject_id>/<modality>_<res>mm.nii.gz`
+where `<subject_id>` is a 6-digit subject-id, `<modality>` is one of T1w, T2w, or PD, and `<res>` is the resolution of the image (up to one digits behind the dot, e.g. 1.5)
 Write a function that takes the subject_id (as an integer), the modality (as a string), and the resolution (as a float) and returns the complete filename (Hint: use one of the formatting techniques mentioned in [String formatting](#string-formatting)).
 ```
 def get_filename(subject_id, modality, resolution):
@@ -320,4 +320,3 @@ def get_parameters(filename):
     ...
     return subject_id, modality, resolution
 ```
-

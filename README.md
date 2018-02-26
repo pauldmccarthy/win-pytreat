@@ -63,13 +63,10 @@ following command:
 
 
 ```
-git reset --hard HEAD
+git stash save
 git pull origin master
+git stash pop
 ```
-
-
-> Note that this will overwrite any changes that you have made to the
-> files in your repository!
 
 
 Have fun!
