@@ -7,7 +7,7 @@ you who are new to Python as a language, or want a refresher on how it all
 works.
 
 
-If you are already comfortable with Python, `numpy`, `nibabel`, and `jupyter`,
+If you are already comfortable with Python, `numpy`, `nibabel`, `jupyter`, and `pandas`,
 then you might want to check out the `advanced_topics` folder.
 
 
@@ -19,3 +19,4 @@ then you might want to check out the `advanced_topics` folder.
 6. Image manipulation (MC)
 7. Jupyter notebook and IPython (MC)
 8. Writing a callable script (MJ)
+9. Pandas tables (MC)
