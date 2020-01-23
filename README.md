@@ -24,36 +24,13 @@ installed.
 ## For attendees
 
 
-To run these notebooks in the `fslpython` environment, you must first install
-jupyter:
-
-
-```
-# If your FSL installation requires administrative privileges to modify, then
-# you MUST run these commands as root - don't just prefix each individual
-# command with sudo, or you will probably install jupyter into the wrong
-# location!
-#
-# One further complication - once you have become root, $FSLDIR may not be set,
-# so either set it as we have done below, or make sure that it is set, before
-# proceeding.
-sudo su
-export FSLDIR=/usr/local/fsl
-source $FSLDIR/fslpython/bin/activate fslpython
-conda install jupyter
-source deactivate
-ln -s $FSLDIR/fslpython/envs/fslpython/bin/jupyter $FSLDIR/bin/fsljupyter
-```
-
-
-Then, clone this repository on your local machine, and run
-`fsljupyter notebook`:
+These notebooks can be run in the `fslpython` environment using:
 
 
 ```
 git clone git@git.fmrib.ox.ac.uk:fsl/pytreat-2018-practicals.git
 cd pytreat-2018-practicals
-fsljupyter notebook
+fslpython -m notebook
 ```
 
 
@@ -110,17 +87,14 @@ To contribute to the practicals:
    repository.
 
 
-When you install `jupyter` above, you may also wish to install
+You may also wish to install
 [`notedown`](https://github.com/aaren/notedown):
 
 ```
-# .
-# see instructions above
-# .
-conda install jupyter
+source $FSLDIR/fslpython/bin/activate fslpython
 pip install notedown
 source deactivate
-ln -s $FSLDIR/fslpython/envs/fslpython/bin/jupyter  $FSLDIR/bin/fsljupyter
+fslpython -m notedown
 ln -s $FSLDIR/fslpython/envs/fslpython/bin/notedown $FSLDIR/bin/fslnotedown
 ```
 
