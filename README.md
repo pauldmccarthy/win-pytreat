@@ -1,7 +1,7 @@
-# 2018 WIN PyTreat
+# 2020 WIN PyTreat
 
 
-This repository contains Jupyter notebooks and data for the 2018 WIN PyTreat.
+This repository contains Jupyter notebooks and data for the 2020 WIN PyTreat.
 It contains the following:
 
 - The `talks` directory contains some (but not all) of the _Topyc_ talks that
@@ -17,7 +17,7 @@ It contains the following:
   about the language.
 
 
-The practicals have been written under the assumption that FSL 5.0.10 is
+The practicals have been written under the assumption that FSL 6.0.3 is
 installed.
 
 
