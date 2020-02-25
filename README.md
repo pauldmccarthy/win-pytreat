@@ -28,8 +28,8 @@ These notebooks can be run in the `fslpython` environment using:
 
 
 ```
-git clone git@git.fmrib.ox.ac.uk:fsl/pytreat-2018-practicals.git
-cd pytreat-2018-practicals
+git clone git@git.fmrib.ox.ac.uk:fsl/pytreat-practicals-2020.git
+cd pytreat-practicals-2020
 fslpython -m notebook
 ```
 
@@ -52,39 +52,66 @@ Have fun!
 ## For contributors
 
 
-The upstream repository can be found at:
+The main repository can be found at:
 
-https://git.fmrib.ox.ac.uk/fsl/pytreat-2018-practicals
+https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020
 
 
-To contribute to the practicals:
+Updates to the master branch should occur via merge requests. You can choose
+to either work on a fork of this repository, or on a branch in this
+repository. To contribute to the practicals using a fork:
+
 
 1. Fork the upstream repository on gitlab
 
 2. Make a local clone of your fork:
 
     ```
-    git clone git@git.fmrib.ox.ac.uk:<username>/pytreat-2018-practicals
+    git clone git@git.fmrib.ox.ac.uk:<username>/pytreat-practicals-2020
     ```
 
 3. Add the upstream repository as a remote:
 
     ```
-    git remote add upstream git@git.fmrib.ox.ac.uk:fsl/pytreat-2018-practicals.git
+    git remote add upstream git@git.fmrib.ox.ac.uk:fsl/pytreat-practicals-2020.git
     ```
 
 4. Make your changes on your local repository
 
-5. Rebase onto the upstream repository, and push your changes to your fork:
+5. Push your changes to your fork:
 
     ```
-    git fetch --all
-    git rebase upstream/master
-    git push --force origin master
+    git push origin master
     ```
 
 6. In gitlab, submit a merge request from your fork back to the upstream
    repository.
+
+
+Or, to contribute via a branch:
+
+1. Make a local clone of the repository:
+
+    ```
+    git clone git@git.fmrib.ox.ac.uk:fsl/pytreat-practicals-2020
+    ```
+
+2. Create a branch for your work:
+
+    ```
+    git checkout -b my_cool_branch origin/master
+    ```
+
+3. Make your changes on this branch.
+
+4. Push your changes to the gitlab repository:
+
+    ```
+    git push origin my_cool_branch
+    ```
+
+5. In gitlab, submit a merge request from your branch onto the master
+   branch.
 
 
 You may also wish to install
