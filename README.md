@@ -84,6 +84,11 @@ repository.
 
 3. Make your changes on this branch.
 
+    ```
+    git add <my_new_and_changed_files>
+    git commit -m 'super cool updates'
+    ```
+
 4. Push your changes to the gitlab repository:
 
     ```
@@ -111,6 +116,11 @@ repository.
     ```
 
 4. Make your changes on your local repository
+
+    ```
+    git add <my_new_and_changed_files>
+    git commit -m 'super cool updates'
+    ```
 
 5. Push your changes to your fork:
 
