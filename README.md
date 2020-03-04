@@ -152,7 +152,7 @@ git merge origin/master
 > git fetch --all
 >
 > # replace <branch_name> with your local branch name
-> git rebase <remote_name>/master
+> git checkout <remote_name>/master
 >
 > # replace <remote_name> with the main repository name
 > git rebase <remote_name>/master
