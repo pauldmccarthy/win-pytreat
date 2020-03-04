@@ -65,37 +65,10 @@ https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020
 
 
 Updates to the master branch should occur via merge requests. You can choose
-to either work on a fork of this repository, or on a branch in this
-repository. To contribute to the practicals using a fork:
+to either work on a branch within this repository, or on a fork of this
+repository.
 
-
-1. Fork the upstream repository on gitlab
-
-2. Make a local clone of your fork:
-
-    ```
-    git clone https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020.git
-    ```
-
-3. Add the upstream repository as a remote:
-
-    ```
-    git remote add upstream https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020.git
-    ```
-
-4. Make your changes on your local repository
-
-5. Push your changes to your fork:
-
-    ```
-    git push origin master
-    ```
-
-6. In gitlab, submit a merge request from your fork back to the upstream
-   repository.
-
-
-Or, to contribute via a branch:
+### Using a branch within this repository
 
 1. Make a local clone of the repository:
 
@@ -111,6 +84,11 @@ Or, to contribute via a branch:
 
 3. Make your changes on this branch.
 
+    ```
+    git add <my_new_and_changed_files>
+    git commit -m 'super cool updates'
+    ```
+
 4. Push your changes to the gitlab repository:
 
     ```
@@ -121,14 +99,82 @@ Or, to contribute via a branch:
    branch.
 
 
-You may also wish to install
-[`notedown`](https://github.com/aaren/notedown):
+### Using a fork of this repository
+
+1. Fork the upstream repository on gitlab
+
+2. Make a local clone of your fork:
+
+    ```
+    git clone https://git.fmrib.ox.ac.uk/<your_username>/pytreat-practicals-2020.git
+    ```
+
+3. Add the upstream repository as a remote:
+
+    ```
+    git remote add upstream https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020.git
+    ```
+
+4. Make your changes on your local repository
+
+    ```
+    git add <my_new_and_changed_files>
+    git commit -m 'super cool updates'
+    ```
+
+5. Push your changes to your fork:
+
+    ```
+    git push origin master
+    ```
+
+6. In gitlab, submit a merge request from your fork back to the upstream
+   repository.
+
+
+### Updating your local repository
+
+To bring in the changes that other people have contributed to the main
+repository into your local repository:
+
 
 ```
-source $FSLDIR/fslpython/bin/activate fslpython
-pip install notedown
-source deactivate
-fslpython -m notedown
+git fetch --all
+
+# make sure you are on the correct local branch - if you followed the
+# instructions above and are working on a fork of the main repository:
+git checkout master
+
+# Or if you are working on a branch within the main repository:
+git checkout my_cool_branch
+
+# Do this if you are working on a fork of the main repository
+git merge upstream/master
+
+# Or do this if you are working on a branch within the main repository
+git merge origin/master
+```
+
+
+> Or, if you are comfortable with git, `rebase` is so much cooler:
+>
+> ```
+> git fetch --all
+>
+> # replace <branch_name> with your local branch name
+> git checkout <remote_name>/master
+>
+> # replace <remote_name> with the main repository name
+> git rebase <remote_name>/master
+> ```
+
+
+### Writing your talk as a Jupyter notebook
+
+You may wish to install [`notedown`](https://github.com/aaren/notedown):
+
+```
+$FSLDIR/fslpython/bin/conda install -n fslpython -c conda-forge notedown
 ln -s $FSLDIR/fslpython/envs/fslpython/bin/notedown $FSLDIR/bin/fslnotedown
 ```
 
