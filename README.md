@@ -28,10 +28,17 @@ These notebooks can be run in the `fslpython` environment using:
 
 
 ```
-git clone git@git.fmrib.ox.ac.uk:fsl/pytreat-practicals-2020.git
+git clone https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020.git
 cd pytreat-practicals-2020
 fslpython -m notebook
 ```
+
+A page should open in your web browser - to access the practicals, navigate
+into one of the `getting_started` or `advanced_topics` directories, and click
+on the `.ipynb` file you are interested in. Some of the talks are also
+presented in notebook form - navigate to the talk you are interested in
+(within the `talks` directory), and click on the `.ipynb` file to follow
+along.
 
 
 Throughout the week we might make changes to this repository. When this
@@ -67,13 +74,13 @@ repository. To contribute to the practicals using a fork:
 2. Make a local clone of your fork:
 
     ```
-    git clone git@git.fmrib.ox.ac.uk:<username>/pytreat-practicals-2020
+    git clone https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020.git
     ```
 
 3. Add the upstream repository as a remote:
 
     ```
-    git remote add upstream git@git.fmrib.ox.ac.uk:fsl/pytreat-practicals-2020.git
+    git remote add upstream https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020.git
     ```
 
 4. Make your changes on your local repository
@@ -93,7 +100,7 @@ Or, to contribute via a branch:
 1. Make a local clone of the repository:
 
     ```
-    git clone git@git.fmrib.ox.ac.uk:fsl/pytreat-practicals-2020
+    git clone https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020.git
     ```
 
 2. Create a branch for your work:
