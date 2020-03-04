@@ -65,7 +65,7 @@ https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020
 
 
 Updates to the master branch should occur via merge requests. You can choose
-to either work on a branch within this repository, on a fork of this
+to either work on a branch within this repository, or on a fork of this
 repository.
 
 ### Using a branch within this repository
