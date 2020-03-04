@@ -164,10 +164,7 @@ git merge origin/master
 You may wish to install [`notedown`](https://github.com/aaren/notedown):
 
 ```
-source $FSLDIR/fslpython/bin/activate fslpython
-pip install notedown
-source deactivate
-fslpython -m notedown
+$FSLDIR/fslpython/bin/conda install -n fslpython -c conda-forge notedown
 ln -s $FSLDIR/fslpython/envs/fslpython/bin/notedown $FSLDIR/bin/fslnotedown
 ```
 
