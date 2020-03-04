@@ -159,8 +159,9 @@ git merge origin/master
 > ```
 
 
-You may also wish to install
-[`notedown`](https://github.com/aaren/notedown):
+### Writing your talk as a Jupyter notebook
+
+You may wish to install [`notedown`](https://github.com/aaren/notedown):
 
 ```
 source $FSLDIR/fslpython/bin/activate fslpython
