@@ -65,10 +65,10 @@ https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020
 
 
 Updates to the master branch should occur via merge requests. You can choose
-to either work on a branch within this repository, or on a fork of this
-repository.
+to either work on a branch within this repository  (recommended), or on a fork of this
+repository (advanced).
 
-### Using a branch within this repository
+### Using a branch within this repository (recommended)
 
 1. Make a local clone of the repository:
 
@@ -98,8 +98,10 @@ repository.
 5. In gitlab, submit a merge request from your branch onto the master
    branch.
 
+    https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html
 
-### Using a fork of this repository
+
+### Using a fork of this repository (advanced)
 
 1. Fork the upstream repository on gitlab
 
@@ -130,6 +132,8 @@ repository.
 
 6. In gitlab, submit a merge request from your fork back to the upstream
    repository.
+    
+    https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html
 
 
 ### Updating your local repository
@@ -137,22 +141,23 @@ repository.
 To bring in the changes that other people have contributed to the main
 repository into your local repository:
 
-
 ```
 git fetch --all
 
-# make sure you are on the correct local branch - if you followed the
-# instructions above and are working on a fork of the main repository:
-git checkout master
+```
 
-# Or if you are working on a branch within the main repository:
+Then, do this if you are working on a branch within the main repository:
+
+```
+# make sure you are on the correct local branch:
 git checkout my_cool_branch
-
-# Do this if you are working on a fork of the main repository
-git merge upstream/master
-
-# Or do this if you are working on a branch within the main repository
 git merge origin/master
+```
+
+Or, do this if you are working on a fork of the main repository:
+```
+git checkout master
+git merge upstream/master
 ```
 
 
