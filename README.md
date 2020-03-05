@@ -98,6 +98,8 @@ repository (advanced).
 5. In gitlab, submit a merge request from your branch onto the master
    branch.
 
+    https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html
+
 
 ### Using a fork of this repository (advanced)
 
@@ -130,6 +132,8 @@ repository (advanced).
 
 6. In gitlab, submit a merge request from your fork back to the upstream
    repository.
+    
+    https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html
 
 
 ### Updating your local repository
@@ -137,21 +141,22 @@ repository (advanced).
 To bring in the changes that other people have contributed to the main
 repository into your local repository:
 
-
 ```
 git fetch --all
 
-# make sure you are on the correct local branch - if you followed the
-# instructions above and are working on a branch within the main repository:
+```
+
+Then, do this if you are working on a branch within the main repository:
+
+```
+# make sure you are on the correct local branch:
 git checkout my_cool_branch
-
-# Or if you are working on a fork of the main repository:
-git checkout master
-
-# Do this if you are working on a branch within the main repository
 git merge origin/master
+```
 
-# Or do this if you are working on a fork of the main repository
+Or, do this if you are working on a fork of the main repository:
+```
+git checkout master
 git merge upstream/master
 ```
 
