@@ -65,10 +65,10 @@ https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020
 
 
 Updates to the master branch should occur via merge requests. You can choose
-to either work on a branch within this repository, or on a fork of this
-repository.
+to either work on a branch within this repository  (recommended), or on a fork of this
+repository (advanced).
 
-### Using a branch within this repository
+### Using a branch within this repository (recommended)
 
 1. Make a local clone of the repository:
 
@@ -99,7 +99,7 @@ repository.
    branch.
 
 
-### Using a fork of this repository
+### Using a fork of this repository (advanced)
 
 1. Fork the upstream repository on gitlab
 
@@ -142,17 +142,17 @@ repository into your local repository:
 git fetch --all
 
 # make sure you are on the correct local branch - if you followed the
-# instructions above and are working on a fork of the main repository:
-git checkout master
-
-# Or if you are working on a branch within the main repository:
+# instructions above and are working on a branch within the main repository:
 git checkout my_cool_branch
 
-# Do this if you are working on a fork of the main repository
-git merge upstream/master
+# Or if you are working on a fork of the main repository:
+git checkout master
 
-# Or do this if you are working on a branch within the main repository
+# Do this if you are working on a branch within the main repository
 git merge origin/master
+
+# Or do this if you are working on a fork of the main repository
+git merge upstream/master
 ```
 
 
