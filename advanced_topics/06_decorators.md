@@ -100,7 +100,7 @@ This new `timeFunc` function is again passed a function `func`, but this time
 as its sole argument. It then creates and returns a new function,
 `wrapperFunc`. This `wrapperFunc` function calls and times the function that
 was passed to `timeFunc`.  But note that when `timeFunc` is called,
-`wrapperFunc` is _not_ called - it is only created and returned.
+`wrapperFunc` is *not* called - it is only created and returned.
 
 
 Let's use our new `timeFunc` implementation:
@@ -151,9 +151,9 @@ which holds a reference to the original definition of `inverse`.
 > [functions are not special](#appendix-functions-are-not-special).
 
 
-Guess what? We have just created a __decorator__. A decorator is simply a
+Guess what? We have just created a **decorator**. A decorator is simply a
 function which accepts a function as its input, and returns another function
-as its output. In the example above, we have _decorated_ the `inverse`
+as its output. In the example above, we have *decorated* the `inverse`
 function with the `timeFunc` decorator.
 
 
@@ -228,7 +228,7 @@ MiscMaths.inverse = timeFunc(MiscMaths.inverse)
 ```
 
 
-So only one `wrapperFunc` function exists, and this function is _shared_ by
+So only one `wrapperFunc` function exists, and this function is *shared* by
 all instances of the `MiscMaths` class - (such as the `mm1` and `mm2`
 instances in the example above). In many cases this is not a problem, but
 there can be situations where you need each instance of your class to have its
@@ -400,11 +400,11 @@ def limitedMemoize(maxSize):
 ```
 
 > We used the handy
-> [`collections.OrderedDict`](https://docs.python.org/3.5/library/collections.html#collections.OrderedDict)
+> [`collections.OrderedDict`](https://docs.python.org/3/library/collections.html#collections.OrderedDict)
 > class here which preserves the insertion order of key-value pairs.
 
 
-This is starting to look a little complicated - we now have _three_ layers of
+This is starting to look a little complicated - we now have *three* layers of
 functions. This is necessary when you wish to write a decorator which accepts
 arguments (refer to the
 [appendix](#appendix-decorators-without-arguments-versus-decorators-with-arguments)
@@ -505,7 +505,7 @@ expensiveFunc(1)
 
 
 By now, you will have gained the impression that a decorator is a function
-which _decorates_ another function. But if you went through the practical on
+which *decorates* another function. But if you went through the practical on
 operator overloading, you might remember the special `__call__` method, that
 allows an object to be called as if it were a function.
 
@@ -596,17 +596,17 @@ registry.runTests()
 ```
 
 
-> Unit testing is something which you must do! This is __especially__
+> Unit testing is something which you must do! This is **especially**
 > important in an interpreted language such as Python, where there is no
 > compiler to catch all of your mistakes.
 >
 > Python has a built-in
-> [`unittest`](https://docs.python.org/3.5/library/unittest.html) module,
+> [`unittest`](https://docs.python.org/3/library/unittest.html) module,
 > however the third-party [`pytest`](https://docs.pytest.org/en/latest/) and
 > [`nose`](http://nose2.readthedocs.io/en/latest/) are popular.  It is also
 > wise to combine your unit tests with
 > [`coverage`](https://coverage.readthedocs.io/en/coverage-4.5.1/), which
-> tells you how much of your code was executed, or _covered_ when your
+> tells you how much of your code was executed, or *covered* when your
 > tests were run.
 
 
@@ -713,7 +713,7 @@ as we like.
 > If it bothers you that `print(inv2)` resulted in
 > `<function inverse at ...>`, and not `<function inv2 at ...>`, then refer to
 > the appendix on
-> [preserving function metdata](#appendix-preserving-function-metadata).
+> [preserving function metadata](#appendix-preserving-function-metadata).
 
 
 <a class="anchor" id="appendix-closures"></a>
@@ -721,7 +721,7 @@ as we like.
 
 
 Whenever we define or use a decorator, we are taking advantage of a concept
-called a [_closure_][wiki-closure]. Take a second to re-familiarise yourself
+called a [*closure*][wiki-closure]. Take a second to re-familiarise yourself
 with our `memoize` decorator function from earlier - when `memoize` is called,
 it creates and returns a function called `wrapper`:
 
@@ -783,7 +783,7 @@ finished.
 
 
 This is what is known as a
-[_closure_](https://www.geeksforgeeks.org/python-closures/). Closures are a
+[*closure*](https://www.geeksforgeeks.org/python-closures/). Closures are a
 fundamental, and extremely powerful, aspect of Python and other high level
 languages. So there's your answer,
 [fishbulb](https://www.youtube.com/watch?v=CiAaEPcnlOg).
@@ -834,7 +834,7 @@ function.
 
 
 But if a decorator function is "called" (scenarios 2 or 3), both the decorator
-function (`decorator`), __and its return value__ (`wrapper`) are called - the
+function (`decorator`), **and its return value** (`wrapper`) are called - the
 decorator function is passed the arguments that were provided, and its return
 value is passed the decorated function.
 
@@ -966,7 +966,7 @@ function, so that the `wrapper` ignores the first argument. But this would
 mean that we couldn't use `ensureNumeric` with standalone functions.
 
 
-But we _can_ manually apply the `ensureNumeric` decorator to `MiscMaths`
+But we *can* manually apply the `ensureNumeric` decorator to `MiscMaths`
 instances when they are initialised.  We can't use the nice `@ensureNumeric`
 syntax to apply our decorators, but this is a viable approach:
 
@@ -988,7 +988,7 @@ print(mm.add('5', 10))
 Another approach is to use a second decorator, which dynamically creates the
 real decorator when it is accessed on an instance. This requires the use of an
 advanced Python technique called
-[_descriptors_](https://docs.python.org/3.5/howto/descriptor.html), which is
+[*descriptors*](https://docs.python.org/3/howto/descriptor.html), which is
 beyond the scope of this practical. But if you are interested, you can see an
 implementation of this approach
 [here](https://git.fmrib.ox.ac.uk/fsl/fslpy/blob/1.6.8/fsl/utils/memoize.py#L249).
@@ -1053,7 +1053,7 @@ documentation](http://www.sphinx-doc.org/) for our code.
 
 
 Fortunately, there is a workaround, available in the built-in
-[`functools`](https://docs.python.org/3.5/library/functools.html#functools.wraps)
+[`functools`](https://docs.python.org/3/library/functools.html#functools.wraps)
 module:
 
 
@@ -1091,11 +1091,11 @@ print('Help: ', add2.__doc__)
 ## Appendix: Class decorators
 
 
-> Not to be confused with [_decorator classes_](#decorator-classes)!
+> Not to be confused with [*decorator classes*](#decorator-classes)!
 
 
 In this practical, we have shown how decorators can be applied to functions
-and methods. But decorators can in fact also be applied to _classes_. This is
+and methods. But decorators can in fact also be applied to *classes*. This is
 a fairly niche feature that you are probably not likely to need, so we will
 only cover it briefly.
 
