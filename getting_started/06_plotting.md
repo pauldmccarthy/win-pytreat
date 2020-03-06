@@ -166,7 +166,7 @@ axis, you don't need to modify the data - simply swap the axis limits around:
 
 
 ```
-plt.imshow(imslc, cmap=plt.cm.gray)
+plt.imshow(imslc.T, cmap=plt.cm.gray)
 plt.xlim(reversed(plt.xlim()))
 plt.ylim(reversed(plt.ylim()))
 plt.colorbar()
