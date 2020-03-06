@@ -1,9 +1,18 @@
 # Callable scripts in python
 
-In this tutorial we will cover how to write simple stand-alone scripts in python that can be used as alternatives to bash scripts.
+In this tutorial we will cover how to write simple stand-alone scripts in
+python that can be used as alternatives to bash scripts.
 
-There are some code blocks within this webpage, but for this practical we _**strongly
-recommend that you write the code in an IDE or editor**_ instead and then run the scripts from a terminal.
+**Important**: Throughout this series of practicals we have been working
+entirely within the Jupyter notebook environment. But it's now time to
+graduate to writing *real* Python  scripts, and running them within a
+*real* enviromnent.
+
+So within this practical there are some code blocks, but instead of running
+them inside the notebook we **strongly recommend that you write the code in
+an IDE or editor**,and then run the scripts from a terminal.  [Don't
+panic](https://www.youtube.com/watch?v=KojYatpLPSE), we're right here,
+ready to help.
 
 ## Contents
 
@@ -63,10 +72,10 @@ print(sout)
 > arguments helps to prevent unintended consequences from inappropriate inputs.
 >
 > Note that the `decode` call in the middle line converts the string from a byte
-> string to a normal string. In Python 3 there is a distinction between strings 
-> (sequences of characters, possibly using multiple bytes to store each 
-> character) and bytes (sequences of bytes). The world has moved on from ASCII, 
-> so in this day and age, this distinction is absolutely necessary, and Python 
+> string to a normal string. In Python 3 there is a distinction between strings
+> (sequences of characters, possibly using multiple bytes to store each
+> character) and bytes (sequences of bytes). The world has moved on from ASCII,
+> so in this day and age, this distinction is absolutely necessary, and Python
 > does a fairly good job of it.
 
 If the output is numerical then this can be extracted like this:
@@ -100,7 +109,7 @@ for cmd in commands.splitlines():
         sout.append(spobj.stdout.decode('utf-8'))
 ```
 
-> Don't be tempted to use the shell=True argument to subprocess.run, especially 
+> Don't be tempted to use the shell=True argument to subprocess.run, especially
 > if you are dealing with user input - if the user gave
 > *myfile; rm -f ~*
 > as a file name and you called the command with shell=True **and** you
@@ -112,6 +121,11 @@ for cmd in commands.splitlines():
 > ```a = shlex.quote('myfile; rm -f ~')
 > cmd = "ls {}".format(a)
 > sp.run(shlex.split(cmd))```
+
+
+> If you're calling lots of FSL tools, the `fslpy` library has a number of
+> *wrapper* functions, which can be used to call an FSL command directly
+> from Python - check out `advanced_topics/08_fslpy.ipynb`.
 
 <a class="anchor" id="command-line-arguments"></a>
 ## Command line arguments
@@ -144,7 +158,7 @@ infile=$1
 outfile=$2
 # mask input image with MNI
 $FSLDIR/bin/fslmaths $infile -mas $FSLDIR/data/standard/MNI152_T1_1mm_brain $outfile
-# calculate volumes of masked image  
+# calculate volumes of masked image
 vv=`$FSLDIR/bin/fslstats $outfile -V`
 vol_vox=`echo $vv | awk '{ print $1 }'`
 vol_mm=`echo $vv | awk '{ print $2 }'`
@@ -166,7 +180,7 @@ infile = sys.argv[1]
 outfile = sys.argv[2]
 # mask input image with MNI
 spobj = sp.run([fsldir+'/bin/fslmaths', infile, '-mas', fsldir+'/data/standard/MNI152_T1_1mm_brain', outfile], stdout = sp.PIPE)
-# calculate volumes of masked image  
+# calculate volumes of masked image
 spobj = sp.run([fsldir+'/bin/fslstats', outfile, '-V'], stdout = sp.PIPE)
 sout = spobj.stdout.decode('utf-8')
 results = sout.split()
@@ -186,4 +200,3 @@ mean or a _sum_ (and hence can do something that fslstats cannot!)
 ```
 # Don't write anything here - do it in a standalone script!
 ```
-

@@ -13,11 +13,6 @@ important Python libraries, and it (along with its partners
 alternative to Matlab as a scientific computing platform.
 
 
-The `fslpython` environment currently includes [Numpy
-1.11.1](https://docs.scipy.org/doc/numpy-1.11.0/index.html), which is a little
-out of date, but we will update it for the next release of FSL.
-
-
 ## Contents
 
 
@@ -80,7 +75,7 @@ xyz_coords = [[-11.4,   1.0,  22.6],
 
 For simple tasks, you could stick with processing your data using python
 lists, and the built-in
-[`math`](https://docs.python.org/3.5/library/math.html) library. And this
+[`math`](https://docs.python.org/3/library/math.html) library. And this
 might be tempting, because it does look quite a lot like what you might type
 into Matlab.
 
@@ -334,8 +329,8 @@ view of the array.
 
 
 > <sup>2</sup> Python, being an object-oriented language, distinguishes
-> between _functions_ and _methods_. Hopefully we all know what a function is
-> - a _method_ is simply the term used to refer to a function that is
+> between _functions_ and _methods_. Hopefully we all know what a function
+> is - a _method_ is simply the term used to refer to a function that is
 > associated with a specific object. Similarly, the term _attribute_ is used
 > to refer to some piece of information that is attached to an object, such as
 > `z.shape`, or `z.dtype`.
@@ -611,7 +606,7 @@ like what you might expect from Matlab.  You can find a brief overview of the
 ### Broadcasting
 
 
-One of the coolest features of Numpy is _broadcasting_<sup>3</sup>.
+One of the coolest features of Numpy is *broadcasting*<sup>3</sup>.
 Broadcasting allows you to perform element-wise operations on arrays which
 have a different shape. For each axis in the two arrays, Numpy will implicitly
 expand the shape of the smaller axis to match the shape of the larger one. You
@@ -963,9 +958,9 @@ correct:
 
 > <sup>4</sup> Even though these are FLIRT transforms, this is just a toy
 > example.  Look
-> [here](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FLIRT/FAQ#What_is_the_format_of_the_matrix_used_by_FLIRT.2C_and_how_does_it_relate_to_the_transformation_parameters.3F)
+> [here](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.transform.flirt.html)
 > and
-> [here](https://git.fmrib.ox.ac.uk/fsl/fslpy/blob/1.6.2/fsl/utils/transform.py#L537)
+> [here](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FLIRT/FAQ#What_is_the_format_of_the_matrix_used_by_FLIRT.2C_and_how_does_it_relate_to_the_transformation_parameters.3F)
 > if you actually need to work with FLIRT transforms.
 
 

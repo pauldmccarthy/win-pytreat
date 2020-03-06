@@ -1,12 +1,25 @@
 # Jupyter notebook and IPython
-Our main interaction with python so far has been through the [Jupyter notebook](http://jupyter.org/).
-These notebooks are extremely popular these days within the python scientific community, however they support many more languages, such as R and octave (and even matlab with the right [plugin](https://github.com/Calysto/matlab_kernel)).
-They allow for interactive analysis of your data interspersed by explanatory notes (including LaTeX) with inline plotting.
-However, they can not be called as scripts on the command line or be imported from other python code, which makes them rather stand-alone.
-This makes them more useful for analysis that needs to be reproducible, but does not need to be replicated on different datasets (e.g., making a plot for a paper).
 
-For more ad-hoc analysis it can be useful to just use the command line (i.e., a REPL).
-We strongly recommend to use the IPython (available as `ipython` or `fslipython`) rather than default python REPL (available through `python` or `fslpython`)
+Our main interaction with python so far has been through the [Jupyter
+notebook](http://jupyter.org/).  These notebooks are extremely popular these
+days within the python scientific community, however they support many more
+languages, such as R and octave (and even matlab with the right
+[plugin](https://github.com/Calysto/matlab_kernel)).  They allow for
+interactive analysis of your data interspersed by explanatory notes (including
+LaTeX) with inline plotting.  However, they can not be called as scripts on
+the command line or be imported from other python code, which makes them
+rather stand-alone.  This makes them more useful for analysis that needs to be
+reproducible, but does not need to be replicated on different datasets (e.g.,
+making a plot for a paper).
+
+For more ad-hoc analysis it can be useful to just use the command line (i.e.,
+a REPL<sup>*</sup>).  We strongly recommend to use the IPython (available as
+`fslipython` or `ipython`) rather than default python REPL (available through
+`fslpython` or `python`), as IPython is much more user-friendly.
+
+> <sup>*</sup>REPL = **R**ead-**E**val-**P**rint-**L**oop - the geeky term for
+> an interactive prompt. You may hear younger generations using the term
+> [ESRR](https://www.youtube.com/watch?v=wBoRkg5-Ieg) instead.
 
 Both Ipython and the jupyter notebook offer a whole range of magic commands, which all start with a `%` sign.
 * A magic command starting with a single `%` sign will only affect the single line.
@@ -206,4 +219,3 @@ We can now run this script
 You can access the full history of your session using `%history`.
 To save the history to a file use `%history -f <filename>`.
 You will probably have to clean a lot of erroneous commands you typed from that file before you are able to run it as a script.
-

@@ -9,11 +9,11 @@ Most of Python's built-in functionality for managing files and paths is spread
 across the following modules:
 
 
- - [`os`](https://docs.python.org/3.5/library/os.html)
- - [`shutil`](https://docs.python.org/3.5/library/shutil.html)
- - [`os.path`](https://docs.python.org/3.5/library/os.path.html)
- - [`glob`](https://docs.python.org/3.5/library/glob.html)
- - [`fnmatch`](https://docs.python.org/3.5/library/fnmatch.html)
+ - [`os`](https://docs.python.org/3/library/os.html)
+ - [`shutil`](https://docs.python.org/3/library/shutil.html)
+ - [`os.path`](https://docs.python.org/3/library/os.path.html)
+ - [`glob`](https://docs.python.org/3/library/glob.html)
+ - [`fnmatch`](https://docs.python.org/3/library/fnmatch.html)
 
 
 The `os` and `shutil` modules have functions allowing you to manage _files and
@@ -22,7 +22,7 @@ managing file and directory _paths_.
 
 
 > Another standard library -
-> [`pathlib`](https://docs.python.org/3.5/library/pathlib.html) - was added in
+> [`pathlib`](https://docs.python.org/3/library/pathlib.html) - was added in
 > Python 3.4, and provides an object-oriented interface to path management. We
 > aren't going to cover `pathlib` here, but feel free to take a look at it if
 > you are into that sort of thing.
@@ -226,7 +226,7 @@ for root, dirs, files in os.walk('raw_mri_data'):
 > Note that `os.walk` does not guarantee a specific ordering in the lists of
 > files and sub-directories that it returns. However, you can force an
 > ordering quite easily - see its
-> [documentation](https://docs.python.org/3.5/library/os.html#os.walk) for
+> [documentation](https://docs.python.org/3/library/os.html#os.walk) for
 > more details.
 
 
@@ -391,7 +391,7 @@ def whatisit(path, existonly=False):
 > ```
 >
 > Take a look at the [official Python
-> tutorial](https://docs.python.org/3.5/tutorial/controlflow.html#defining-functions)
+> tutorial](https://docs.python.org/3/tutorial/controlflow.html#defining-functions)
 > for more details on defining your own functions.
 
 
@@ -474,7 +474,11 @@ print('Suffix: {}'.format(suffix))
 > Correct handling of them is an open problem in Computer Science, and is
 > considered by many to be unsolvable.  For `imglob`, `imcp`, and `immv`-like
 > functionality, check out the `fsl.utils.path` and `fsl.utils.imcp` modules,
-> part of the [`fslpy` project](https://pypi.python.org/pypi/fslpy).
+> part of the [`fslpy`
+> project](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/). If you
+> are using `fslpython`, then you already have access to all of the functions
+> in `fslpy`.
+
 
 
 <a class="anchor" id="absolute-and-relative-paths"></a>
@@ -577,7 +581,7 @@ print(get_subject_id('raw_mri_data/subj_9'))
 
 Now that we have this function, we can sort the directories in one line of
 code, via the built-in
-[`sorted`](https://docs.python.org/3.5/library/functions.html#sorted)
+[`sorted`](https://docs.python.org/3/library/functions.html#sorted)
 function.  The directories will be sorted according to the `key` function that
 we specify, which provides a mapping from each directory to a sortable
 &quot;key&quot;:
@@ -622,10 +626,10 @@ pattern matching logic.
 
 Note that the syntax used by `glob` and `fnmatch` is similar, but __not__
 identical to the syntax that you are used to from `bash`. Refer to the
-[`fnmatch` module](https://docs.python.org/3.5/library/fnmatch.html)
+[`fnmatch` module](https://docs.python.org/3/library/fnmatch.html)
 documentation for details. If you need more complicated pattern matching, you
 can use regular expressions, available via the [`re`
-module](https://docs.python.org/3.5/library/re.html).
+module](https://docs.python.org/3/library/re.html).
 
 
 For example, let's retrieve all images that are in our data set:
@@ -834,7 +838,7 @@ errors. For example, when you type CTRL+C into a running Python program, a
 
 > There are many different types of exceptions in Python - a list of all the
 > built-in ones can be found
-> [here](https://docs.python.org/3.5/library/exceptions.html). It is also easy
+> [here](https://docs.python.org/3/library/exceptions.html). It is also easy
 > to define your own exceptions by creating a sub-class of `Exception` (beyond
 > the scope of this practical).
 
@@ -1037,7 +1041,7 @@ finally:
 
 
 You can read more about handling exceptions in Python
-[here](https://docs.python.org/3.5/tutorial/errors.html).
+[here](https://docs.python.org/3/tutorial/errors.html).
 
 
 ### Raising exceptions
