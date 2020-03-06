@@ -2,20 +2,31 @@
 
 
 The Python language has built-in support for multi-threading in the
-[`threading`](https://docs.python.org/3.5/library/threading.html) module, and
+[`threading`](https://docs.python.org/3/library/threading.html) module, and
 true parallelism in the
-[`multiprocessing`](https://docs.python.org/3.5/library/multiprocessing.html)
-module.  If you want to be impressed, skip straight to the section on
+[`multiprocessing`](https://docs.python.org/3/library/multiprocessing.html)
+and
+[`concurrent.futures`](https://docs.python.org/3/library/concurrent.futures.html)
+modules.  If you want to be impressed, skip straight to the section on
 [`multiprocessing`](todo).
 
 
-
+> *Note*: If you are familiar with a "real" programming language such as C++
+> or Java, you will be disappointed with the native support for parallelism in
+> Python. Python threads do not run in parallel because of the Global
+> Interpreter Lock, and if you use `multiprocessing`, be prepared to either
+> bear the performance hit of copying data between processes, or jump through
+> hoops order to share data between processes.
+>
+> This limitation *might* be solved in a future Python release by way of
+> [*sub-interpreters*](https://www.python.org/dev/peps/pep-0554/), but the
+> author of this practical is not holding his breath.
 
 
 ## Threading
 
 
-The [`threading`](https://docs.python.org/3.5/library/threading.html) module
+The [`threading`](https://docs.python.org/3/library/threading.html) module
 provides a traditional multi-threading API that should be familiar to you if
 you have worked with threads in other languages.
 
@@ -107,7 +118,7 @@ t.daemon = True
 
 
 See the [`Thread`
-documentation](https://docs.python.org/3.5/library/threading.html#thread-objects)
+documentation](https://docs.python.org/3/library/threading.html#thread-objects)
 for more details.
 
 
@@ -117,16 +128,16 @@ for more details.
 The `threading` module provides some useful thread-synchronisation primitives
 - the `Lock`, `RLock` (re-entrant `Lock`), and `Event` classes.  The
 `threading` module also provides `Condition` and `Semaphore` classes - refer
-to the [documentation](https://docs.python.org/3.5/library/threading.html) for
+to the [documentation](https://docs.python.org/3/library/threading.html) for
 more details.
 
 
 #### `Lock`
 
 
-The [`Lock`](https://docs.python.org/3.5/library/threading.html#lock-objects)
+The [`Lock`](https://docs.python.org/3/library/threading.html#lock-objects)
 class (and its re-entrant version, the
-[`RLock`](https://docs.python.org/3.5/library/threading.html#rlock-objects))
+[`RLock`](https://docs.python.org/3/library/threading.html#rlock-objects))
 prevents a block of code from being accessed by more than one thread at a
 time. For example, if we have multiple threads running this `task` function,
 their [outputs](https://www.youtube.com/watch?v=F5fUFnfPpYU) will inevitably
@@ -229,7 +240,7 @@ what it does to the output.
 
 
 The
-[`Event`](https://docs.python.org/3.5/library/threading.html#event-objects)
+[`Event`](https://docs.python.org/3/library/threading.html#event-objects)
 class is essentially a boolean [semaphore][semaphore-wiki]. It can be used to
 signal events between threads. Threads can `wait` on the event, and be awoken
 when the event is `set` by another thread:
@@ -261,8 +272,8 @@ print('Processing finished!')
 ### The Global Interpreter Lock (GIL)
 
 
-The [_Global Interpreter
-Lock_](https://docs.python.org/3/c-api/init.html#thread-state-and-the-global-interpreter-lock)
+The [*Global Interpreter
+Lock*](https://docs.python.org/3/c-api/init.html#thread-state-and-the-global-interpreter-lock)
 is an implementation detail of [CPython](https://github.com/python/cpython)
 (the official Python interpreter).  The GIL means that a multi-threaded
 program written in pure Python is not able to take advantage of multiple
@@ -282,7 +293,7 @@ running on another core.
 
 
 For true parallelism, you should check out the
-[`multiprocessing`](https://docs.python.org/3.5/library/multiprocessing.html)
+[`multiprocessing`](https://docs.python.org/3/library/multiprocessing.html)
 module.
 
 
@@ -296,11 +307,11 @@ the `threading` module, and a powerful higher-level API.
 
 
 The
-[`Process`](https://docs.python.org/3.5/library/multiprocessing.html#the-process-class)
+[`Process`](https://docs.python.org/3/library/multiprocessing.html#the-process-class)
 class is the `multiprocessing` equivalent of the
-[`threading.Thread`](https://docs.python.org/3.5/library/threading.html#thread-objects)
+[`threading.Thread`](https://docs.python.org/3/library/threading.html#thread-objects)
 class.  `multprocessing` also has equivalents of the [`Lock` and `Event`
-classes](https://docs.python.org/3.5/library/multiprocessing.html#synchronization-between-processes),
+classes](https://docs.python.org/3/library/multiprocessing.html#synchronization-between-processes),
 and the other synchronisation primitives provided by `threading`.
 
 
@@ -309,10 +320,12 @@ and you will have true parallelism.
 
 
 Because your "threads" are now independent processes, you need to be a little
-careful about how to share information across them. Fortunately, the
-`multiprocessing` module provides [`Queue` and `Pipe`
-classes](https://docs.python.org/3.5/library/multiprocessing.html#exchanging-objects-between-processes)
-which make it easy to share data across processes.
+careful about how to share information across them. If you only need to share
+small amounts of data, you can use the [`Queue` and `Pipe`
+classes](https://docs.python.org/3/library/multiprocessing.html#exchanging-objects-between-processes),
+in the `multiprocessing` module. If you are working with large amounts of data
+where copying between processes is not feasible, things become more
+complicated, but read on...
 
 
 ### Higher-level API - the `multiprocessing.Pool`
@@ -320,11 +333,13 @@ which make it easy to share data across processes.
 
 The real advantages of `multiprocessing` lie in its higher level API, centered
 around the [`Pool`
-class](https://docs.python.org/3.5/library/multiprocessing.html#using-a-pool-of-workers).
+class](https://docs.python.org/3/library/multiprocessing.html#using-a-pool-of-workers).
 
 
 Essentially, you create a `Pool` of worker processes - you specify the number
-of processes when you create the pool.
+of processes when you create the pool. Once you have created a `Pool`, you can
+use its methods to automatically parallelise tasks. The most useful are the
+`map`, `starmap` and `apply_async` methods.
 
 
 > The best number of processes to use for a `Pool` will depend on the system
@@ -332,18 +347,13 @@ of processes when you create the pool.
 > I/O bound or CPU bound).
 
 
-Once you have created a `Pool`, you can use its methods to automatically
-parallelise tasks. The most useful are the `map`, `starmap` and
-`apply_async` methods.
-
-
 #### `Pool.map`
 
 
 The
-[`Pool.map`](https://docs.python.org/3.5/library/multiprocessing.html#multiprocessing.pool.Pool.map)
+[`Pool.map`](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.map)
 method is the multiprocessing equivalent of the built-in
-[`map`](https://docs.python.org/3.5/library/functions.html#map) function - it
+[`map`](https://docs.python.org/3/library/functions.html#map) function - it
 is given a function, and a sequence, and it applies the function to each
 element in the sequence.
 
@@ -388,7 +398,7 @@ print('Total execution time: {:0.2f} seconds'.format(end - start))
 The `Pool.map` method only works with functions that accept one argument, such
 as our `crunchImage` function above. If you have a function which accepts
 multiple arguments, use the
-[`Pool.starmap`](https://docs.python.org/3.5/library/multiprocessing.html#multiprocessing.pool.Pool.starmap)
+[`Pool.starmap`](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.starmap)
 method instead:
 
 
@@ -427,7 +437,7 @@ print('Total execution time: {:0.2f} seconds'.format(end - start))
 
 The `map` and `starmap` methods also have asynchronous equivalents `map_async`
 and `starmap_async`, which return immediately. Refer to the
-[`Pool`](https://docs.python.org/3.5/library/multiprocessing.html#module-multiprocessing.pool)
+[`Pool`](https://docs.python.org/3/library/multiprocessing.html#module-multiprocessing.pool)
 documentation for more details.
 
 
@@ -435,16 +445,16 @@ documentation for more details.
 
 
 The
-[`Pool.apply`](https://docs.python.org/3.5/library/multiprocessing.html#multiprocessing.pool.Pool.apply)
+[`Pool.apply`](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.apply)
 method will execute a function on one of the processes, and block until it has
 finished.  The
-[`Pool.apply_async`](https://docs.python.org/3.5/library/multiprocessing.html#multiprocessing.pool.Pool.apply_async)
+[`Pool.apply_async`](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.Pool.apply_async)
 method returns immediately, and is thus more suited to asynchronously
 scheduling multiple jobs to run in parallel.
 
 
 `apply_async` returns an object of type
-[`AsyncResult`](https://docs.python.org/3.5/library/multiprocessing.html#multiprocessing.pool.AsyncResult).
+[`AsyncResult`](https://docs.python.org/3/library/multiprocessing.html#multiprocessing.pool.AsyncResult).
 An `AsyncResult` object has `wait` and `get` methods which will block until
 the job has completed.
 
@@ -526,9 +536,9 @@ the data that they return then has to be copied back to the parent process.
 
 
 Any items which you wish to pass to a function that is executed by a `Pool`
-must be - the built-in
-[`pickle`](https://docs.python.org/3.5/library/pickle.html) module is used by
-`multiprocessing` to serialise and de-serialise the data passed into and
+must be *pickleable*<sup>1</sup> - the built-in
+[`pickle`](https://docs.python.org/3/library/pickle.html) module is used by
+`multiprocessing` to serialise and de-serialise the data passed to and
 returned from a child process. The majority of standard Python types (`list`,
 `dict`, `str` etc), and Numpy arrays can be pickled and unpickled, so you only
 need to worry about this detail if you are passing objects of a custom type
@@ -536,24 +546,134 @@ need to worry about this detail if you are passing objects of a custom type
 third-party library).
 
 
+> <sup>1</sup>*Pickleable* is the term used in the Python world to refer to
+> something that is *serialisable* - basically, the process of converting an
+> in-memory object into a binary form that can be stored and/or transmitted.
+
+
 There is obviously some overhead in copying data back and forth between the
-main process and the worker processes.  For most computationally intensive
-tasks, this communication overhead is not important - the performance
-bottleneck is typically going to be the computation time, rather than I/O
-between the parent and child processes. You may need to spend some time
-adjusting the way in which you split up your data, and the number of
-processes, in order to get the best performance.
+main process and the worker processes; this may or may not be a problem.  For
+most computationally intensive tasks, this communication overhead is not
+important - the performance bottleneck is typically going to be the
+computation time, rather than I/O between the parent and child processes.
 
 
-However, if you have determined that copying data between processes is having
-a substantial impact on your performance, the `multiprocessing` module
-provides the [`Value`, `Array`, and `RawArray`
-classes](https://docs.python.org/3.5/library/multiprocessing.html#shared-ctypes-objects),
+However, if you are working with a large dataset, you have determined that
+copying data between processes is having a substantial impact on your
+performance, and instead wish to *share* a single copy of the data between
+the processes, you will need to:
+
+ 1. Structure your code so that the data you want to share is accessible at
+    the *module level*.
+ 2. Define/create/load the data *before* creating the `Pool`.
+
+
+This is because, when you create a `Pool`, what actually happens is that the
+process your Pythonn script is running in will [**fork**](wiki-fork) itself -
+the child processes that are created are used as the worker processes by the
+`Pool`. And if you create/load your data in your main process *before* this
+fork occurs, all of the child processes will inherit the memory space of the
+main process, and will therefore have (read-only) access to the data, without
+any copying required.
+
+
+[wiki-fork]: https://en.wikipedia.org/wiki/Fork_(system_call)
+
+
+Let's see this in action with a simple example. We'll start by defining a
+little helper function which allows us to track the total memory usage, using
+the unix `free` command:
+
+
+```
+# todo mac version
+import subprocess as sp
+def memusage(msg):
+    stdout = sp.run(['free', '--mega'], capture_output=True).stdout.decode()
+    stdout = stdout.split('\n')[1].split()
+    total  = stdout[1]
+    used   = stdout[2]
+    print('Memory usage {}: {} / {} MB'.format(msg, used, total))
+```
+
+
+Now our task is simply to calculate the sum of a large array of numbers. We're
+going to create a big chunk of data, and process it in chunks, keeping track
+of memory usage as the task progresses:
+
+
+```
+import time
+
+memusage('before creating data')
+
+# allocate 500MB of data
+data = np.random.random(500 * (1048576 // 8))
+
+# Assign nelems values to each worker
+# process (hard-coded so we need 12
+# jobs to complete the task)
+nelems =  len(data) // 12
+
+memusage('after creating data')
+
+# Each job process nelems values,
+# starting from the specified offset
+def process_chunk(offset):
+    time.sleep(1)
+    return data[offset:offset + nelems].mean()
+
+# Create our worker process pool
+pool = mp.Pool(4)
+
+# Generate an offset into the data for each
+# job, and call process_chunk for each offset
+offsets = range(0, len(data), nelems)
+results = pool.map_async(process_chunk, offsets)
+
+# Wait for all of the jobs to finish
+elapsed = 0
+while not results.ready():
+    memusage('after {} seconds'.format(elapsed))
+    time.sleep(1)
+    elapsed += 1
+
+results = results.get()
+print('Total sum:', sum(results))
+```
+
+
+You should be able to see that only one copy of `data` is created, and is
+shared by all of the worker processes without any copying taking place.
+
+So if you only need read-only acess ...
+
+But what if your worker processes need ...
+
+Go back to the code block above and ...
+
+
+
+
+
+
+> If you have worked with a real programming language with true parallelism
+> and shared memory via within-process multi-threading, feel free to take a
+> break at this point. Breathe. Relax. Go punch a hole in a wall. I've been
+> coding in Python for years, and this still makes me angry. Sometimes
+> ... don't tell anyone I said this ... I even find myself wishing I were
+> coding in *Java* instead of Python. Ugh. I need to take a shower.
+
+
+
+
+The `multiprocessing` module provides the [`Value`, `Array`, and `RawArray`
+classes](https://docs.python.org/3/library/multiprocessing.html#shared-ctypes-objects),
 which allow you to share individual values, or arrays of values, respectively.
 
 
 The `Array` and `RawArray` classes essentially wrap a typed pointer (from the
-built-in [`ctypes`](https://docs.python.org/3.5/library/ctypes.html) module)
+built-in [`ctypes`](https://docs.python.org/3/library/ctypes.html) module)
 to a block of memory. We can use the `Array` or `RawArray` class to share a
 Numpy array between our worker processes. The difference between an `Array`
 and a `RawArray` is that the former offers synchronised (i.e. process-safe)
