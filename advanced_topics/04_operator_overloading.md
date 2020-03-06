@@ -8,13 +8,13 @@
 Operator overloading, in an object-oriented programming language, is the
 process of customising the behaviour of _operators_ (e.g. `+`, `*`, `/` and
 `-`) on user-defined types. This practical aims to show you that operator
-overloading is __very__ easy to do in Python.
+overloading is **very** easy to do in Python.
 
 
 This practical gives a brief overview of the operators which you may be most
 interested in implementing. However, there are many operators (and other
 special methods) which you can support in your own classes - the [official
-documentation](https://docs.python.org/3.5/reference/datamodel.html#basic-customization)
+documentation](https://docs.python.org/3/reference/datamodel.html#basic-customization)
 is the best reference if you are interested in learning more.
 
 
@@ -173,7 +173,7 @@ rules are followed depending on the set of methods implemented on the
 operands. For example, in the expression `a + b`, if `a.__add__` is not
 implemented, but but `b.__radd__` is implemented, then the latter will be
 called.  Take a look at the [official
-documentation](https://docs.python.org/3.5/reference/datamodel.html#emulating-numeric-types)
+documentation](https://docs.python.org/3/reference/datamodel.html#emulating-numeric-types)
 for further details, including a full list of the arithmetic and logical
 operators that your classes can support.
 
@@ -252,9 +252,9 @@ print(sorted((l3, l1, l2)))
 
 
 The
-[`@functools.total_ordering`](https://docs.python.org/3.5/library/functools.html#functools.total_ordering)
+[`@functools.total_ordering`](https://docs.python.org/3/library/functools.html#functools.total_ordering)
 is a convenience
-[decorator](https://docs.python.org/3.5/glossary.html#term-decorator) which,
+[decorator](https://docs.python.org/3/glossary.html#term-decorator) which,
 given a class that implements equality and a single comparison function
 (`__lt__` in the above code), will "fill in" the remainder of the comparison
 operators.  If you need very specific or complicated behaviour, then you can
@@ -271,7 +271,7 @@ and just one of `__lt__`, `__le__`, `__gt__` or `__ge__`.
 
 
 Refer to the [official
-documentation](https://docs.python.org/3.5/reference/datamodel.html#object.__lt__)
+documentation](https://docs.python.org/3/reference/datamodel.html#object.__lt__)
 for all of the details on supporting comparison operators.
 
 
@@ -293,13 +293,13 @@ At its essence, there are only three types of behaviours that are possible
 with the `[]` operator. All that is needed to support them are to implement
 three special methods in your class, regardless of whether your class will be
 indexed by sequential integers (like a `list`) or by
-[hashable](https://docs.python.org/3.5/glossary.html#term-hashable) values
+[hashable](https://docs.python.org/3/glossary.html#term-hashable) values
 (like a `dict`):
 
 
-- __Retrieval__ is performed by the `__getitem__` method
-- __Assignment__ is performed by the `__setitem__` method
-- __Deletion__ is performed by the `__delitem__` method
+- **Retrieval** is performed by the `__getitem__` method
+- **Assignment** is performed by the `__setitem__` method
+- **Deletion** is performed by the `__delitem__` method
 
 
 Note that, if you implement these methods in your own class, there is no
@@ -370,7 +370,7 @@ print(tt['12345'])
 
 
 If you wish to support the Python `start:stop:step` [slice
-notation](https://docs.python.org/3.5/library/functions.html#slice), you
+notation](https://docs.python.org/3/library/functions.html#slice), you
 simply need to write your `__getitem__` and `__setitem__` methods so that they
 can detect `slice` objects:
 
@@ -414,7 +414,7 @@ print(tt[::2])
 > different hashing algorithm), the `Sequence` and `MutableMapping` classes
 > are [a better choice](https://stackoverflow.com/a/7148602) - you can find
 > them in the
-> [`collections.abc`](https://docs.python.org/3.5/library/collections.abc.html)
+> [`collections.abc`](https://docs.python.org/3/library/collections.abc.html)
 > module.
 
 
@@ -472,7 +472,7 @@ inv = tf(data)
 
 
 > The `TimedFunction` class is conceptually very similar to a
-> [decorator](https://docs.python.org/3.5/glossary.html#term-decorator) -
+> [decorator](https://docs.python.org/3/glossary.html#term-decorator) -
 > decorators are covered in another practical.
 
 
@@ -485,7 +485,7 @@ the attributes and methods of an object.  This is very powerful, but is also
 quite a niche feature, and it is easy to trip yourself up, so if you wish to
 use this in your own project, make sure that you carefully read (and
 understand) [the
-documentation](https://docs.python.org/3.5/reference/datamodel.html#customizing-attribute-access),
+documentation](https://docs.python.org/3/reference/datamodel.html#customizing-attribute-access),
 and test your code comprehensively!
 
 
