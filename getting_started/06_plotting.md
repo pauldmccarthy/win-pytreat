@@ -109,7 +109,7 @@ there is also an alternative: `scatter()`
 ```
 fig, ax = plt.subplots()
 # setup some sizes for each point (arbitrarily example here)
-ssize = 100*abs(samp1-samp2) + 10 
+ssize = 100*abs(samp1-samp2) + 10
 ax.scatter(samp1, samp2, s=ssize, alpha=0.5)
 # now add the y=x line
 allsamps = np.hstack((samp1,samp2))
@@ -153,10 +153,27 @@ import nibabel as nib
 import os.path as op
 nim = nib.load(op.expandvars('${FSLDIR}/data/standard/MNI152_T1_1mm.nii.gz'), mmap=False)
 imdat = nim.get_data().astype(float)
-plt.imshow(imdat[:,:,70], cmap=plt.cm.gray)
+imslc = imdat[:,:,70]
+plt.imshow(imslc, cmap=plt.cm.gray)
 plt.colorbar()
 plt.grid('off')
 ```
+
+Note that matplotlib will use the **voxel data orientation**, and that
+configuring the plot orientation is **your responsibility**. To rotate a
+slice, simply transpose the data (`.T`). To invert the data along along an
+axis, you don't need to modify the data - simply swap the axis limits around:
+
+
+```
+plt.imshow(imslc.T, cmap=plt.cm.gray)
+plt.xlim(reversed(plt.xlim()))
+plt.ylim(reversed(plt.ylim()))
+plt.colorbar()
+plt.grid('off')
+
+```
+
 
 
 <a class="anchor" id="3D-plots"></a>
@@ -208,5 +225,3 @@ example code from the docs).
 ```
 # Make up some data and do the funky plot
 ```
-
-

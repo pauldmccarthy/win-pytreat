@@ -10,7 +10,17 @@ explanations. You can run each block by using _shift + enter_
 (including the text blocks, so you can just move down the document
 with shift + enter).
 
-It is also possible to _change_ the contents of each code block (these pages are completely interactive) so do experiment with the code you see and try some variations!
+It is also possible to _change_ the contents of each code block (these pages
+are completely interactive) so do experiment with the code you see and try
+some variations!
+
+> **Important**: We are exclusively using Python 3 in FSL - as of FSL 6.0.4 we
+> are using Python 3.7. There are some subtle differences between Python 2 and
+> Python 3, but instead of learning about these differences, it is easier to
+> simply forget that Python 2 exists.  When you are googling for Python help,
+> make sure that the pages you find are relevant to Python 3 and *not* Python
+> 2! The official Python docs can be found at https://docs.python.org/3/ (note
+> the _/3/_ at the end!).
 
 ## Contents
 
@@ -104,7 +114,10 @@ print(s3)
 <a class="anchor" id="Format"></a>
 ### Format
 
-More interesting strings can be created using the `format` statement, which is very useful in print statements:
+More interesting strings can be created using the
+[`format`](https://docs.python.org/3/library/string.html#formatstrings)
+statement, which is very useful in print statements:
+
 ```
 x = 1
 y = 'PyTreat'
@@ -113,7 +126,16 @@ print(s)
 print('A name is {} and a number is {}'.format(y, x))
 ```
 
-There are also other options along these lines, but this is the more modern version, although you will see plenty of the other alternatives in "old" code (to python coders this means anything written before last week).
+Python also supports C-style [`%`
+formatting](https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting):
+
+```
+x = 1
+y = 'PyTreat'
+s = 'The numerical value is %i and a name is %s' % (x, y)
+print(s)
+print('A name is %s and a number is %i' % (y, x))
+```
 
 <a class="anchor" id="String-manipulation"></a>
 ### String manipulation
@@ -150,7 +172,8 @@ where the `r` before the quote is used to force the regular expression specifica
 
 For more information on matching and substitutions, look up the regular expression module on the web.
 
-Two common and convenient string methods are `strip()` and `split()`.  The first will remove any whitespace at the beginning and end of a string:
+Two common and convenient string methods are `strip()` and `split()`.  The
+first will remove any whitespace at the beginning and end of a string:
 
 ```
 s2 = '   A very    spacy   string       '
@@ -159,6 +182,7 @@ print('*' + s2.strip() + '*')
 ```
 
 With `split()` we can tokenize a string (to turn it into a list of strings) like this:
+
 ```
 print(s.split())
 print(s2.split())
@@ -170,11 +194,27 @@ s4 = '  This is,  as you can    see ,   a very  weirdly spaced and punctuated   
 print(s4.split(','))
 ```
 
-There are more powerful ways of dealing with this like csv files/strings, which are covered in later practicals, but even this can get you a long way.
+A neat trick, if you want to change the delimiter in some structured data (e.g.
+replace `,` with `\t`), is to use `split()` in combination with another string
+method, `join()`:
+```
+csvdata = 'some,comma,separated,data'
+tsvdata = '\t'.join(csvdata.split(','))
+tsvdata = tsvdata.replace('comma', 'tab'))
+print('csvdata:', csvdata)
+print('tsvdata:', tsvdata)
+```
 
-> Note that strings in python 3 are _unicode_ so can represent Chinese characters, etc, and is therefore very flexible.  However, in general you can just be blissfully ignorant of this fact.
 
-Strings can be converted to integer or floating-point values by using the `int()` and `float()` calls:
+There are more powerful ways of dealing with this like csv files/strings,
+which are covered in later practicals, but even this can get you a long way.
+
+> Note that strings in python 3 are _unicode_ so can represent Chinese
+> characters, etc, and is therefore very flexible.  However, in general you
+> can just be blissfully ignorant of this fact.
+
+Strings can be converted to integer or floating-point values by using the
+`int()` and `float()` calls:
 
 ```
 sint='23'
@@ -191,8 +231,8 @@ print(float(sint) + float(sfp))
 <a class="anchor" id="Tuples-and-lists"></a>
 ## Tuples and lists
 
-Both tuples and lists are builtin python types and are like vectors, 
-but for numerical vectors and arrays it is much better to use _numpy_
+Both tuples and lists are builtin python types and are like vectors,
+but for numerical vectors and arrays it is much better to use `numpy`
 arrays (or matrices), which are covered in a later tutorial.
 
 A tuple is like a list or a vector, but with less flexibility than a full list (tuples are immutable), however anything can be stored in either a list or tuple, without any consistency being required.  Tuples are defined using round brackets and lists are defined using square brackets. For example:
@@ -222,7 +262,8 @@ a +=  [80]
 print(a)
 ```
 
-> Similar things can be done for tuples, except for the last one: that is, a += (80) as a tuple is immutable so cannot be changed like this. 
+> Similar things can be done for tuples, except for the last one: that is,
+> `a += (80)` as a tuple is immutable so cannot be changed like this.
 
 <a class="anchor" id="Indexing"></a>
 ### Indexing
@@ -242,7 +283,9 @@ print(a[0])
 print(a[2])
 ```
 
-Indices naturally run from 0 to N-1, _but_ negative numbers can be used to reference from the end (circular wrap-around). 
+Indices naturally run from 0 to N-1, _but_ negative numbers can be used to
+reference from the end (circular wrap-around).
+
 ```
 print(a[-1])
 print(a[-6])
@@ -294,7 +337,7 @@ print(a[1:3])    # same as a(2:3) in MATLAB
 > _*Pitfall:*_
 >
 >  Unlike in MATLAB, you cannot use a list as indices instead of an
->  integer or a slice (although these can be done in _numpy_).
+>  integer or a slice (although these can be done in `numpy`).
 
 ```
 b = [3, 4]
@@ -372,7 +415,9 @@ dir(d)
 ```
 
 
-> Note that google is often more helpful!  At least, as long as you find pages relating to the right version of python - we use python 3 for FSL, so check that what you find is appropriate for that.
+> Note that google is often more helpful!  At least, as long as you find pages
+> relating to Python 3 - Python 2 is no longer supported, but there is still
+> lots of information about it on the internet, so be careful!
 
 ---
 
@@ -430,14 +475,20 @@ for k in e:
     print((k, e[k]))
 ```
 
-> Note that in both cases the order is arbitrary. The `sorted` function can be used if you want keys in a sorted order; e.g. `for k in sorted(e):` ...
+> In older versions of Python 3, there was no guarantee of ordering when using dictionaries.
+> However, a of Python 3.7, dictionaries will remember the order in which items are inserted,
+> and the `keys()`, `values()`, and `items()` methods will return elements in that order.
 >
-> There are also [other options](https://docs.python.org/3.5/library/collections.html#collections.OrderedDict) if you want a dictionary with ordering.
+
+> If you want a dictionary with ordering, *and* you want your code to work with
+> Python versions older than 3.7, you can use the
+> [`OrderedDict`](https://docs.python.org/3/library/collections.html#collections.OrderedDict)
+> class.
 
 ---
 
 <a class="anchor" id="Copying-and-references"></a>
-## Copying and references 
+## Copying and references
 
 In python there are immutable types (e.g. numbers) and mutable types (e.g. lists). The main thing to know is that assignment can sometimes create separate copies and sometimes create references (as in C++). In general, the more complicated types are assigned via references. For example:
 ```
@@ -517,7 +568,11 @@ print('b: ', b)
 <a class="anchor" id="Boolean-operators"></a>
 ### Boolean operators
 
-There is a boolean type in python that can be `True` or `False` (note the capitals). Other values can also be used for True or False (e.g., 1 for True; 0 or None or [] or {} or "") although they are not considered 'equal' in the sense that the operator `==` would consider them the same.
+There is a boolean type in python that can be `True` or `False` (note the
+capitals). Other values can also be used for True or False (e.g., `1` for
+`True`; `0` or `None` or `[]` or `{}` or `""` for `False`) although they are
+not considered 'equal' in the sense that the operator `==` would consider them
+the same.
 
 Relevant boolean and comparison operators include: `not`, `and`, `or`, `==` and `!=`
 
@@ -564,7 +619,7 @@ a = []    # just one of many examples
 if not a:
     print('Variable is true, or at least not empty')
 ```
-This can be useful for functions where a variety of possible input types are being dealt with. 
+This can be useful for functions where a variety of possible input types are being dealt with.
 
 ---
 
@@ -722,7 +777,7 @@ You will often see python functions called with these named arguments. In fact, 
 Let's say you are given a single string with comma separated elements
 that represent filenames and ID codes: e.g., `/vols/Data/pytreat/AAC, 165873, /vols/Data/pytreat/AAG, 170285, ...`
 
-Write some code to do the following: 
+Write some code to do the following:
  * separate out the filenames and ID codes into separate lists (ID's
  should be numerical values, not strings) - you may need several steps for this
  * loop over the two and generate a _string_ that could be used to
@@ -738,5 +793,3 @@ Write some code to do the following:
 mstr = '/vols/Data/pytreat/AAC, 165873,  /vols/Data/pytreat/AAG,   170285, /vols/Data/pytreat/AAH, 196792, /vols/Data/pytreat/AAK, 212577, /vols/Data/pytreat/AAQ, 385376, /vols/Data/pytreat/AB, 444600, /vols/Data/pytreat/AC6, 454578, /vols/Data/pytreat/V8, 501502,   /vols/Data/pytreat/2YK, 667688, /vols/Data/pytreat/C3PO, 821971'
 
 ```
-
-
