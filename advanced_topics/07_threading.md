@@ -526,7 +526,7 @@ for t1, result in zip(t1s, nlinresults):
 ```
 
 
-### Sharing data between processes
+## Sharing data between processes
 
 
 When you use the `Pool.map` method (or any of the other methods we have shown)
@@ -580,6 +580,9 @@ any copying required.
 [wiki-fork]: https://en.wikipedia.org/wiki/Fork_(system_call)
 
 
+### Read-only sharing
+
+
 Let's see this in action with a simple example. We'll start by defining a
 little helper function which allows us to track the total memory usage, using
 the unix `free` command:
@@ -621,7 +624,7 @@ memusage('after creating data')
 # starting from the specified offset
 def process_chunk(offset):
     time.sleep(1)
-    return data[offset:offset + nelems].mean()
+    return data[offset:offset + nelems].sum()
 
 # Create our worker process pool
 pool = mp.Pool(4)
@@ -639,22 +642,43 @@ while not results.ready():
     elapsed += 1
 
 results = results.get()
-print('Total sum:', sum(results))
+print('Total sum:   ', sum(results))
+print('Sanity check:', data.sum())
 ```
 
 
 You should be able to see that only one copy of `data` is created, and is
 shared by all of the worker processes without any copying taking place.
 
-So if you only need read-only acess ...
+So things are reasonably straightforward if you only need read-only acess to
+your data. But what if your worker processes need to be able to modify the
+data? Go back to the code block above and:
 
-But what if your worker processes need ...
+1. Modify the `process_chunk` function so that it modifies every element of
+   its assigned portion of the data before calculating and returning the sum.
+   For example:
 
-Go back to the code block above and ...
+   > ```
+   > data[offset:offset + nelems] += 1
+   > ```
+
+2. Re-run the code block, and watch what happens to the memory usage.
 
 
+What happened? Well, you are seeing [copy-on-write](wiki-copy-on-write) in
+action. When the `process_chunk` is invoked, it is given a reference to the
+original data array in the memory space of the parent process. But as soon as
+an attempt is made to modify it, a copy of the data, in the memory space of
+the child process, is created. The modifications are then applied to this
+child process, and not to the original copy. So the total memory usage has
+blown out to twice as much as before, and the changes made by each child
+process are being lost!
 
 
+[wiki-copy-on-write]: https://en.wikipedia.org/wiki/Copy-on-write
+
+
+### Read/write sharing
 
 
 > If you have worked with a real programming language with true parallelism
@@ -665,27 +689,32 @@ Go back to the code block above and ...
 > coding in *Java* instead of Python. Ugh. I need to take a shower.
 
 
-
-
-The `multiprocessing` module provides the [`Value`, `Array`, and `RawArray`
+In order to truly share memory between multiple processes, the
+`multiprocessing` module provides the [`Value`, `Array`, and `RawArray`
 classes](https://docs.python.org/3/library/multiprocessing.html#shared-ctypes-objects),
 which allow you to share individual values, or arrays of values, respectively.
 
 
 The `Array` and `RawArray` classes essentially wrap a typed pointer (from the
-built-in [`ctypes`](https://docs.python.org/3/library/ctypes.html) module)
-to a block of memory. We can use the `Array` or `RawArray` class to share a
-Numpy array between our worker processes. The difference between an `Array`
-and a `RawArray` is that the former offers synchronised (i.e. process-safe)
-access to the shared memory. This is necessary if your child processes will be
-modifying the same parts of your data.
+built-in [`ctypes`](https://docs.python.org/3/library/ctypes.html) module) to
+a block of memory. We can use the `Array` or `RawArray` class to share a Numpy
+array between our worker processes. The difference between an `Array` and a
+`RawArray` is that the former offers low-level synchronised
+(i.e. process-safe) access to the shared memory. This is necessary if your
+child processes will be modifying the same parts of your data.
 
 
-Due to the way that shared memory works, in order to share a Numpy array
-between different processes you need to structure your code so that the
-array(s) you want to share are accessible at the _module level_. Furthermore,
-we need to make sure that our input and output arrays are located in shared
-memory - we can do this via the `Array` or `RawArray`.
+> If you need fine-grained control over synchronising access to shared data by
+> multiple processes, all of the [synchronisation
+> primitives](https://docs.python.org/3/library/multiprocessing.html#synchronization-between-processes)
+> from the `multiprocessing` module are at your disposal.
+
+
+The requirements for sharing memory between processes still apply here - we
+need to make our data accessible at the *module level*, and we need to create
+our data before creating the `Pool`. And to achieve read and write capability,
+we also need to make sure that our input and output arrays are located in
+shared memory - we can do this via the `Array` or `RawArray`.
 
 
 As an example, let's say we want to parallelise processing of an image by
@@ -758,11 +787,18 @@ def process_dataset(data):
     # Make the input/output data
     # accessible to the process_chunk
     # function. This must be done
-    # *before* the worker pool is created.
+    # *before* the worker pool is
+    # created - even though we are
+    # doing things differently to the
+    # read-only example, we are still
+    # making the data arrays accessible
+    # at the *module* level, so the
+    # memory they are stored in can be
+    # shared with the child processes.
     process_chunk.input_data  = sindata
     process_chunk.output_data = soutdata
 
-    # number of boxels to be computed
+    # number of voxels to be computed
     # by each worker process.
     nvox = int(data.size / nprocs)
 
@@ -781,12 +817,9 @@ def process_dataset(data):
     # process a list of indices, which
     # specify the data items which that
     # worker process needs to compute.
-    xs = [xs[nvox * i:nvox * i + nvox] for i in range(nprocs)] + \
-         [xs[nvox * nprocs:]]
-    ys = [ys[nvox * i:nvox * i + nvox] for i in range(nprocs)] + \
-         [ys[nvox * nprocs:]]
-    zs = [zs[nvox * i:nvox * i + nvox] for i in range(nprocs)] + \
-         [zs[nvox * nprocs:]]
+    xs = [xs[nvox * i:nvox * i + nvox] for i in range(nprocs)] + [xs[nvox * nprocs:]]
+    ys = [ys[nvox * i:nvox * i + nvox] for i in range(nprocs)] + [ys[nvox * nprocs:]]
+    zs = [zs[nvox * i:nvox * i + nvox] for i in range(nprocs)] + [zs[nvox * nprocs:]]
 
     # Build the argument lists for
     # each worker process.
@@ -794,7 +827,7 @@ def process_dataset(data):
 
     # Create a pool of worker
     # processes and run the jobs.
-    pool   = mp.Pool(processes=nprocs)
+    pool = mp.Pool(processes=nprocs)
 
     pool.starmap(process_chunk, args)
 
@@ -816,3 +849,12 @@ print(data)
 print('Output')
 print(outdata)
 ```
+
+
+## The `concurrent.futures` library
+
+
+The `concurrent.futures` module provides a simpler alternative API to the
+`multiprocessing` module - it focuses specifically on asynchronous execution
+of tasks, so can be used instead of the `Pool.map_async` and
+`Pool.apply_async` methods.
