@@ -5,14 +5,12 @@ The Python language has built-in support for multi-threading in the
 [`threading`](https://docs.python.org/3/library/threading.html) module, and
 true parallelism in the
 [`multiprocessing`](https://docs.python.org/3/library/multiprocessing.html)
-and
-[`concurrent.futures`](https://docs.python.org/3/library/concurrent.futures.html)
-modules.  If you want to be impressed, skip straight to the section on
+module.  If you want to be impressed, skip straight to the section on
 [`multiprocessing`](todo).
 
 
 > *Note*: If you are familiar with a "real" programming language such as C++
-> or Java, you will be disappointed with the native support for parallelism in
+> or Java, you might be disappointed with the native support for parallelism in
 > Python. Python threads do not run in parallel because of the Global
 > Interpreter Lock, and if you use `multiprocessing`, be prepared to either
 > bear the performance hit of copying data between processes, or jump through
@@ -303,6 +301,11 @@ from. It provides two APIs - a "traditional" equivalent to that provided by
 the `threading` module, and a powerful higher-level API.
 
 
+> Python also provides the
+> [`concurrent.futures`](https://docs.python.org/3/library/concurrent.futures.html)
+> module, which offers a simpler alternative API to `multiprocessing`. It
+> offers no functionality over `multiprocessing`, so is not covered here.
+
 ### `threading`-equivalent API
 
 
@@ -340,6 +343,21 @@ Essentially, you create a `Pool` of worker processes - you specify the number
 of processes when you create the pool. Once you have created a `Pool`, you can
 use its methods to automatically parallelise tasks. The most useful are the
 `map`, `starmap` and `apply_async` methods.
+
+
+
+The `Pool` class is a context manager, so can be used in a `with` statement,
+e.g.:
+
+> ```
+> with mp.Pool(processes=16) as pool:
+>     # do stuff with the pool
+> ```
+
+It is possible to create a `Pool` outside of a `with` statement, but in this
+case you must ensure that you call its `close` mmethod when you are finished.
+Using a `Pool` in a `with` statement is therefore recommended, because you know
+that it will be shut down correctly, even in the event of an error.
 
 
 > The best number of processes to use for a `Pool` will depend on the system
@@ -383,13 +401,14 @@ def crunchImage(imgfile):
 
 imgfiles = ['{:02d}.nii.gz'.format(i) for i in range(20)]
 
-p = mp.Pool(processes=16)
-
 print('Crunching images...')
 
-start   = time.time()
-results = p.map(crunchImage, imgfiles)
-end     = time.time()
+start = time.time()
+
+with mp.Pool(processes=16) as p:
+     results = p.map(crunchImage, imgfiles)
+
+end = time.time()
 
 print('Total execution time: {:0.2f} seconds'.format(end - start))
 ```
@@ -421,15 +440,16 @@ imgfiles   = ['t1_{:02d}.nii.gz'.format(i) for i in range(10)] + \
              ['t2_{:02d}.nii.gz'.format(i) for i in range(10)]
 modalities = ['t1'] * 10 + ['t2'] * 10
 
-pool = mp.Pool(processes=16)
-
 args = [(f, m) for f, m in zip(imgfiles, modalities)]
 
 print('Crunching images...')
 
-start   = time.time()
-results = pool.starmap(crunchImage, args)
-end     = time.time()
+start = time.time()
+
+with mp.Pool(processes=16) as pool:
+     results = pool.starmap(crunchImage, args)
+
+end = time.time()
 
 print('Total execution time: {:0.2f} seconds'.format(end - start))
 ```
@@ -482,24 +502,24 @@ def nonlinear_registration(src, ref, affine):
 t1s = ['{:02d}_t1.nii.gz'.format(i) for i in range(20)]
 std = 'MNI152_T1_2mm.nii.gz'
 
-pool = mp.Pool(processes=16)
-
 print('Running structural-to-standard registration '
       'on {} subjects...'.format(len(t1s)))
 
 # Run linear registration on all the T1s.
-#
-# We build a list of AsyncResult objects
-linresults = [pool.apply_async(linear_registration, (t1, std))
-              for t1 in t1s]
-
-# Then we wait for each job to finish,
-# and replace its AsyncResult object
-# with the actual result - an affine
-# transformation matrix.
 start = time.time()
-for i, r in enumerate(linresults):
-    linresults[i] = r.get()
+with mp.Pool(processes=16) as pool:
+
+    # We build a list of AsyncResult objects
+    linresults = [pool.apply_async(linear_registration, (t1, std))
+                  for t1 in t1s]
+
+    # Then we wait for each job to finish,
+    # and replace its AsyncResult object
+    # with the actual result - an affine
+    # transformation matrix.
+    for i, r in enumerate(linresults):
+        linresults[i] = r.get()
+
 end = time.time()
 
 print('Linear registrations completed in '
@@ -507,14 +527,16 @@ print('Linear registrations completed in '
 
 # Run non-linear registration on all the T1s,
 # using the linear registrations to initialise.
-nlinresults = [pool.apply_async(nonlinear_registration, (t1, std, aff))
-               for (t1, aff) in zip(t1s, linresults)]
-
-# Wait for each non-linear reg to finish,
-# and store the resulting warp field.
 start = time.time()
-for i, r in enumerate(nlinresults):
-    nlinresults[i] = r.get()
+with mp.Pool(processes=16) as pool:
+    nlinresults = [pool.apply_async(nonlinear_registration, (t1, std, aff))
+                   for (t1, aff) in zip(t1s, linresults)]
+
+    # Wait for each non-linear reg to finish,
+    # and store the resulting warp field.
+    for i, r in enumerate(nlinresults):
+        nlinresults[i] = r.get()
+
 end = time.time()
 
 print('Non-linear registrations completed in '
@@ -606,7 +628,9 @@ of memory usage as the task progresses:
 
 
 ```
-import time
+import                    time
+import multiprocessing as mp
+import numpy           as np
 
 memusage('before creating data')
 
@@ -626,22 +650,24 @@ def process_chunk(offset):
     time.sleep(1)
     return data[offset:offset + nelems].sum()
 
-# Create our worker process pool
-pool = mp.Pool(4)
-
-# Generate an offset into the data for each
-# job, and call process_chunk for each offset
+# Generate an offset into the data for each job -
+# we will call process_chunk for each offset
 offsets = range(0, len(data), nelems)
-results = pool.map_async(process_chunk, offsets)
 
-# Wait for all of the jobs to finish
-elapsed = 0
-while not results.ready():
-    memusage('after {} seconds'.format(elapsed))
-    time.sleep(1)
-    elapsed += 1
+# Create our worker process pool
+with mp.Pool(4) as pool:
 
-results = results.get()
+    results = pool.map_async(process_chunk, offsets)
+
+    # Wait for all of the jobs to finish
+    elapsed = 0
+    while not results.ready():
+        memusage('after {} seconds'.format(elapsed))
+        time.sleep(1)
+        elapsed += 1
+
+    results = results.get()
+
 print('Total sum:   ', sum(results))
 print('Sanity check:', data.sum())
 ```
@@ -662,7 +688,12 @@ data? Go back to the code block above and:
    > data[offset:offset + nelems] += 1
    > ```
 
-2. Re-run the code block, and watch what happens to the memory usage.
+2. Restart the Jupyter notebook kernel (*Kernel -> Restart*) - this example is
+   somewhat dependent on the behaviour of the Python garbage collector, so it
+   helps to start afresh
+
+
+2. Re-run the two code blocks, and watch what happens to the memory usage.
 
 
 What happened? Well, you are seeing [copy-on-write](wiki-copy-on-write) in
@@ -827,9 +858,8 @@ def process_dataset(data):
 
     # Create a pool of worker
     # processes and run the jobs.
-    pool = mp.Pool(processes=nprocs)
-
-    pool.starmap(process_chunk, args)
+    with mp.Pool(processes=nprocs) as pool:
+        pool.starmap(process_chunk, args)
 
     return outdata
 ```
@@ -839,8 +869,7 @@ Now we can call our `process_data` function just like any other function:
 
 
 ```
-data = np.array(np.arange(64).reshape((4, 4, 4)), dtype=np.float64)
-
+indata  = np.array(np.arange(64).reshape((4, 4, 4)), dtype=np.float64)
 outdata = process_dataset(data)
 
 print('Input')
@@ -849,12 +878,3 @@ print(data)
 print('Output')
 print(outdata)
 ```
-
-
-## The `concurrent.futures` library
-
-
-The `concurrent.futures` module provides a simpler alternative API to the
-`multiprocessing` module - it focuses specifically on asynchronous execution
-of tasks, so can be used instead of the `Pool.map_async` and
-`Pool.apply_async` methods.
