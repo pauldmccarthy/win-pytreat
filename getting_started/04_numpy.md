@@ -18,24 +18,24 @@ alternative to Matlab as a scientific computing platform.
 
 * [The Python list versus the Numpy array](#the-python-list-versus-the-numpy-array)
 * [Numpy basics](#numpy-basics)
- * [Creating arrays](#creating-arrays)
- * [Loading text files](#loading-text-files)
- * [Array properties](#array-properties)
- * [Descriptive statistics](#descriptive-statistics)
- * [Reshaping and rearranging arrays](#reshaping-and-rearranging-arrays)
+  * [Creating arrays](#creating-arrays)
+  * [Loading text files](#loading-text-files)
+  * [Array properties](#array-properties)
+  * [Descriptive statistics](#descriptive-statistics)
+  * [Reshaping and rearranging arrays](#reshaping-and-rearranging-arrays)
 * [Operating on arrays](#operating-on-arrays)
- * [Scalar operations](#scalar-operations)
- * [Multi-variate operations](#multi-variate-operations)
- * [Matrix multplication](#matrix-multiplication)
- * [Broadcasting](#broadcasting)
- * [Linear algebra](#linear-algebra)
+  * [Scalar operations](#scalar-operations)
+  * [Multi-variate operations](#multi-variate-operations)
+  * [Matrix multplication](#matrix-multiplication)
+  * [Broadcasting](#broadcasting)
+  * [Linear algebra](#linear-algebra)
 * [Array indexing](#array-indexing)
- * [Indexing multi-dimensional arrays](#indexing-multi-dimensional-arrays)
- * [Boolean indexing](#boolean-indexing)
- * [Coordinate array indexing](#coordinate-array-indexing)
+  * [Indexing multi-dimensional arrays](#indexing-multi-dimensional-arrays)
+  * [Boolean indexing](#boolean-indexing)
+  * [Coordinate array indexing](#coordinate-array-indexing)
 * [Exercises](#exercises)
- * [Load an array from a file and do stuff with it](#load-an-array-from-a-file-and-do-stuff-with-it)
- * [Concatenate affine transforms](#concatenate-affine-transforms)
+  * [Load an array from a file and do stuff with it](#load-an-array-from-a-file-and-do-stuff-with-it)
+  * [Concatenate affine transforms](#concatenate-affine-transforms)
 
 * [Appendix A: Generating random numbers](#appendix-generating-random-numbers)
 * [Appendix B: Importing Numpy](#appendix-importing-numpy)
@@ -457,6 +457,8 @@ print('dstacked: (shape {}):'.format(dstacked.shape))
 print( dstacked)
 ```
 
+Alternatively, you can use the `stack` function and give the index of the dimension along which the array
+should be stacked as the `axis` keyword (so, `np.vstack((a, b))` is equivalent to `np.stack((a, b), axis=1)`). 
 
 <a class="anchor" id="operating-on-arrays"></a>
 ## Operating on arrays
@@ -655,8 +657,6 @@ print(a - a.mean(axis=0))
 print('a (rows demeaned):')
 print(a - a.mean(axis=1).reshape(-1, 1))
 ```
-
-
 > As demonstrated above, many functions in Numpy accept an `axis` parameter,
 > allowing you to apply the function along a specific axis. Omitting the
 > `axis` parameter will apply the function to the whole array.
@@ -668,6 +668,16 @@ should be applied, are pretty straightforward. If something is not working,
 and you can't figure out why refer to the [official
 documentation](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
 
+In short the broadcasting rules are:
+1. If the input arrays have a different number of dimensions, the ones with fewer 
+    dimensions will have new dimensions with length 1 prepended until all arrays 
+    have the same number of dimensions. So adding a 2D array shaped (3, 3) with
+    a 1D array of length (3, ), is equivalent to adding the two 2D arrays with
+    shapes (3, 3) and (1, 3).
+2. Once, all the arrays have the same number of dimensions, the arrays are combined
+    elementwise. Each dimension is compatible between the two arrays if they have 
+    equal length or one has a length of 1. In the latter case the dimension will
+    be repeated using a procedure equivalent to Matlab's `repmat`).
 
 <a class="anchor" id="linear-algebra"></a>
 ### Linear algebra
