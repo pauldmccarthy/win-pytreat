@@ -49,7 +49,7 @@ other sections as a reference. You might miss out on some neat tricks though.
   * [Wildcard matching a.k.a. globbing](#wildcard-matching-aka-globbing)
   * [Expanding the home directory and environment variables](#expanding-the-home-directory-and-environment-variables)
   * [Cross-platform compatibility](#cross-platform-compatbility)
-* [FileTrees](#filetree)
+* [FileTree](#filetree)
 * [Exercises](#exercises)
   * [Re-name subject directories](#re-name-subject-directories)
   * [Re-organise a data set](#re-organise-a-data-set)
@@ -97,7 +97,7 @@ cwd = os.getcwd()
 print(f'Current directory: {cwd}')
 
 os.chdir(op.expanduser('~'))
-print(f'Changed to: {os.get_cwd()}')
+print(f'Changed to: {os.getcwd()}')
 
 os.chdir(cwd)
 print(f'Changed back to: {cwd}')

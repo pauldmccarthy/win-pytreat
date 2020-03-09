@@ -192,7 +192,7 @@ method, `join()`:
 ```
 csvdata = 'some,comma,separated,data'
 tsvdata = '\t'.join(csvdata.split(','))
-tsvdata = tsvdata.replace('comma', 'tab'))
+tsvdata = tsvdata.replace('comma', 'tab')
 print('csvdata:', csvdata)
 print('tsvdata:', tsvdata)
 ```
@@ -630,7 +630,7 @@ where a list or any other sequence (e.g. tuple) can be used.
 If you want a numerical range then use:
 ```
 for x in range(2, 9):
-  print(x)
+    print(x)
 ```
 Note that, like slicing, the maximum value is one less than the value specified.  Also, `range` actually returns an object that can be iterated over but is not just a list of numbers. If you want a list of numbers then `list(range(2, 9))` will give you this.
 

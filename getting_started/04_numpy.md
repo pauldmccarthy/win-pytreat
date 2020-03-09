@@ -914,8 +914,8 @@ print(a)
 
 evenrows, evencols = np.where(a % 2 == 0)
 
-print('even row coordinates:', evenx)
-print('even col coordinates:', eveny)
+print('even row coordinates:', evenrows)
+print('even col coordinates:', evencols)
 
 print(a[evenrows, evencols])
 ```

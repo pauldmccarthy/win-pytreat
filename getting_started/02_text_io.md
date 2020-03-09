@@ -74,7 +74,7 @@ with open('README.md', 'r') as readme_file:
         # each line is returned with its
         # newline character still intact,
         # so we use rstrip() to remove it.
-        print(f'{i}: {line.rstrip()}'))
+        print(f'{i}: {line.rstrip()}')
         if i == 4:
             break
 ```
@@ -418,7 +418,7 @@ The file 02_text_io/input.txt contains integers in a 2-column format (separated 
 
 ```
 input_filename = '02_text_io/input.txt'
-out_filename = '02_text_io/output.txt'
+output_filename = '02_text_io/output.txt'
 
 with open(input_filename, 'r') as input_file:
     ...
