@@ -1,10 +1,10 @@
 # `fslpy`
 
-# THIS IS A WORK IN PROGRESS - DO NOT READ
 
+[`fslpy`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/) is a
+Python library which is built into FSL, and contains a range of functionality
+for working with neuroimaging data from Python.
 
-`fslpy` is a Python library which is built into FSL, and contains a range of
-functionality for working with neuroimaging data in an FSL context.
 
 This practical highlights some of the most useful features provided by
 `fslpy`. You may find `fslpy` useful if you are writing Python code to
@@ -17,67 +17,355 @@ perform analyses and image processing in conjunction with FSL.
 
 
 * [The `Image` class, and other data types](#the-image-class-and-other-data-types)
+  * [Creating images](#creating-images)
+  * [Working with image data](#working-with-image-data)
+  * [Loading other file types](#loading-other-file-types)
 * [FSL atlases](#fsl-atlases)
 * [The `filetree`](#the-filetree)
-* [NIfTI coordinate systems](#nifti-coordinate-systems)
 * [Image processing](#image-processing)
 * [FSL wrapper functions](#fsl-wrapper-functions)
+* [NIfTI coordinate systems](#nifti-coordinate-systems)
 
 
 <a class="anchor" id="the-image-class-and-other-data-types"></a>
 ## The `Image` class, and other data types
 
 
-The `fsl.data.image` module provides the `Image` class, which sits on top of
-`nibabel` and contains some handy functionality if you need to work with
-coordinate transformations, or do some FSL-specific processing. The `Image`
-class provides features such as:
+The
+[`fsl.data.image`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.image.html#fsl.data.image.Image)
+module provides the `Image` class, which sits on top of `nibabel` and contains
+some handy functionality if you need to work with coordinate transformations,
+or do some FSL-specific processing. The `Image` class provides features such
+as:
 
 - Support for NIFTI1, NIFTI2, and ANALYZE image files
 - Access to affine transformations between the voxel, FSL and world coordinate
   systems
 - Ability to load metadata from BIDS sidecar files
 
+
 Some simple image processing routines are also provided - these are covered
 [below](#image-processing).
 
 
+<a class="anchor" id="creating-images"></a>
 ### Creating images
+
 
 It's easy to create an `Image` - you can create one from a file name:
 
+
 ```
+import os.path as op
 from fsl.data.image import Image
+
 stddir = op.expandvars('${FSLDIR}/data/standard/')
 
 # load a FSL image - the file
 # suffix is optional, just like
 # in real FSL-land!
 img = Image(op.join(stddir, 'MNI152_T1_1mm'))
+print(img)
 ```
 
-You can crearte an `Image` from an existing `nibabel` image:
+
+You can create an `Image` from an existing `nibabel` image:
+
 
 ```
+import nibabel as nib
+
 # load a nibabel image, and
 # convert it into an FSL image
 nibimg = nib.load(op.join(stddir, 'MNI152_T1_1mm.nii.gz'))
 img    = Image(nibimg)
-``
+```
+
 
 Or you can create an `Image` from a `numpy` array:
 
+
 ```
+import numpy as np
+
 data = np.zeros((100, 100, 100))
 img = Image(data, xform=np.eye(4))
 ```
 
+You can save an image to file via the `save` method:
 
 
+```
+img.save('empty.nii.gz')
+```
+
+
+`Image` objects have all of the attributes you might expect:
+
+
+```
+stddir = op.expandvars('${FSLDIR}/data/standard/')
+std1mm = Image(op.join(stddir, 'MNI152_T1_1mm'))
+
+print('name:         ', std1mm.name)
+print('file:         ', std1mm.dataSource)
+print('NIfTI version:', std1mm.niftiVersion)
+print('ndim:         ', std1mm.ndim)
+print('shape:        ', std1mm.shape)
+print('dtype:        ', std1mm.dtype)
+print('nvals:        ', std1mm.nvals)
+print('pixdim:       ', std1mm.pixdim)
+```
+
+
+and a number of useful methods:
+
+
+```
+std2mm  = Image(op.join(stddir, 'MNI152_T1_2mm'))
+mask2mm = Image(op.join(stddir, 'MNI152_T1_2mm_mask'))
+
+print(std1mm.sameSpace(std2mm))
+print(std2mm.sameSpace(mask2mm))
+print(std2mm.getAffine('voxel', 'world'))
+```
+
+
+An `Image` object is a high-level wrapper around a `nibabel` image object -
+you can always work directly with the `nibabel` object via the `nibImage`
+attribute:
+
+
+```
+print(std2mm)
+print(std2mm.nibImage)
+```
+
+
+<a class="anchor" id="working-with-image-data"></a>
+### Working with image data
+
+
+You can get the image data as a `numpy` array via the `data` attribute:
+
+
+```
+data = std2mm.data
+print(data.min, data.max())
+```
+
+> Note that this will give you the data in its underlying type, unlike the
+> `nibabel.get_fdata` method, which up-casts image data to floating-point.
+
+
+You can also read and write data directly via the `Image` object:
+
+
+```
+slc = std2mm[:, :, 45]
+std2mm[0:10, :, :] = 0
+```
+
+
+Doing so has some advantages that may or may not be useful, depending on your
+use-case:
+ - The image data will be kept on disk - only the parts that you access will
+   be loaded into RAM (you will also need to pass`loadData=False` when creating
+   the `Image` to achieve this).
+ - The `Image` object will keep track of modifications to the data - this can
+   be queried via the `saveState` attribute.
+
+
+<a class="anchor" id="loading-other-file-types"></a>
+### Loading other file types
+
+
+The
+[`fsl.data`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.html#module-fsl.data)
+package has a number of other classes for working with different types of FSL
+and neuroimaging data. Most of these are higher-level wrappers around the
+corresponding `nibabel` types:
+
+* The
+  [`fsl.data.bitmap.Bitmap`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.bitmap.html)
+  class can be used to load a bitmap image (e.g. `jpg, `png`, etc) and
+  convert it to a NIfTI image.
+* The
+  [`fsl.data.dicom.DicomImage`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.dicom.html)
+  class uses `dcm2niix` to load NIfTI images contained within a DICOM
+  directory<sup>*</sup>.
+* The
+  [`fsl.data.mghimahe.MGHImage`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.mghimage.html)
+  class can be used too load `.mgh`/`.mgz` images (they are converted into
+  NIfTI images).
+* The
+  [`fsl.data.dtifit`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.dtifit.html)
+  module contains functions for loading and working with the output of the
+  FSL `dtifit` tool.
+* The
+  [`fsl.data.featanalysis`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.featanalysis.html),
+  [`fsl.data.featimage`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.featimage.html),
+  and
+  [`fsl.data.featdesign`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.featdesign.html)
+  modules contain classes and functions for loading data from FEAT
+  directories.
+* Similarly, the
+  [`fsl.data.melodicanalysis`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.melodicanalysis.html)
+  and
+  [`fsl.data.melodicimage`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.melodicimage.html)
+  modules contain classes and functions for loading data from MELODIC
+  directories.
+* The
+  [`fsl.data.gifti`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.gifti.html),
+  [`fsl.data.freesurfer`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.freesurfer.html),
+  and
+  [`fsl.data.vtk`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.vtk.html)
+  modules contain functionality form loading surface data from GIfTI,
+  freesurfer, and VTK files respectively.
+
+
+> <sup>*</sup>You must make sure that `dcm2niix` is installed on your system
+> in order to use this class.
 
 
 <a class="anchor" id="fsl-atlases"></a>
 ## FSL atlases
+
+
+The
+[`fsl.data.atlases`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.atlases.html)
+module provides access to all of the atlas images that are stored in the
+`$FSLDIR/data/atlases/` directory of a standard FSL installation. It can be
+used to load and query probabilistic and label-based atlases.
+
+
+The `atlases` module needs to be initialised using the `rescanAtlases` function:
+
+
+```
+import fsl.data.atlases as atlases
+atlases.rescanAtlases()
+```
+
+
+You can list all of the available atlases using `listAtlases`:
+
+
+```
+for desc in atlases.listAtlases():
+    print(desc)
+```
+
+
+`listAtlases` returns a list of `AtlasDescription` objects, each of which
+contains descriptive information about one atlas. You can retrieve the
+`AtlasDescription` for a specific atlas via the `getAtlasDescription`
+function:
+
+
+```
+desc = atlases.getAtlasDescription('harvardoxford-cortical')
+print(desc.name)
+print(desc.atlasID)
+print(desc.specPath)
+print(desc.atlasType)
+```
+
+
+Each `AtlasDescription` maintains a list of `AtlasLabel` objects, each of
+which represents one region that is defined in the atlas. You can access all
+of the `AtlasLabel` objects via the `labels` attribute:
+
+
+```
+for lbl in desc.labels[:5]:
+    print(lbl)
+```
+
+
+Or you can retrieve a specific label using the `find` method:
+
+
+```
+# search by region name
+print(desc.find(name='Occipital Pole'))
+
+# or by label value
+print(desc.find(value=48))
+```
+
+
+The `loadAtlas` function can be used to load the atlas image:
+
+
+```
+# For probabilistic atlases, you
+# can ask for the 3D ROI image
+# by setting loadSummary=True.
+# You can also request a
+# resolution - by default the
+# highest resolution version
+# will be loaded.
+lblatlas = atlases.loadAtlas('harvardoxford-cortical',
+                             loadSummary=True,
+                             resolution=2)
+
+# By default you will get the 4D
+# probabilistic atlas image (for
+# atlases for which this is
+# available).
+probatlas = atlases.loadAtlas('harvardoxford-cortical',
+                              resolution=2)
+
+print(lblatlas)
+print(probatlas)
+```
+
+
+`LabelAtlas` objects have a method called `label`, which can be used to
+interrogate the atlas at specific locations:
+
+
+```
+# The label method accepts 3D
+# voxel or world coordinates
+val = lblatlas.label((25, 52, 43), voxel=True)
+lbl = lblatlas.find(value=val)
+print('Region at voxel [25, 52, 43]: {} [{}]'.format(val, lbl.name))
+
+
+# or a 3D weighted or binary mask
+mask = np.zeros(lblatlas.shape)
+mask[30:60, 30:60, 30:60] = 1
+mask = Image(mask, header=lblatlas.header)
+
+lbls, props = lblatlas.label(mask)
+print('Labels in mask:')
+for lbl, prop in zip(lbls, props):
+    lblname = lblatlas.find(value=lbl).name
+    print('  {} [{}]: {:0.2f}%'.format(lbl, lblname, prop))
+```
+
+
+`ProbabilisticAtlas` objects have an analogous method called `values`:
+
+
+```
+vals = probatlas.values((25, 52, 43), voxel=True)
+print('Regions at voxel [25, 52, 43]:')
+for idx, val in enumerate(vals):
+    if val > 0:
+        lbl = probatlas.find(index=idx)
+        print('  {} [{}]: {:0.2f}%'.format(lbl.value, lbl.name, val))
+
+print('Average proportions of regions within mask:')
+vals = probatlas.values(mask)
+for idx, val in enumerate(vals):
+    if val > 0:
+        lbl = probatlas.find(index=idx)
+        print('  {} [{}]: {:0.2f}%'.format(lbl.value, lbl.name, val))
+```
+
 
 <a class="anchor" id="the-filetree"></a>
 ## The `filetree`
