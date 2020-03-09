@@ -17,8 +17,8 @@ automatically, even if an error occurs inside the `with` statement.
 
 
 The `with` statement is obviously hiding some internal details from us. But
-these internals are in fact quite straightforward, and are known as [_context
-managers_](https://docs.python.org/3.5/reference/datamodel.html#context-managers).
+these internals are in fact quite straightforward, and are known as [*context
+managers*](https://docs.python.org/3/reference/datamodel.html#context-managers).
 
 
 * [Anatomy of a context manager](#anatomy-of-a-context-manager)
@@ -36,7 +36,7 @@ managers_](https://docs.python.org/3.5/reference/datamodel.html#context-managers
 ## Anatomy of a context manager
 
 
-A _context manager_ is simply an object which has two specially named methods
+A *context manager* is simply an object which has two specially named methods
 `__enter__` and `__exit__`. Any object which has these methods can be used in
 a `with` statement.
 
@@ -89,7 +89,7 @@ finalisation logic that we always want to have executed.
 
 Context managers do not provide anything that cannot be accomplished in other
 ways.  For example, we could accomplish very similar behaviour using
-[`try` - `finally` logic](https://docs.python.org/3.5/tutorial/errors.html#handling-exceptions) -
+[`try` - `finally` logic](https://docs.python.org/3/tutorial/errors.html#handling-exceptions) -
 the statements in the `finally` clause will *always* be executed, whether an
 error is raised or not:
 
@@ -183,7 +183,7 @@ with TempDir():
 By now you must be [panicking](https://youtu.be/cSU_5MgtDc8?t=9) about why I
 haven't mentioned those conspicuous `*args` that get passed to the`__exit__`
 method.  It turns out that a context manager's [`__exit__`
-method](https://docs.python.org/3.5/reference/datamodel.html#object.__exit__)
+method](https://docs.python.org/3/reference/datamodel.html#object.__exit__)
 is always passed three arguments.
 
 
@@ -227,10 +227,10 @@ with MyContextManager():
 
 So when an error occurs, the `__exit__` method is passed the following:
 
-- The [`Exception`](https://docs.python.org/3.5/tutorial/errors.html)
+- The [`Exception`](https://docs.python.org/3/tutorial/errors.html)
   type that was raised.
 - The `Exception` instance that was raised.
-- A [`traceback`](https://docs.python.org/3.5/library/traceback.html) object
+- A [`traceback`](https://docs.python.org/3/library/traceback.html) object
   which can be used to get more information about the exception (e.g. line
   number).
 
@@ -262,7 +262,7 @@ class MyContextManager(object):
 > Note that if a function or method does not explicitly return a value, its
 > return value is `None` (which would evaluate to `False` when converted to a
 > `bool`).  Also note that we are using the built-in
-> [`issubclass`](https://docs.python.org/3.5/library/functions.html#issubclass)
+> [`issubclass`](https://docs.python.org/3/library/functions.html#issubclass)
 > function, which allows us to test the type of a class.
 
 
@@ -312,7 +312,7 @@ with open('05_context_managers.md', 'rt') as inf, \
 
 In fact, there is another way to create context managers in Python. The
 built-in [`contextlib`
-module](https://docs.python.org/3.5/library/contextlib.html#contextlib.contextmanager)
+module](https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager)
 has a decorator called `@contextmanager`, which allows us to turn __any
 function__ into a context manager.  The only requirement is that the function
 must have a `yield` statement<sup>1</sup>. So we could rewrite our `TempDir`
@@ -359,11 +359,11 @@ to be passed to the `with` statement, so in the line `with tempdir() as tmp`,
 the variable `tmp` will be given the value `tdir`.
 
 
-> <sup>1</sup> The `yield` keyword is used in _generator functions_.
+> <sup>1</sup> The `yield` keyword is used in *generator functions*.
 > Functions which are used with the `@contextmanager` decorator must be
 > generator functions which yield exactly one value.
 > [Generators](https://www.python.org/dev/peps/pep-0289/) and [generator
-> functions](https://docs.python.org/3.5/glossary.html#term-generator) are
+> functions](https://docs.python.org/3/glossary.html#term-generator) are
 > beyond the scope of this practical.
 
 
@@ -582,20 +582,24 @@ class Plotter(object):
 
 
 This new `holdUpdates` method allows us to temporarily suppress notifications
-from all `Line` instances. So now, we can update many `Line` properties
-without performing any redundant redraws:
+from all `Line` instances.  Let's create a new plot:
 
 
 ```
 fig     = plt.figure()
 ax      = fig.add_subplot(111)
 plotter = Plotter(ax)
+l1      = plotter.addData(np.sin(np.linspace(0, 6 * np.pi, 50)))
+l2      = plotter.addData(np.cos(np.linspace(0, 6 * np.pi, 50)))
 
 plt.show()
+```
 
+Now, we can update many `Line` properties without performing any redundant
+redraws:
+
+```
 with plotter.holdUpdates():
-    l1        = plotter.addData(np.sin(np.linspace(0, 6 * np.pi, 50)))
-    l2        = plotter.addData(np.cos(np.linspace(0, 6 * np.pi, 50)))
     l1.colour = '#0000ff'
     l2.colour = '#ffff00'
     l1.width  = 1
@@ -609,5 +613,5 @@ with plotter.holdUpdates():
 ## Useful references
 
 
-* [Context manager classes](https://docs.python.org/3.5/reference/datamodel.html#context-managers)
-* The [`contextlib` module](https://docs.python.org/3.5/library/contextlib.html)
+* [Context manager classes](https://docs.python.org/3/reference/datamodel.html#context-managers)
+* The [`contextlib` module](https://docs.python.org/3/library/contextlib.html)

@@ -19,6 +19,7 @@ you use an object-oriented approach.
  * [We didn't specify the `self` argument - what gives?!?](#we-didnt-specify-the-self-argument)
 * [Attributes](#attributes)
 * [Methods](#methods)
+* [Method chaining](#method-chaining)
 * [Protecting attribute access](#protecting-attribute-access)
  * [A better way - properties](#a-better-way-properties])
 * [Inheritance](#inheritance)
@@ -46,8 +47,8 @@ section.
 
 
 If you have not done any object-oriented programming before, your first step
-is to understand the difference between _objects_ (also known as
-_instances_) and _classes_ (also known as _types_).
+is to understand the difference between *objects* (also known as
+*instances*) and *classes* (also known as *types*).
 
 
 If you have some experience in C, then you can start off by thinking of a
@@ -66,8 +67,8 @@ layout of a chunk of memory. For example, here is a typical struct definition:
 > ```
 
 
-Now, an _object_ is not a definition, but rather a thing which resides in
-memory. An object can have _attributes_ (pieces of information), and _methods_
+Now, an *object* is not a definition, but rather a thing which resides in
+memory. An object can have *attributes* (pieces of information), and *methods*
 (functions associated with the object). You can pass objects around your code,
 manipulate their attributes, and call their methods.
 
@@ -92,12 +93,12 @@ you create an object from that class.
 Of course there are many more differences between C structs and classes (most
 notably [inheritance](todo), [polymorphism](todo), and [access
 protection](todo)). But if you can understand the difference between a
-_definition_ of a C struct, and an _instantiation_ of that struct, then you
-are most of the way towards understanding the difference between a _class_,
-and an _object_.
+*definition* of a C struct, and an *instantiation* of that struct, then you
+are most of the way towards understanding the difference between a *class*,
+and an *object*.
 
 
-> But just to confuse you, remember that in Python, __everything__ is an
+> But just to confuse you, remember that in Python, **everything** is an
 > object - even classes!
 
 
@@ -206,7 +207,7 @@ print(fm)
 
 
 Refer to the [official
-docs](https://docs.python.org/3.5/reference/datamodel.html#special-method-names)
+docs](https://docs.python.org/3/reference/datamodel.html#special-method-names)
 for details on all of the special methods that can be defined in a class. And
 take a look at the appendix for some more details on [how Python objects get
 created](appendix-init-versus-new).
@@ -352,8 +353,8 @@ append a tuple to that `operations` list.
 
 The idea behind this design is that our `FSLMaths` class will not actually do
 anything when we call the `add`, `mul` or `div` methods. Instead, it will
-"stage" each operation, and then perform them all in one go. So let's add
-another method, `run`, which actually does the work:
+*stage* each operation, and then perform them all in one go at a later point
+in time. So let's add another method, `run`, which actually does the work:
 
 
 ```
@@ -386,7 +387,6 @@ class FSLMaths(object):
             # it is a scalar/numpy array.
             if isinstance(value, nib.nifti1.Nifti1Image):
                 value = value.get_data()
-
 
             if oper == 'add':
                 data = data + value
@@ -428,6 +428,99 @@ nmaskvox = (outimg.get_data() > 0).sum()
 print('Number of voxels >0 in original image: {}'.format(norigvox))
 print('Number of voxels >0 in masked image:   {}'.format(nmaskvox))
 ```
+
+
+<a class="anchor" id="method-chaining"></a>
+## Method chaining
+
+
+A neat trick, which is used by all the cool kids these days, is to write
+classes that allow *method chaining* - writing one line of code which
+calls more than one method on an object, e.g.:
+
+> ```
+> fm = FSLMaths(img)
+> result = fm.add(1).mul(10).run()
+> ```
+
+Adding this feature to our budding `FSLMaths` class is easy - all we have
+to do is return `self` from each method:
+
+```
+import numpy   as np
+import nibabel as nib
+
+class FSLMaths(object):
+
+    def __init__(self, inimg):
+        self.img        = inimg
+        self.operations = []
+
+    def add(self, value):
+        self.operations.append(('add', value))
+        return self
+
+    def mul(self, value):
+        self.operations.append(('mul', value))
+        return self
+
+    def div(self, value):
+        self.operations.append(('div', value))
+        return self
+
+    def run(self, output=None):
+
+        data = np.array(self.img.get_data())
+
+        for oper, value in self.operations:
+
+            # Value could be an image.
+            # If not, we assume that
+            # it is a scalar/numpy array.
+            if isinstance(value, nib.nifti1.Nifti1Image):
+                value = value.get_data()
+
+            if oper == 'add':
+                data = data + value
+            elif oper == 'mul':
+                data = data * value
+            elif oper == 'div':
+                data = data / value
+
+        # turn final output into a nifti,
+        # and save it to disk if an
+        # 'output' has been specified.
+        outimg = nib.nifti1.Nifti1Image(data, inimg.affine)
+
+        if output is not None:
+            nib.save(outimg, output)
+
+        return outimg
+```
+
+
+Now we can chain all of our method calls, and even the creation of our
+`FSLMaths` object, into a single line:
+
+
+```
+fpath = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm.nii.gz')
+fmask = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
+inimg = nib.load(fpath)
+mask  = nib.load(fmask)
+
+outimg = FSLMaths(inimg).mul(mask).add(-10).run()
+
+norigvox = (inimg .get_data() > 0).sum()
+nmaskvox = (outimg.get_data() > 0).sum()
+
+print('Number of voxels >0 in original image: {}'.format(norigvox))
+print('Number of voxels >0 in masked image:   {}'.format(nmaskvox))
+```
+
+> In fact, this is precisely how the
+> [`fsl.wrappers.fslmaths`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.wrappers.fslmaths.html)
+> function works.
 
 
 <a class="anchor" id="protecting-attribute-access"></a>
@@ -488,9 +581,8 @@ of an object. This is in contrast to languages like C++ and Java, where the
 notion of a private attribute or method is strictly enforced by the language.
 
 
-However, there are a couple of conventions in Python that are [universally
-adhered
-to](https://docs.python.org/3.5/tutorial/classes.html#private-variables):
+However, there are a couple of conventions in Python that are
+[universally adhered to](https://docs.python.org/3/tutorial/classes.html#private-variables):
 
 * Class-level attributes and methods, and module-level attributes, functions,
   and classes, which begin with a single underscore (`_`), should be
@@ -504,14 +596,13 @@ to](https://docs.python.org/3.5/tutorial/classes.html#private-variables):
   enforcement for this rule - any attribute or method with such a name will
   actually be _renamed_ (in a standardised manner) at runtime, so that it is
   not accessible through its original name (it is still accessible via its
-  [mangled
-  name](https://docs.python.org/3.5/tutorial/classes.html#private-variables)
+  [mangled name](https://docs.python.org/3/tutorial/classes.html#private-variables)
   though).
 
 
 > <sup>2</sup> With the exception that module-level fields which begin with a
 > single underscore will not be imported into the local scope via the
-> `from [module] import *` techinque.
+> `from [module] import *` technique.
 
 
 So with all of this in mind, we can adjust our `FSLMaths` class to discourage
@@ -541,7 +632,7 @@ print(fm.__img)
 
 
 Python has a feature called
-[`properties`](https://docs.python.org/3.5/library/functions.html#property),
+[`properties`](https://docs.python.org/3/library/functions.html#property),
 which is a nice way of controlling access to the attributes of an object. We
 can use properties by defining a "getter" method which can be used to access
 our attributes, and "decorating" them with the `@property` decorator (we will
@@ -676,17 +767,17 @@ class Chihuahua(Dog):
 
 
 Hopefully this example doesn't need much in the way of explanation - this
-collection of classes captures a hierarchical relationship which exists in the
-real world (and also captures the inherently annoying nature of
+collection of classes represents a hierarchical relationship which exists in
+the real world (and also represents the inherently annoying nature of
 chihuahuas). For example, in the real world, all dogs are animals, but not all
 animals are dogs.  Therefore in our model, the `Dog` class has specified
-`Animal` as its base class. We say that the `Dog` class _extends_, _derives
-from_, or _inherits from_, the `Animal` class, and that all `Dog` instances
+`Animal` as its base class. We say that the `Dog` class *extends*, *derives
+from*, or *inherits from*, the `Animal` class, and that all `Dog` instances
 are also `Animal` instances (but not vice-versa).
 
 
 What does that `noiseMade` method do?  There is a `noiseMade` method defined
-on the `Animal` class, but it has been re-implemented, or _overridden_ in the
+on the `Animal` class, but it has been re-implemented, or *overridden* in the
 `Dog`,
 [`TalkingDog`](https://twitter.com/simpsonsqotd/status/427941665836630016?lang=en),
 `Cat`, and `Chihuahua` classes (but not on the `Labrador` class).  We can call
@@ -819,7 +910,7 @@ This line invokes `Operator.__init__` - the initialisation method for the
 
 
 In Python, we can use the [built-in `super`
-method](https://docs.python.org/3.5/library/functions.html#super) to take care
+method](https://docs.python.org/3/library/functions.html#super) to take care
 of correctly calling methods that are defined in an object's base-class (or
 classes, in the case of [multiple inheritance](multiple-inheritance)).
 
@@ -920,8 +1011,8 @@ print(so.run('python is an ok language'))
 ### Polymorphism
 
 
-Inheritance also allows us to take advantage of _polymorphism_, which refers
-to idea that, in an object-oriented language, we should be able to use an
+Inheritance also allows us to take advantage of *polymorphism*, which refers
+to the idea that, in an object-oriented language, we should be able to use an
 object without having complete knowledge about the class, or type, of that
 object. For example, we should be able to write a function which expects an
 `Operator` instance, but which will work on an instance of any `Operator`
@@ -1110,12 +1201,15 @@ class FSLMaths(object):
 
     def add(self, value):
         self.operations.append(('add', value))
+        return self
 
     def mul(self, value):
         self.operations.append(('mul', value))
+        return self
 
     def div(self, value):
         self.operations.append(('div', value))
+        return self
 
     def run(self, output=None):
 
@@ -1125,12 +1219,15 @@ class FSLMaths(object):
 
             # Code omitted for brevity
 
-            # Increment the usage counter
-            # for this operation. We can
-            # access class attributes (and
-            # methods) through the class
-            # itself.
-            FSLMaths.opCounters[oper] = self.opCounters.get(oper, 0) + 1
+            # Increment the usage counter for this operation. We can
+            # access class attributes (and methods) through the class
+            # itself, as shown here.
+            FSLMaths.opCounters[oper] = FSLMaths.opCounters.get(oper, 0) + 1
+
+            # It is also possible to access class-level
+            # attributes via instances of the class, e.g.
+            # self.opCounters[oper] = self.opCounters.get(oper, 0) + 1
+
 ```
 
 
@@ -1143,17 +1240,8 @@ fmask = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
 inimg = nib.load(fpath)
 mask  = nib.load(fmask)
 
-fm1 = FSLMaths(inimg)
-fm2 = FSLMaths(inimg)
-
-fm1.mul(mask)
-fm1.add(15)
-
-fm2.add(25)
-fm1.div(1.5)
-
-fm1.run()
-fm2.run()
+FSLMaths(inimg).mul(mask).add(25).run()
+FSLMaths(inimg).add(15).div(1.5).run()
 
 print('FSLMaths usage statistics')
 for oper in ('add', 'div', 'mul'):
@@ -1194,12 +1282,15 @@ class FSLMaths(object):
 
     def add(self, value):
         self.operations.append(('add', value))
+        return self
 
     def mul(self, value):
         self.operations.append(('mul', value))
+        return self
 
     def div(self, value):
         self.operations.append(('div', value))
+        return self
 
     def run(self, output=None):
 
@@ -1213,11 +1304,11 @@ class FSLMaths(object):
 > There is another decorator -
 > [`@staticmethod`](https://docs.python.org/3.5/library/functions.html#staticmethod) -
 > which can be used on methods defined within a class. The difference
-> between a `@classmethod` and a `@staticmethod` is that the latter will _not_
+> between a `@classmethod` and a `@staticmethod` is that the latter will *not*
 > be passed the class (`cls`).
 
 
-calling a class method is the same as accessing a class attribute:
+Calling a class method is the same as accessing a class attribute:
 
 
 ```
@@ -1226,14 +1317,8 @@ fmask = op.expandvars('$FSLDIR/data/standard/MNI152_T1_2mm_brain_mask.nii.gz')
 inimg = nib.load(fpath)
 mask  = nib.load(fmask)
 
-fm1 = FSLMaths(inimg)
-fm2 = FSLMaths(inimg)
-
-fm1.mul(mask)
-fm1.add(15)
-
-fm2.add(25)
-fm1.div(1.5)
+fm1 = FSLMaths(inimg).mul(mask).add(25)
+fm2 = FSLMaths(inimg).add(15).div(1.5)
 
 fm1.run()
 fm2.run()
@@ -1294,9 +1379,9 @@ always use the new-style format.
 ## Appendix: `__init__` versus `__new__`
 
 
-In Python, object creation is actually a two-stage process - _creation_, and
-then _initialisation_. The `__init__` method gets called during the
-_initialisation_ stage - its job is to initialise the state of the object. But
+In Python, object creation is actually a two-stage process - *creation*, and
+then *initialisation*. The `__init__` method gets called during the
+*initialisation* stage - its job is to initialise the state of the object. But
 note that, by the time `__init__` gets called, the object has already been
 created.
 
@@ -1314,7 +1399,7 @@ A brief explanation on
 the difference between `__new__` and `__init__` can be found
 [here](https://www.reddit.com/r/learnpython/comments/2s3pms/what_is_the_difference_between_init_and_new/cnm186z/),
 and you may also wish to take a look at the [official Python
-docs](https://docs.python.org/3.5/reference/datamodel.html#basic-customization).
+docs](https://docs.python.org/3/reference/datamodel.html#basic-customization).
 
 
 <a class="anchor" id="appendix-monkey-patching"></a>
@@ -1322,24 +1407,24 @@ docs](https://docs.python.org/3.5/reference/datamodel.html#basic-customization).
 
 
 The act of run-time modification of objects or class definitions is referred
-to as [_monkey-patching_](https://en.wikipedia.org/wiki/Monkey_patch) and,
+to as [*monkey-patching*](https://en.wikipedia.org/wiki/Monkey_patch) and,
 whilst it is allowed by the Python programming language, it is generally
 considered quite bad practice.
 
 
-Just because you _can_ do something doesn't mean that you _should_. Python
+Just because you *can* do something doesn't mean that you *should*. Python
 gives you the flexibility to write your software in whatever manner you deem
-suitable.  __But__ if you want to write software that will be used, adopted,
+suitable.  **But** if you want to write software that will be used, adopted,
 maintained, and enjoyed by other people, you should be polite, write your code
 in a clear, readable fashion, and avoid the use of devious tactics such as
 monkey-patching.
 
 
-__However__, while monkey-patching may seem like a horrific programming
+**However**, while monkey-patching may seem like a horrific programming
 practice to those of you coming from the realms of C++, Java, and the like,
-(and it is horrific in many cases), it can be _extremely_ useful in certain
+(and it is horrific in many cases), it can be *extremely* useful in certain
 circumstances.  For instance, monkey-patching makes [unit testing a
-breeze in Python](https://docs.python.org/3.5/library/unittest.mock.html).
+breeze in Python](https://docs.python.org/3/library/unittest.mock.html).
 
 
 As another example, consider the scenario where you are dependent on a third
@@ -1398,7 +1483,7 @@ print('Add four:  {}'.format(a.add(1, 2, 3, 4)))
 ```
 
 > <sup>4</sup>Another option is the [`functools.singledispatch`
-> decorator](https://docs.python.org/3.5/library/functools.html#functools.singledispatch),
+> decorator](https://docs.python.org/3/library/functools.html#functools.singledispatch),
 > which is more complicated, but may allow you to write your dispatch logic in
 > a more concise manner.
 
@@ -1411,5 +1496,5 @@ The official Python documentation has a wealth of information on the internal
 workings of classes and objects, so these pages are worth a read:
 
 
-* https://docs.python.org/3.5/tutorial/classes.html
-* https://docs.python.org/3.5/reference/datamodel.html
+* https://docs.python.org/3/tutorial/classes.html
+* https://docs.python.org/3/reference/datamodel.html

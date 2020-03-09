@@ -4,7 +4,7 @@
 Python gives you a lot of flexibility in how you organise your code. If you
 want, you can write a Python program just as you would write a Bash script.
 You don't _have_ to use functions, classes, modules or packages if you don't
-want to, or if the script's task does not require them.
+want to, or if the script task does not require them.
 
 
 But when your code starts to grow beyond what can reasonably be defined in a
@@ -113,7 +113,7 @@ print(add(1, 5))
 
 
 __PLEASE DON'T DO THIS!__ Because every time you do, somewhere in the world, a
-software developer will will spontaneously stub his/her toe, and start crying.
+software developer will spontaneously stub his/her toe, and start crying.
 Using this approach can make more complicated programs very difficult to read,
 because it is not possible to determine the origin of the functions and
 attributes that are being used.
@@ -242,7 +242,7 @@ in the following order:
 If you are experimenting or developing your program, the quickest and easiest
 way to make your module(s) importable is to add their containing directory to
 the `PYTHONPATH`. But if you are developing a larger piece of software, you
-should probably organise your modules into _packages_, which are [described
+should probably organise your modules into *packages*, which are [described
 below](#what-is-a-package).
 
 
@@ -298,10 +298,10 @@ mas.main([str(a), str(b)])
 
 
 You now know how to split your Python code up into separate files
-(a.k.a. _modules_). When your code grows beyond a handful of files, you may
+(a.k.a. *modules*). When your code grows beyond a handful of files, you may
 wish for more fine-grained control over the namespaces in which your modules
 live. Python has another feature which allows you to organise your modules
-into _packages_.
+into *packages*.
 
 
 A package in Python is simply a directory which:
@@ -367,5 +367,5 @@ fsleyes.fsleyes_main()
 <a class="anchor" id="useful-references"></a>
 ## Useful references
 
-* [Modules and packages in Python](https://docs.python.org/3.5/tutorial/modules.html)
+* [Modules and packages in Python](https://docs.python.org/3/tutorial/modules.html)
 * [Using `__init__.py`](http://mikegrouchy.com/blog/2012/05/be-pythonic-__init__py.html)
