@@ -21,6 +21,24 @@ module.  If you want to be impressed, skip straight to the section on
 > author of this practical is not holding his breath.
 
 
+* [Threading](#threading)
+ * [Subclassing `Thread`](#subclassing-thread)
+ * [Daemon threads](#daemon-threads)
+ * [Thread synchronisation](#thread-synchronisation)
+   * [`Lock`](#lock)
+   * [`Event`](#event)
+ * [The Global Interpreter Lock (GIL)](#the-global-interpreter-lock-gil)
+* [Multiprocessing](#multiprocessing)
+ * [`threading`-equivalent API](#threading-equivalent-api)
+ * [Higher-level API - the `multiprocessing.Pool`](#higher-level-api-the-multiprocessing-pool)
+   * [`Pool.map`](#pool-map)
+   * [`Pool.apply_async`](#pool-apply-async)
+* [Sharing data between processes](#sharing-data-between-processes)
+ * [Read-only sharing](#read-only-sharing)
+ * [Read/write sharing](#read-write-sharing)
+
+
+<a class="anchor" id="threading"></a>
 ## Threading
 
 
@@ -69,6 +87,7 @@ print('Finished!')
 ```
 
 
+<a class="anchor" id="subclassing-thread"></a>
 ### Subclassing `Thread`
 
 
@@ -95,6 +114,7 @@ print('Done')
 ```
 
 
+<a class="anchor" id="daemon-threads"></a>
 ### Daemon threads
 
 
@@ -120,6 +140,7 @@ documentation](https://docs.python.org/3/library/threading.html#thread-objects)
 for more details.
 
 
+<a class="anchor" id="thread-synchronisation"></a>
 ### Thread synchronisation
 
 
@@ -130,6 +151,7 @@ to the [documentation](https://docs.python.org/3/library/threading.html) for
 more details.
 
 
+<a class="anchor" id="lock"></a>
 #### `Lock`
 
 
@@ -234,6 +256,7 @@ Try removing the `mutex` lock from the two methods in the above code, and see
 what it does to the output.
 
 
+<a class="anchor" id="event"></a>
 #### `Event`
 
 
@@ -267,6 +290,8 @@ processingFinished.wait()
 print('Processing finished!')
 ```
 
+
+<a class="anchor" id="the-global-interpreter-lock-gil"></a>
 ### The Global Interpreter Lock (GIL)
 
 
@@ -287,6 +312,7 @@ running on one core, whilst having another thread (e.g. user interaction)
 running on another core.
 
 
+<a class="anchor" id="multiprocessing"></a>
 ## Multiprocessing
 
 
@@ -306,6 +332,8 @@ the `threading` module, and a powerful higher-level API.
 > module, which offers a simpler alternative API to `multiprocessing`. It
 > offers no functionality over `multiprocessing`, so is not covered here.
 
+
+<a class="anchor" id="threading-equivalent-api"></a>
 ### `threading`-equivalent API
 
 
@@ -331,6 +359,7 @@ where copying between processes is not feasible, things become more
 complicated, but read on...
 
 
+<a class="anchor" id="higher-level-api-the-multiprocessing-pool"></a>
 ### Higher-level API - the `multiprocessing.Pool`
 
 
@@ -343,7 +372,6 @@ Essentially, you create a `Pool` of worker processes - you specify the number
 of processes when you create the pool. Once you have created a `Pool`, you can
 use its methods to automatically parallelise tasks. The most useful are the
 `map`, `starmap` and `apply_async` methods.
-
 
 
 The `Pool` class is a context manager, so can be used in a `with` statement,
@@ -365,6 +393,7 @@ that it will be shut down correctly, even in the event of an error.
 > I/O bound or CPU bound).
 
 
+<a class="anchor" id="pool-map"></a>
 #### `Pool.map`
 
 
@@ -461,6 +490,7 @@ and `starmap_async`, which return immediately. Refer to the
 documentation for more details.
 
 
+<a class="anchor" id="pool-apply-async"></a>
 #### `Pool.apply_async`
 
 
@@ -548,6 +578,7 @@ for t1, result in zip(t1s, nlinresults):
 ```
 
 
+<a class="anchor" id="sharing-data-between-processes"></a>
 ## Sharing data between processes
 
 
@@ -591,7 +622,7 @@ the processes, you will need to:
 
 
 This is because, when you create a `Pool`, what actually happens is that the
-process your Pythonn script is running in will [**fork**](wiki-fork) itself -
+process your Pythonn script is running in will [**fork**][wiki-fork] itself -
 the child processes that are created are used as the worker processes by the
 `Pool`. And if you create/load your data in your main process *before* this
 fork occurs, all of the child processes will inherit the memory space of the
@@ -602,6 +633,7 @@ any copying required.
 [wiki-fork]: https://en.wikipedia.org/wiki/Fork_(system_call)
 
 
+<a class="anchor" id="read-only-sharing"></a>
 ### Read-only sharing
 
 
@@ -696,19 +728,20 @@ data? Go back to the code block above and:
 2. Re-run the two code blocks, and watch what happens to the memory usage.
 
 
-What happened? Well, you are seeing [copy-on-write](wiki-copy-on-write) in
-action. When the `process_chunk` is invoked, it is given a reference to the
-original data array in the memory space of the parent process. But as soon as
-an attempt is made to modify it, a copy of the data, in the memory space of
-the child process, is created. The modifications are then applied to this
-child process, and not to the original copy. So the total memory usage has
-blown out to twice as much as before, and the changes made by each child
-process are being lost!
+What happened? Well, you are seeing [copy-on-write][wiki-copy-on-write] in
+action. When the `process_chunk` function is invoked, it is given a reference
+to the original data array in the memory space of the parent process. But as
+soon as an attempt is made to modify it, a copy of the data, in the memory
+space of the child process, is created. The modifications are then applied to
+this child process copy, and not to the original copy. So the total memory
+usage has blown out to twice as much as before, and the changes made by each
+child process are being lost!
 
 
 [wiki-copy-on-write]: https://en.wikipedia.org/wiki/Copy-on-write
 
 
+<a class="anchor" id="read-write-sharing"></a>
 ### Read/write sharing
 
 
@@ -870,10 +903,10 @@ Now we can call our `process_data` function just like any other function:
 
 ```
 indata  = np.array(np.arange(64).reshape((4, 4, 4)), dtype=np.float64)
-outdata = process_dataset(data)
+outdata = process_dataset(indata)
 
 print('Input')
-print(data)
+print(indata)
 
 print('Output')
 print(outdata)
