@@ -16,8 +16,8 @@ practical (`advanced_topics/08_fslpy.ipynb`).
 
 * [Reading images](#reading-images)
 * [Header info](#header-info)
- * [Voxel sizes](#voxel-sizes)
- * [Coordinate orientations and mappings](#orientation-info)
+  * [Voxel sizes](#voxel-sizes)
+  * [Coordinate orientations and mappings](#orientation-info)
 * [Writing images](#writing-images)
 * [Exercise](#exercise)
 
@@ -26,7 +26,7 @@ practical (`advanced_topics/08_fslpy.ipynb`).
 <a class="anchor" id="reading-images"></a>
 ## Reading images
 
-It is easy to read an image:
+For most neuroimaging dataformats reading an image is as simple as calling `nibabel.load`.
 
 ```
 import numpy as np
@@ -37,10 +37,11 @@ imobj = nib.load(filename, mmap=False)
 
 # display header object
 imhdr = imobj.header
+print('header', imhdr)
 
 # extract data (as a numpy array)
 imdat = imobj.get_fdata()
-print(imdat.shape)
+print('data', imdat.shape)
 ```
 
 > Make sure you use the full filename, including the `.nii.gz` extension.
@@ -105,6 +106,13 @@ affine, code = imhdr.get_qform(coded=True)
 print(affine, code)
 ```
 
+If you don't want to have to worry about the difference between `qform` and `sform`,
+you can just let `nibabel` return what it thinks is the appropriate `affine`:
+```
+print('affine', imobj.affine) 
+```
+> Note that we access the `affine` attribute from the image object here, not the image header (like above).
+> Accessing the affine this way has the advantage that it will also work for data types, where the affine is stored in a different way in the header.
 
 ---
 

@@ -36,23 +36,24 @@ other sections as a reference. You might miss out on some neat tricks though.
 
 
 * [Managing files and directories](#managing-files-and-directories)
- * [Querying and changing the current directory](#querying-and-changing-the-current-directory)
- * [Directory listings](#directory-listings)
- * [Creating and removing directories](#creating-and-removing-directories)
- * [Moving and removing files](#moving-and-removing-files)
- * [Walking a directory tree](#walking-a-directory-tree)
- * [Copying, moving, and removing directory trees](#copying-moving-and-removing-directory-trees)
+  * [Querying and changing the current directory](#querying-and-changing-the-current-directory)
+  * [Directory listings](#directory-listings)
+  * [Creating and removing directories](#creating-and-removing-directories)
+  * [Moving and removing files](#moving-and-removing-files)
+  * [Walking a directory tree](#walking-a-directory-tree)
+  * [Copying, moving, and removing directory trees](#copying-moving-and-removing-directory-trees)
 * [Managing file paths](#managing-file-paths)
- * [File and directory tests](#file-and-directory-tests)
- * [Deconstructing paths](#deconstructing-paths)
- * [Absolute and relative paths](#absolute-and-relative-paths)
- * [Wildcard matching a.k.a. globbing](#wildcard-matching-aka-globbing)
- * [Expanding the home directory and environment variables](#expanding-the-home-directory-and-environment-variables)
- * [Cross-platform compatibility](#cross-platform-compatbility)
+  * [File and directory tests](#file-and-directory-tests)
+  * [Deconstructing paths](#deconstructing-paths)
+  * [Absolute and relative paths](#absolute-and-relative-paths)
+  * [Wildcard matching a.k.a. globbing](#wildcard-matching-aka-globbing)
+  * [Expanding the home directory and environment variables](#expanding-the-home-directory-and-environment-variables)
+  * [Cross-platform compatibility](#cross-platform-compatbility)
+* [FileTree](#filetree)
 * [Exercises](#exercises)
- * [Re-name subject directories](#re-name-subject-directories)
- * [Re-organise a data set](#re-organise-a-data-set)
- * [Solutions](#solutions)
+  * [Re-name subject directories](#re-name-subject-directories)
+  * [Re-organise a data set](#re-organise-a-data-set)
+  * [Solutions](#solutions)
 * [Appendix: Exceptions](#appendix-exceptions)
 
 
@@ -69,6 +70,7 @@ creating, removing, and traversing directories.
 ```
 import os
 import os.path as op
+from pathlib import Path
 ```
 
 
@@ -92,13 +94,13 @@ You can query and change the current directory with the `os.getcwd` and
 
 ```
 cwd = os.getcwd()
-print('Current directory: {}'.format(cwd))
+print(f'Current directory: {cwd}')
 
 os.chdir(op.expanduser('~'))
-print('Changed to: {}'.format(os.getcwd()))
+print(f'Changed to: {os.getcwd()}')
 
 os.chdir(cwd)
-print('Changed back to: {}'.format(cwd))
+print(f'Changed back to: {cwd}')
 ```
 
 
@@ -123,13 +125,13 @@ command):
 ```
 cwd = os.getcwd()
 listing = os.listdir(cwd)
-print('Directory listing: {}'.format(cwd))
+print(f'Directory listing: {cwd}')
 print('\n'.join(listing))
 print()
 
 datadir = 'raw_mri_data'
 listing = os.listdir(datadir)
-print('Directory listing: {}'.format(datadir))
+print(f'Directory listing: {datadir}')
 print('\n'.join(listing))
 ```
 
@@ -730,6 +732,27 @@ print(path)
 print(op.join(op.sep, 'home', 'fsluser', '.bash_profile'))
 ```
 
+> The `Path` object in the built-in [`pathlib`](https://docs.python.org/3/library/pathlib.html) also has
+> excellent cross-platform support. If you write your file management code using this class you are far less likely
+> to get errors on Windows.
+
+<a class="anchor" id="filetree"></a>
+## FileTree
+`fslpy` also contains support for `FileTree` objects (docs are 
+[here](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.filetree.html)). 
+These `FileTree` objects provide a simple format to define a whole directory structure with multiple subjects, sessions,
+scans, etc. In the `FileTree` format the dataset we have been looking at so far would be described by:
+```
+tree_text = """
+raw_mri_data
+    subj_{subject}
+        rest.nii.gz
+        t1.nii
+        t2.nii
+        task.nii.gz
+"""
+```
+FileTrees are discussed in more detail in the advanced `fslpy` practical.
 
 <a class="anchor" id="exercises"></a>
 ## Exercises

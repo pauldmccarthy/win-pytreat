@@ -63,7 +63,7 @@ Python has many different types and variables are dynamic and can change types (
 * lists
 * dictionaries
 
-N-dimensional arrays and other types are supported through common modules (e.g., numpy, scipy, scikit-learn).  These will be covered in a subsequent exercise.
+N-dimensional arrays and other types are supported through common modules (e.g., [numpy](https://numpy.org/), [scipy](https://docs.scipy.org/doc/scipy-1.4.1/reference/), [scikit-learn](https://scikit-learn.org/stable/)).  These will be covered in a subsequent exercises.
 
 ```
 a = 4
@@ -114,28 +114,20 @@ print(s3)
 <a class="anchor" id="Format"></a>
 ### Format
 
-More interesting strings can be created using the
-[`format`](https://docs.python.org/3/library/string.html#formatstrings)
-statement, which is very useful in print statements:
-
+More interesting strings can be created using an [f-string](https://realpython.com/python-f-strings/), 
+which is very useful in print statements:
 ```
 x = 1
 y = 'PyTreat'
-s = 'The numerical value is {} and a name is {}'.format(x, y)
+s = f'The numerical value is {x} and a name is {y}'
 print(s)
-print('A name is {} and a number is {}'.format(y, x))
+print(f'A name is {y} and a number is {x}')
 ```
+Note the `f` before the initial quote. This lets python know to fill in the variables between the curly brackets.
 
-Python also supports C-style [`%`
-formatting](https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting):
-
-```
-x = 1
-y = 'PyTreat'
-s = 'The numerical value is %i and a name is %s' % (x, y)
-print(s)
-print('A name is %s and a number is %i' % (y, x))
-```
+There are also other options along these lines, which will be discussed in the next practical. 
+This is the more modern version, although you will see plenty of the other alternatives in "old" code 
+(to python coders this means anything written before last week).
 
 <a class="anchor" id="String-manipulation"></a>
 ### String manipulation
@@ -200,7 +192,7 @@ method, `join()`:
 ```
 csvdata = 'some,comma,separated,data'
 tsvdata = '\t'.join(csvdata.split(','))
-tsvdata = tsvdata.replace('comma', 'tab'))
+tsvdata = tsvdata.replace('comma', 'tab')
 print('csvdata:', csvdata)
 print('tsvdata:', tsvdata)
 ```
@@ -263,7 +255,7 @@ print(a)
 ```
 
 > Similar things can be done for tuples, except for the last one: that is,
-> `a += (80)` as a tuple is immutable so cannot be changed like this.
+> `a += (80)` because a tuple is immutable so cannot be changed like this.
 
 <a class="anchor" id="Indexing"></a>
 ### Indexing
@@ -337,7 +329,7 @@ print(a[1:3])    # same as a(2:3) in MATLAB
 > _*Pitfall:*_
 >
 >  Unlike in MATLAB, you cannot use a list as indices instead of an
->  integer or a slice (although these can be done in `numpy`).
+>  integer or a slice (although this can be done in `numpy`).
 
 ```
 b = [3, 4]
@@ -574,7 +566,7 @@ capitals). Other values can also be used for True or False (e.g., `1` for
 not considered 'equal' in the sense that the operator `==` would consider them
 the same.
 
-Relevant boolean and comparison operators include: `not`, `and`, `or`, `==` and `!=`
+Relevant boolean and comparison operators include: `not`, `and`, `or`, `==` and `!=`.
 
 For example:
 ```
@@ -594,7 +586,9 @@ print(3 in [1, 2, 3, 4])
 ```
 
 
-A useful keyword is `None`, which is a bit like "null". This can be a default value for a variable and should be tested with the `is` operator rather than `==` (for technical reasons that it isn't worth going into here). For example: `a is None` or `a is not None` are the preferred tests.
+A useful keyword is `None`, which is a bit like "null". 
+This can be a default value for a variable and should be tested with the `is` operator rather than `==` (for technical reasons that it isn't worth going into here). For example: `a is None` or `a is not None` are the preferred tests.
+Do not use the `is` instead of the `==` operator for any other comparisons (unless you know what you are doing).
 
 
 <a class="anchor" id="If-statements"></a>
@@ -636,7 +630,7 @@ where a list or any other sequence (e.g. tuple) can be used.
 If you want a numerical range then use:
 ```
 for x in range(2, 9):
-  print(x)
+    print(x)
 ```
 Note that, like slicing, the maximum value is one less than the value specified.  Also, `range` actually returns an object that can be iterated over but is not just a list of numbers. If you want a list of numbers then `list(range(2, 9))` will give you this.
 

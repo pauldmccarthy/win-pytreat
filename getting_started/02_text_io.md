@@ -24,15 +24,15 @@ empty_string.
 
 * [Reading/writing files](#reading-writing-files)
 * [Creating new strings](#creating-new-strings)
- * [String syntax](#string-syntax)
-  * [Unicode versus bytes](#unicode-versus-bytes)
- * [Converting objects into strings](#converting-objects-into-strings)
- * [Combining strings](#combining-strings)
- * [String formattings](#string-formatting)
+  * [String syntax](#string-syntax)
+    * [Unicode versus bytes](#unicode-versus-bytes)
+  * [Converting objects into strings](#converting-objects-into-strings)
+  * [Combining strings](#combining-strings)
+  * [String formattings](#string-formatting)
 * [Extracting information from strings](#extracting-information-from-strings)
- * [Splitting strings](#splitting-strings)
- * [Converting strings to numbers](#converting-strings-to-numbers)
- * [Regular expressions](#regular-expressions)
+  * [Splitting strings](#splitting-strings)
+  * [Converting strings to numbers](#converting-strings-to-numbers)
+  * [Regular expressions](#regular-expressions)
 * [Exercises](#exercises)
 
 <a class="anchor" id="reading-writing-files"></a>
@@ -46,7 +46,8 @@ The syntax to open a file in python is `with open(<filename>, <mode>) as
 
 * `mode` is one of `'r'` (for read-only access), `'w'` (for writing a file,
   this wipes out any existing content), `'a'` (for appending to an existing
-  file).
+  file). A `'b'` can be added to any of these to open the file in "byte"-mode,
+  which prevents python from interpreting non-text (e.g., NIFTI) files as text.
 
 * `file_object` is a variable name which will be used within the `block of
   code` to access the opened file.
@@ -73,10 +74,12 @@ with open('README.md', 'r') as readme_file:
         # each line is returned with its
         # newline character still intact,
         # so we use rstrip() to remove it.
-        print('{}: {}'.format(i, line.rstrip()))
+        print(f'{i}: {line.rstrip()}')
         if i == 4:
             break
 ```
+
+> enumerate takes any sequence and returns 2-element tuples with the index and the sequence item
 
 A very similar syntax is used to write files:
 ```
@@ -85,7 +88,7 @@ with open('02_text_io/my_file', 'w') as my_file:
     my_file.writelines(['Second line\n', 'and the third\n'])
 ```
 
-Note that no new line characters get added automatically. We can investigate
+Note that new line characters do not get added automatically. We can investigate
 the resulting file using
 
 ```
@@ -143,6 +146,12 @@ a_string = "This is the first line.\nAnd here is the second.\n\tThe third starts
 print(a_string)
 ```
 
+You can even include unicode characters:
+```
+a_string = "Python = 🐍"
+print(a_string)
+```
+
 However, the easiest way to create multi-line strings is to use a triple quote (again single or double quotes can be used). Triple quotes allow your string to span multiple lines:
 ```
 multi_line_string = """This is the first line.
@@ -162,6 +171,7 @@ One pitfall when creating a list of strings is that python automatically concate
 my_list_of_strings = ['a', 'b', 'c' 'd', 'e']
 print("The 'c' and 'd' got concatenated, because we forgot the comma:", my_list_of_strings)
 ```
+> This will lead to a syntax warning in python 3.8 or greater
 
 <a class="anchor" id="unicode-versus-bytes"></a>
 #### unicode versus bytes
@@ -227,7 +237,7 @@ with open(op.expandvars('${FSLDIR}/data/standard/MNI152_T1_1mm.nii.gz'), 'rb') a
 
 
 <a class="anchor" id="converting-objects-into-strings"></a>
-### converting objects into strings
+### Converting objects into strings
 
 There are two functions to convert python objects into strings, `repr()` and
 `str()`.  All other functions that rely on string-representations of python
@@ -286,9 +296,9 @@ print(full_string)
 <a class="anchor" id="string-formatting"></a>
 ### String formatting
 Using the techniques in [Combining strings](#combining-strings) we can build simple strings. For longer strings it is often useful to first write a template strings with some placeholders, where variables are later inserted. Built into python are currently 4 different ways of doing this (with many packages providing similar capabilities):
-* the recommended [new-style formatting](https://docs.python.org/3/library/string.html#format-string-syntax).
-* printf-like [old-style formatting](https://docs.python.org/3/library/stdtypes.html#old-string-formatting)
 * [formatted string literals](https://docs.python.org/3/reference/lexical_analysis.html#f-strings) (these are only available in python 3.6+)
+* [new-style formatting](https://docs.python.org/3/library/string.html#format-string-syntax).
+* printf-like [old-style formatting](https://docs.python.org/3/library/stdtypes.html#old-string-formatting)
 * bash-like [template-strings](https://docs.python.org/3/library/string.html#template-strings)
 
 Here we provide a single example using the first three methods, so you can recognize them in the future.
@@ -321,7 +331,17 @@ b = 1/3
 
 print(f'{a + b:.3f} = {a} + {b:.3f}')
 ```
-This code block will fail in fslpython, since it uses python 3.5.
+
+These f-strings are extremely useful when creating print or error messages for debugging, 
+especially with the new support for self-documenting in python 3.8 (see 
+[here](https://docs.python.org/3/whatsnew/3.8.html#f-strings-support-for-self-documenting-expressions-and-debugging)):
+```
+a = 3
+b = 1/3
+
+print(f'{a + b=}')
+```
+Note that this prints both the expression `a + b` and the output (this block will raise an error for python <= 3.7). 
 
 
 <a class="anchor" id="extracting-information-from-strings"></a>
@@ -336,7 +356,7 @@ practcals.
 
 <a class="anchor" id="splitting-strings"></a>
 ### Splitting strings
-The simplest way to extract a sub-string is to use slicing
+The simplest way to extract a sub-string is to use slicing (see previous practical for more details):
 ```
 a_string = 'abcdefghijklmnopqrstuvwxyz'
 print(a_string[10])  # create a string containing only the 11th character
@@ -398,7 +418,7 @@ The file 02_text_io/input.txt contains integers in a 2-column format (separated 
 
 ```
 input_filename = '02_text_io/input.txt'
-out_filename = '02_text_io/output.txt'
+output_filename = '02_text_io/output.txt'
 
 with open(input_filename, 'r') as input_file:
     ...
