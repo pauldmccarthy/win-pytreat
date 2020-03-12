@@ -23,7 +23,11 @@ perform analyses and image processing in conjunction with FSL.
   * [NIfTI coordinate systems](#nifti-coordinate-systems)
   * [Image processing](#image-processing)
 * [The `filetree`](#the-filetree)
+* [Calling shell commands](#calling-shell-commands)
 * [FSL wrapper functions](#fsl-wrapper-functions)
+  * [In-memory images](#in-memory-images)
+  * [Loading outputs into Python](#loading-outputs-into-python)
+  * [The `fslmaths` wrapper](#the-fslmaths-wrapper)
 * [FSL atlases](#fsl-atlases)
   * [Querying atlases](#querying-atlases)
   * [Loading atlas images](#loading-atlas-images)
@@ -61,6 +65,10 @@ def ortho(data, voxel, fig=None, **kwargs):
     :returns:   The figure and axes (which can be passed back in as the
                 `fig` argument to plot overlays).
     """
+
+    data            = np.asanyarray(data, dtype=np.float)
+    data[data <= 0] = np.nan
+
     x, y, z = voxel
     xslice  = np.flipud(data[x, :, :].T)
     yslice  = np.flipud(data[:, y, :].T)
@@ -222,10 +230,12 @@ You can get the image data as a `numpy` array via the `data` attribute:
 ```
 data = std2mm.data
 print(data.min(), data.max())
+ortho(data, (45, 54, 45))
 ```
 
-> Note that this will give you the data in its underlying type, unlike the
-> `nibabel.get_fdata` method, which up-casts image data to floating-point.
+
+> Note that `Image.data` will give you the data in its underlying type, unlike
+> the `nibabel.get_fdata` method, which up-casts image data to floating-point.
 
 
 You can also read and write data directly via the `Image` object:
@@ -360,7 +370,7 @@ Let's start by identifying the voxel with the biggest t-statistic:
 
 
 ```
-featdir = op.join(op.join('08_fslpy', 'fmri.feat'))
+featdir = op.join('08_fslpy', 'fmri.feat')
 
 tstat1 = Image(op.join(featdir, 'stats', 'tstat1')).data
 
@@ -498,11 +508,11 @@ standard space using `matplotlib`:
 stddir = op.expandvars('${FSLDIR}/data/standard/')
 std2mm = Image(op.join(stddir, 'MNI152_T1_2mm'))
 
-std_tstat1 = std_tstat1.data
-std_tstat1 = np.ma.masked_where(std_tstat1 < 3, std_tstat1)
+std_tstat1                 = std_tstat1.data
+std_tstat1[std_tstat1 < 3] = 0
 
-fig = ortho(std2mm,     mnivoxels, cmap=plt.cm.gray)
-fig = ortho(std_tstat1, mnivoxels, cmap=plt.cm.inferno, fig=fig)
+fig = ortho(std2mm.data, mnivoxels, cmap=plt.cm.gray)
+fig = ortho(std_tstat1,  mnivoxels, cmap=plt.cm.inferno, fig=fig)
 ```
 
 
@@ -517,6 +527,125 @@ non-linear (FNIRT) transformations.
 ## The `filetree`
 
 
+<a class="anchor" id="calling-shell-commands"></a>
+## Calling shell commands
+
+
+The
+[`fsl.utils.run`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.run.html)
+module provides the `run` and `runfsl` functions, which are wrappers around
+the built-in [`subprocess`
+library](https://docs.python.org/3/library/subprocess.html).
+
+
+The defsault behaviour of `run` is to return the standard output of the
+command:
+
+
+```
+from fsl.utils.run import run
+
+# You can pass the command
+# and its arguments as a single
+# string, or as a sequence
+print('Lines in this notebook:', run('wc -l 08_fslpy.md'))
+print('Lines in this notebook:', run(['wc', '-l', '08_fslpy.md']))
+```
+
+
+But you can use the `stdout`, `stderr` and `exitcode` arguments to control the
+return value. Let's create a little script to demonstrate the options:
+
+
+```
+%%writefile mycmd
+#!/usr/bin/env bash
+exitcode=$1
+
+echo "Standard output!"
+echo "Standard error :(" >&2
+
+exit $exitcode
+```
+
+
+And let's not forget to make it executable:
+
+
+```
+!chmod a+x mycmd
+```
+
+
+```
+print('run("./mycmd 0"):                                         ',
+       run("./mycmd 0"))
+print('run("./mycmd 0", stdout=False):                           ',
+       run("./mycmd 0", stdout=False))
+print('run("./mycmd 0",                           exitcode=True):',
+       run("./mycmd 0",                           exitcode=True))
+print('run("./mycmd 0", stdout=False,             exitcode=True):',
+       run("./mycmd 0", stdout=False,             exitcode=True))
+print('run("./mycmd 0", stdout=True, stderr=True):               ',
+       run("./mycmd 0", stdout=True, stderr=True))
+print('run("./mycmd 0", stdout=True, stderr=True, exitcode=True):',
+       run("./mycmd 0", stdout=True, stderr=True, exitcode=True))
+
+print('run("./mycmd 1",                           exitcode=True):',
+       run("./mycmd 1",                           exitcode=True))
+print('run("./mycmd 1", stdout=False,             exitcode=True):',
+       run("./mycmd 1", stdout=False,             exitcode=True))
+```
+
+
+If the command returns a non-0 exit code, the default behaviour (if you don't
+set `exitcode=True`) is for an `Exception` to be raised:
+
+
+```
+print('run("./mycmd 99")', run("./mycmd 99"))
+```
+
+
+The `log` option allows for more fine-grained control over what is done with
+the standard output and error streams:
+
+
+```
+import time
+
+# Use 'tee' to redirect the stdout/stderr
+# of the command to the stdout/stderr of
+# the calling command (your python script):
+print('Teeing:')
+run('./mycmd 0', log={'tee' : True})
+
+# sleep a tiny bit, otherwise the outputs
+# from the command above might get interspersed
+# with the print statements below
+time.sleep(0.5)
+
+# Use 'stdout'/'stderr' to redirect
+# the stdout/stderr to files:
+with open('stdout.log', 'wt') as o, \
+     open('stderr.log', 'wt') as e:
+     run('./mycmd 0', log={'stdout' : o, 'stderr' : e})
+print('\nRedirected stdout:')
+!cat stdout.log
+print('\nRedirected stderr:')
+!cat stderr.log
+
+# Use 'cmd' to log the command to a file
+# (useful for pipeline logging!)
+with open('commands.log', 'wt') as cmdlog:
+     run('./mycmd 0',         log={'cmd' : cmdlog})
+     run('wc -l 08_fslpy.md', log={'cmd' : cmdlog})
+
+print('\nCommand log:')
+!cat commands.log
+```
+
+
 <a class="anchor" id="fsl-wrapper-functions"></a>
 ## FSL wrapper functions
 
@@ -528,24 +657,188 @@ use them to call an FSL tool from Python code, without having to worry about
 constructing a command-line, or saving/loading input/output images.
 
 
-You can use the FSL wrapper functions with file names:
+You can use the FSL wrapper functions with file names, similar to calling the
+corresponding tool via the command-line:
+
 
 ```
 from fsl.wrappers import bet, robustfov, LOAD
-os.chdir('08_fslpy')
-robustfov('bighead', 'bighead_cropped')
-render('bighead bighead_cropped -cm blue')
+
+robustfov('08_fslpy/bighead', 'bighead_cropped')
+
+render('08_fslpy/bighead bighead_cropped -cm blue')
 ```
 
-Or, if you have images in memory, you can pass the `Image` objects in,
-and have the results automatically loaded in too:
+
+The `fsl.wrapper` functions strive to provide an interface which is as close
+as possible to the command-line tool - most functions use positional arguments
+for required options, and keyword arguments for all other options, with
+argument names equivalent to command line option names. For example, the usage
+for the command-line `bet` tool is as follows:
+
+
+> ```
+> Usage:    bet <input> <output> [options]
+>
+> Main bet2 options:
+>   -o          generate brain surface outline overlaid onto original image
+>   -m          generate binary brain mask
+>   -s          generate approximate skull image
+>   -n          don't generate segmented brain image output
+>   -f <f>      fractional intensity threshold (0->1); default=0.5; smaller values give larger brain outline estimates
+>   -g <g>      vertical gradient in fractional intensity threshold (-1->1); default=0; positive values give larger brain outline at bottom, smaller at top
+>   -r <r>      head radius (mm not voxels); initial surface sphere is set to half of this
+>   -c <x y z>  centre-of-gravity (voxels not mm) of initial mesh surface.
+> ...
+> ```
+
+
+So to use the `bet()` wrapper function, pass `<input>` and `<output>` as
+positional arguments, and pass the additional options as keyword arguments:
+
+
+```
+bet('bighead_cropped', 'bighead_cropped_brain', f=0.3, m=True, s=True)
+
+render('bighead_cropped             -b 40 '
+       'bighead_cropped_brain       -cm hot '
+       'bighead_cropped_brain_skull -ot mask -mc 0.4 0.4 1 '
+       'bighead_cropped_brain_mask  -ot mask -mc 0   1   0 -o -w 5')
+```
+
+
+> Some FSL commands accept arguments which cannot be used as Python
+> identifiers - for example, the `-2D` option to `flirt` cannot be used as an
+> identifier in Python, because it begins with a number. In situations like
+> this, an alias is used. So to set the `-2D` option to `flirt`, you can do this:
+>
+> ```
+> # "twod" applies the -2D flag
+> flirt('source.nii.gz', 'ref.nii.gz', omat='src2ref.mat', twod=True)
+> ```
+
+
+<a class="anchor" id="in-memory-images"></a>
+### In-memory images
+
+
+It can be quite awkward to combine image processing with FSL tools and image
+processing in Python. The `fsl.wrapper` package tries to make this a little
+easier for you - if you are working with image data in Python, you can pass
+`Image` or `nibabel` objects directly into `fsl.wrapper` functions - they will
+be automatically saved to temporary files and passed to the underlying FSL
+command:
+
 
 ```
 cropped = Image('bighead_cropped')
-betted = bet(cropped, LOAD)['output']
 
-fig = ortho(cropped, (80, 112, 85))
-fig = ortho(betted,  (80, 112, 85), fig=fig, cmap=plt.cm.inferno)
+bet(cropped, 'bighead_cropped_brain')
+
+betted = Image('bighead_cropped_brain')
+
+fig = ortho(cropped.data, (80, 112, 85), cmap=plt.cm.gray)
+fig = ortho(betted .data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
+```
+
+
+<a class="anchor" id="loading-outputs-into-python"></a>
+### Loading outputs into Python
+
+
+By using the special `fsl.wrappers.LOAD` symbol, you can have any output
+files produced by the tool automatically loaded in too:
+
+
+```
+cropped = Image('bighead_cropped')
+betted  = bet(cropped, LOAD)['output']
+
+fig = ortho(cropped.data, (80, 112, 85), cmap=plt.cm.gray)
+fig = ortho(betted .data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
+```
+
+
+You can use the `LOAD` symbol for any output argument - any output files which
+are loaded will be returned in a dictionary, with the argument name used as
+the key:
+
+
+```
+from fsl.wrappers import flirt
+
+std2mm   = Image(op.expandvars(op.join('$FSLDIR', 'data', 'standard', 'MNI152_T1_2mm')))
+tstat1   = Image(op.join('08_fslpy', 'fmri.feat', 'stats', 'tstat1'))
+func2std = np.loadtxt(op.join('08_fslpy', 'fmri.feat', 'reg', 'example_func2standard.mat'))
+
+aligned = flirt(tstat1, std2mm, applyxfm=True, init=func2std, out=LOAD)
+
+print(aligned)
+
+aligned = aligned['out'].data
+aligned[aligned < 1] = 0
+
+fig = ortho(std2mm .data, (45, 54, 45), cmap=plt.cm.gray)
+fig = ortho(aligned.data, (45, 54, 45), cmap=plt.cm.inferno, fig=fig)
+```
+
+
+For tools like `bet`, which expect an output *prefix* or *basename*, you can
+just set the prefix to `LOAD` - all output files with that prefix will be
+available in the returned dictionary:
+
+
+```
+img    = Image('bighead_cropped')
+betted = bet(img, LOAD, f=0.3, m=True)
+
+print(betted)
+
+fig = ortho(img                  .data, (80, 112, 85), cmap=plt.cm.gray)
+fig = ortho(betted['output']     .data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
+fig = ortho(betted['output_mask'].data, (80, 112, 85), cmap=plt.cm.summer,  fig=fig, alpha=0.5)
+```
+
+
+<a class="anchor" id="the-fslmaths-wrapper"></a>
+### The `fslmaths` wrapper
+
+
+*Most* of the `fsl.wrapper` functions aim to provide an interface which is as
+close as possible to the underlying FSL tool. Ideally, if you read the
+command-line help for a tool, you should be able to figure out how to use the
+corresponding wrapper function. The wrapper for the `fslmaths` command is a
+little different, however. It provides more of an object-oriented interface,
+which is hopefully a little easier to use from within Python.
+
+
+You can apply an `fslmaths` operation by specifying the input file, *chaining*
+method calls together, and finally calling the `run()` method. For example:
+
+
+```
+from wrappers import fslmaths
+fslmaths('bighead_cropped')            \
+  .mas(  'bighead_cropped_brain_mask') \
+  .run(  'bighead_cropped_brain')
+
+render('bighead_cropped bighead_cropped_brain -cm hot')
+```
+
+
+Of course, you can also use the `fslmaths` wrapper with in-memory images:
+
+
+```
+wholehead   = Image('bighead_cropped')
+brainmask   = Image('bighead_cropped_brain_mask')
+
+eroded      = fslmaths(brainmask).ero().ero().run()
+erodedbrain = fslmaths(wholehead).mas(eroded).run()
+
+fig = ortho(wholehead  .data, (80, 112, 85), cmap=plt.cm.gray)
+fig = ortho(brainmask  .data, (80, 112, 85), cmap=plt.cm.summer,  fig=fig)
+fig = ortho(erodedbrain.data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
 ```
 
 
