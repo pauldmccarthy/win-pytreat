@@ -22,12 +22,14 @@ perform analyses and image processing in conjunction with FSL.
   * [Loading other file types](#loading-other-file-types)
   * [NIfTI coordinate systems](#nifti-coordinate-systems)
   * [Image processing](#image-processing)
-* [The `filetree`](#the-filetree)
-* [Calling shell commands](#calling-shell-commands)
 * [FSL wrapper functions](#fsl-wrapper-functions)
   * [In-memory images](#in-memory-images)
   * [Loading outputs into Python](#loading-outputs-into-python)
   * [The `fslmaths` wrapper](#the-fslmaths-wrapper)
+* [The `filetree`](#the-filetree)
+* [Calling shell commands](#calling-shell-commands)
+  * [`runfsl` and `submit`](#runfsl-and-submit)
+  * [Redirecting output](#redirecting-output)
 * [FSL atlases](#fsl-atlases)
   * [Querying atlases](#querying-atlases)
   * [Loading atlas images](#loading-atlas-images)
@@ -523,129 +525,6 @@ also contains a wealth of functionality for working with linear (FLIRT) and
 non-linear (FNIRT) transformations.
 
 
-<a class="anchor" id="the-filetree"></a>
-## The `filetree`
-
-
-<a class="anchor" id="calling-shell-commands"></a>
-## Calling shell commands
-
-
-The
-[`fsl.utils.run`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.run.html)
-module provides the `run` and `runfsl` functions, which are wrappers around
-the built-in [`subprocess`
-library](https://docs.python.org/3/library/subprocess.html).
-
-
-The defsault behaviour of `run` is to return the standard output of the
-command:
-
-
-```
-from fsl.utils.run import run
-
-# You can pass the command
-# and its arguments as a single
-# string, or as a sequence
-print('Lines in this notebook:', run('wc -l 08_fslpy.md'))
-print('Lines in this notebook:', run(['wc', '-l', '08_fslpy.md']))
-```
-
-
-But you can use the `stdout`, `stderr` and `exitcode` arguments to control the
-return value. Let's create a little script to demonstrate the options:
-
-
-```
-%%writefile mycmd
-#!/usr/bin/env bash
-exitcode=$1
-
-echo "Standard output!"
-echo "Standard error :(" >&2
-
-exit $exitcode
-```
-
-
-And let's not forget to make it executable:
-
-
-```
-!chmod a+x mycmd
-```
-
-
-```
-print('run("./mycmd 0"):                                         ',
-       run("./mycmd 0"))
-print('run("./mycmd 0", stdout=False):                           ',
-       run("./mycmd 0", stdout=False))
-print('run("./mycmd 0",                           exitcode=True):',
-       run("./mycmd 0",                           exitcode=True))
-print('run("./mycmd 0", stdout=False,             exitcode=True):',
-       run("./mycmd 0", stdout=False,             exitcode=True))
-print('run("./mycmd 0", stdout=True, stderr=True):               ',
-       run("./mycmd 0", stdout=True, stderr=True))
-print('run("./mycmd 0", stdout=True, stderr=True, exitcode=True):',
-       run("./mycmd 0", stdout=True, stderr=True, exitcode=True))
-
-print('run("./mycmd 1",                           exitcode=True):',
-       run("./mycmd 1",                           exitcode=True))
-print('run("./mycmd 1", stdout=False,             exitcode=True):',
-       run("./mycmd 1", stdout=False,             exitcode=True))
-```
-
-
-If the command returns a non-0 exit code, the default behaviour (if you don't
-set `exitcode=True`) is for an `Exception` to be raised:
-
-
-```
-print('run("./mycmd 99")', run("./mycmd 99"))
-```
-
-
-The `log` option allows for more fine-grained control over what is done with
-the standard output and error streams:
-
-
-```
-import time
-
-# Use 'tee' to redirect the stdout/stderr
-# of the command to the stdout/stderr of
-# the calling command (your python script):
-print('Teeing:')
-run('./mycmd 0', log={'tee' : True})
-
-# sleep a tiny bit, otherwise the outputs
-# from the command above might get interspersed
-# with the print statements below
-time.sleep(0.5)
-
-# Use 'stdout'/'stderr' to redirect
-# the stdout/stderr to files:
-with open('stdout.log', 'wt') as o, \
-     open('stderr.log', 'wt') as e:
-     run('./mycmd 0', log={'stdout' : o, 'stderr' : e})
-print('\nRedirected stdout:')
-!cat stdout.log
-print('\nRedirected stderr:')
-!cat stderr.log
-
-# Use 'cmd' to log the command to a file
-# (useful for pipeline logging!)
-with open('commands.log', 'wt') as cmdlog:
-     run('./mycmd 0',         log={'cmd' : cmdlog})
-     run('wc -l 08_fslpy.md', log={'cmd' : cmdlog})
-
-print('\nCommand log:')
-!cat commands.log
-```
-
-
 <a class="anchor" id="fsl-wrapper-functions"></a>
 ## FSL wrapper functions
 
@@ -817,7 +696,7 @@ method calls together, and finally calling the `run()` method. For example:
 
 
 ```
-from wrappers import fslmaths
+from fsl.wrappers import fslmaths
 fslmaths('bighead_cropped')            \
   .mas(  'bighead_cropped_brain_mask') \
   .run(  'bighead_cropped_brain')
@@ -839,6 +718,168 @@ erodedbrain = fslmaths(wholehead).mas(eroded).run()
 fig = ortho(wholehead  .data, (80, 112, 85), cmap=plt.cm.gray)
 fig = ortho(brainmask  .data, (80, 112, 85), cmap=plt.cm.summer,  fig=fig)
 fig = ortho(erodedbrain.data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
+```
+
+
+<a class="anchor" id="the-filetree"></a>
+## The `filetree`
+
+
+
+<a class="anchor" id="calling-shell-commands"></a>
+## Calling shell commands
+
+
+The
+[`fsl.utils.run`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.run.html)
+module provides the `run` and `runfsl` functions, which are wrappers around
+the built-in [`subprocess`
+library](https://docs.python.org/3/library/subprocess.html).
+
+
+The default behaviour of `run` is to return the standard output of the
+command:
+
+
+```
+from fsl.utils.run import run
+
+# You can pass the command
+# and its arguments as a single
+# string, or as a sequence
+print('Lines in this notebook:', run('wc -l 08_fslpy.md').strip())
+print('Words in this notebook:', run(['wc', '-w', '08_fslpy.md']).strip())
+```
+
+
+But you can control what `run` returns, depending on your needs. Let's create
+a little script to demonstrate the options:
+
+
+```
+%%writefile mycmd
+#!/usr/bin/env bash
+exitcode=$1
+
+echo "Standard output!"
+echo "Standard error :(" >&2
+
+exit $exitcode
+```
+
+
+And let's not forget to make it executable:
+
+
+```
+!chmod a+x mycmd
+```
+
+
+You can use the `stdout`, `stderr` and `exitcode` arguments to control the
+return value:
+
+
+```
+print('run("./mycmd 0"):                                          ',
+       run("./mycmd 0").strip())
+print('run("./mycmd 0", stdout=False):                            ',
+       run("./mycmd 0", stdout=False))
+print('run("./mycmd 0",                            exitcode=True):',
+       run("./mycmd 0",                            exitcode=True))
+print('run("./mycmd 0", stdout=False,              exitcode=True):',
+       run("./mycmd 0", stdout=False,              exitcode=True))
+print('run("./mycmd 0",               stderr=True):               ',
+       run("./mycmd 0",               stderr=True))
+print('run("./mycmd 0", stdout=False, stderr=True):               ',
+       run("./mycmd 0", stdout=False, stderr=True).strip())
+print('run("./mycmd 0",               stderr=True, exitcode=True):',
+       run("./mycmd 0",               stderr=True, exitcode=True))
+
+print('run("./mycmd 1",                            exitcode=True):',
+       run("./mycmd 1",                            exitcode=True))
+print('run("./mycmd 1", stdout=False,              exitcode=True):',
+       run("./mycmd 1", stdout=False,              exitcode=True))
+```
+
+
+So if only one of `stdout`, `stderr`, or `exitcode` is `True`, `run` will only
+return the corresponding value. Otherwise `run` will return a tuple which
+contains the requested outputs.
+
+
+If you run a command which returns a non-0 exit code, the default behaviour
+(if you don't set `exitcode=True`) is for a `RuntimeError` to be raised:
+
+
+```
+run("./mycmd 99")
+```
+
+
+<a class="anchor" id="runfsl-and-submit"></a>
+### `runfsl` and `submit`
+
+
+The `runfsl` function is a wrapper around `run` which simply makes sure that
+the command you are calling is inside the `$FSLDIR/bin/` directory. It has the
+same usage as the `run` function:
+
+
+```
+from fsl.utils.run import runfsl
+runfsl('fslroi 08_fslpy/bighead_cropped bighead_slices 0 -1 0 -1 90 5')
+runfsl('fast -o bighead_fast bighead_slices')
+```
+
+
+
+<a class="anchor" id="redirecting-output"></a>
+### Redirecting output
+
+
+The `log` option, accepted by both `run` and `fslrun`, allows for more
+fine-grained control over what is done with the standard output and error
+streams.
+
+
+You can use `'tee'` to redirect the standard output and error streams of the
+command to the standard output and error streams of the calling command (your
+python script):
+
+
+```
+print('Teeing:')
+_ = run('./mycmd 0', log={'tee' : True})
+```
+
+
+Or you can use `'stdout'` and `'stderr'` to redirect the standard output and
+error streams of the command to files:
+
+
+```
+with open('stdout.log', 'wt') as o, \
+     open('stderr.log', 'wt') as e:
+     run('./mycmd 0', log={'stdout' : o, 'stderr' : e})
+print('\nRedirected stdout:')
+!cat stdout.log
+print('\nRedirected stderr:')
+!cat stderr.log
+```
+
+
+Finally, you can use `'cmd'` to log the command itself to a file (useful for
+pipeline logging):
+
+
+```
+with open('commands.log', 'wt') as cmdlog:
+     run('./mycmd 0',         log={'cmd' : cmdlog})
+     run('wc -l 08_fslpy.md', log={'cmd' : cmdlog})
+
+print('\nCommand log:')
+!cat commands.log
 ```
 
 
