@@ -1,5 +1,8 @@
 # `fslpy`
 
+# THIS IS A WORK IN PROGRESS - DO NOT READ
+
+
 `fslpy` is a Python library which is built into FSL, and contains a range of
 functionality for working with neuroimaging data in an FSL context.
 
