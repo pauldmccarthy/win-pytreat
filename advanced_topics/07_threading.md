@@ -22,20 +22,20 @@ module.  If you want to be impressed, skip straight to the section on
 
 
 * [Threading](#threading)
- * [Subclassing `Thread`](#subclassing-thread)
- * [Daemon threads](#daemon-threads)
- * [Thread synchronisation](#thread-synchronisation)
-   * [`Lock`](#lock)
-   * [`Event`](#event)
- * [The Global Interpreter Lock (GIL)](#the-global-interpreter-lock-gil)
+  * [Subclassing `Thread`](#subclassing-thread)
+  * [Daemon threads](#daemon-threads)
+  * [Thread synchronisation](#thread-synchronisation)
+    * [`Lock`](#lock)
+    * [`Event`](#event)
+  * [The Global Interpreter Lock (GIL)](#the-global-interpreter-lock-gil)
 * [Multiprocessing](#multiprocessing)
- * [`threading`-equivalent API](#threading-equivalent-api)
- * [Higher-level API - the `multiprocessing.Pool`](#higher-level-api-the-multiprocessing-pool)
-   * [`Pool.map`](#pool-map)
-   * [`Pool.apply_async`](#pool-apply-async)
+  * [`threading`-equivalent API](#threading-equivalent-api)
+  * [Higher-level API - the `multiprocessing.Pool`](#higher-level-api-the-multiprocessing-pool)
+    * [`Pool.map`](#pool-map)
+    * [`Pool.apply_async`](#pool-apply-async)
 * [Sharing data between processes](#sharing-data-between-processes)
- * [Read-only sharing](#read-only-sharing)
- * [Read/write sharing](#read-write-sharing)
+  * [Read-only sharing](#read-only-sharing)
+  * [Read/write sharing](#read-write-sharing)
 
 
 <a class="anchor" id="threading"></a>
@@ -638,19 +638,29 @@ any copying required.
 
 
 Let's see this in action with a simple example. We'll start by defining a
-little helper function which allows us to track the total memory usage, using
-the unix `free` command:
+horrible little helper function which allows us to track the total memory
+usage:
 
 
 ```
-# todo mac version
+import sys
 import subprocess as sp
 def memusage(msg):
-    stdout = sp.run(['free', '--mega'], capture_output=True).stdout.decode()
-    stdout = stdout.split('\n')[1].split()
-    total  = stdout[1]
-    used   = stdout[2]
-    print('Memory usage {}: {} / {} MB'.format(msg, used, total))
+    if sys.platform == 'darwin':
+        total = sp.run(['sysctl', 'hw.memsize'], capture_output=True).stdout.decode()
+        total = int(total.split()[1]) // 1048576
+        usage = sp.run('vm_stat', capture_output=True).stdout.decode()
+        usage = usage.strip().split('\n')
+        usage = [l.split(':') for l in usage]
+        usage = {k.strip() : v.strip() for k, v in usage}
+        usage = int(usage['Pages free'][:-1]) / 256.0
+        usage = int(total - usage)
+    else:
+        stdout = sp.run(['free', '--mega'], capture_output=True).stdout.decode()
+        stdout = stdout.split('\n')[1].split()
+        total  = int(stdout[1])
+        usage  = int(stdout[2])
+    print('Memory usage {}: {} / {} MB'.format(msg, usage, total))
 ```
 
 
@@ -713,8 +723,8 @@ your data. But what if your worker processes need to be able to modify the
 data? Go back to the code block above and:
 
 1. Modify the `process_chunk` function so that it modifies every element of
-   its assigned portion of the data before calculating and returning the sum.
-   For example:
+   its assigned portion of the data before the call to `time.sleep`.  For
+   example:
 
    > ```
    > data[offset:offset + nelems] += 1
