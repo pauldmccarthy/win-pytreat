@@ -36,12 +36,10 @@ alternative to Matlab as a scientific computing platform.
 * [Exercises](#exercises)
   * [Load an array from a file and do stuff with it](#load-an-array-from-a-file-and-do-stuff-with-it)
   * [Concatenate affine transforms](#concatenate-affine-transforms)
-
 * [Appendix A: Generating random numbers](#appendix-generating-random-numbers)
 * [Appendix B: Importing Numpy](#appendix-importing-numpy)
 * [Appendix C: Vectors in Numpy](#appendix-vectors-in-numpy)
 * [Appendix D: The Numpy `matrix`](#appendix-the-numpy-matrix)
-
 * [Useful references](#useful-references)
 
 
@@ -324,7 +322,7 @@ print('Row min indices: ', a.argmin(axis=1))
 
 Note that, for a multi-dimensional array, the `argmin` and `argmax` methods
 will return the (0-based) index of the minimum/maximum values into a
-[flattened](https://docs.scipy.org/doc/numpy-1.14.0/reference/generated/numpy.ndarray.flatten.html)
+[flattened](https://docs.scipy.org/doc/numpy/reference/generated/numpy.ndarray.flatten.html)
 view of the array.
 
 
@@ -458,7 +456,7 @@ print( dstacked)
 ```
 
 Alternatively, you can use the `stack` function and give the index of the dimension along which the array
-should be stacked as the `axis` keyword (so, `np.vstack((a, b))` is equivalent to `np.stack((a, b), axis=1)`). 
+should be stacked as the `axis` keyword (so, `np.vstack((a, b))` is equivalent to `np.stack((a, b), axis=1)`).
 
 <a class="anchor" id="operating-on-arrays"></a>
 ## Operating on arrays
@@ -669,13 +667,13 @@ and you can't figure out why refer to the [official
 documentation](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
 
 In short the broadcasting rules are:
-1. If the input arrays have a different number of dimensions, the ones with fewer 
-    dimensions will have new dimensions with length 1 prepended until all arrays 
+1. If the input arrays have a different number of dimensions, the ones with fewer
+    dimensions will have new dimensions with length 1 prepended until all arrays
     have the same number of dimensions. So adding a 2D array shaped (3, 3) with
     a 1D array of length (3, ), is equivalent to adding the two 2D arrays with
     shapes (3, 3) and (1, 3).
 2. Once, all the arrays have the same number of dimensions, the arrays are combined
-    elementwise. Each dimension is compatible between the two arrays if they have 
+    elementwise. Each dimension is compatible between the two arrays if they have
     equal length or one has a length of 1. In the latter case the dimension will
     be repeated using a procedure equivalent to Matlab's `repmat`).
 
@@ -1154,7 +1152,7 @@ Note however that use of the `matrix` type is _not_ widespread, and if you use
 it you will risk confusing others who are familiar with the much more commonly
 used `array`, and who need to work with your code. In fact, the official Numpy
 documentation [recommends against using the `matrix`
-type](https://docs.scipy.org/doc/numpy-dev/user/numpy-for-matlab-users.html#array-or-matrix-which-should-i-use).
+type](https://numpy.org/devdocs/user/numpy-for-matlab-users.html#array-or-matrix-which-should-i-use).
 
 
 But if you are writing some very maths-heavy code, and you want your code to
@@ -1171,6 +1169,6 @@ clear to others what is going on!
 * [Linear algebra in `numpy.linalg`](https://docs.scipy.org/doc/numpy/reference/routines.linalg.html)
 * [Broadcasting in Numpy](https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
 * [Indexing in Numpy](https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html)
-* [Random sampling in `numpy.random`](https://docs.scipy.org/doc/numpy/reference/routines.random.html)
+* [Random sampling in `numpy.random`](https://docs.scipy.org/doc/numpy/reference/random/index.html)
 * [Python slicing](https://www.pythoncentral.io/how-to-slice-listsarrays-and-tuples-in-python/)
-* [Numpy for Matlab users](https://docs.scipy.org/doc/numpy-dev/user/numpy-for-matlab-users.html)
+* [Numpy for Matlab users](https://numpy.org/devdocs/user/numpy-for-matlab-users.html)
