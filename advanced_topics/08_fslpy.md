@@ -28,7 +28,8 @@ perform analyses and image processing in conjunction with FSL.
   * [The `fslmaths` wrapper](#the-fslmaths-wrapper)
 * [The `filetree`](#the-filetree)
 * [Calling shell commands](#calling-shell-commands)
-  * [`runfsl` and `submit`](#runfsl-and-submit)
+  * [The `runfsl` function](#the-runfsl-function)
+  * [Submitting to the cluster](#submitting-to-the-cluster)
   * [Redirecting output](#redirecting-output)
 * [FSL atlases](#fsl-atlases)
   * [Querying atlases](#querying-atlases)
@@ -536,6 +537,10 @@ use them to call an FSL tool from Python code, without having to worry about
 constructing a command-line, or saving/loading input/output images.
 
 
+> The `fsl.wrappers` functions also allow you to submit jobs to be run on the
+> cluster - this is described [below](#submitting-to-the-cluster).
+
+
 You can use the FSL wrapper functions with file names, similar to calling the
 corresponding tool via the command-line:
 
@@ -549,7 +554,7 @@ render('08_fslpy/bighead bighead_cropped -cm blue')
 ```
 
 
-The `fsl.wrapper` functions strive to provide an interface which is as close
+The `fsl.wrappers` functions strive to provide an interface which is as close
 as possible to the command-line tool - most functions use positional arguments
 for required options, and keyword arguments for all other options, with
 argument names equivalent to command line option names. For example, the usage
@@ -602,9 +607,9 @@ render('bighead_cropped             -b 40 '
 
 
 It can be quite awkward to combine image processing with FSL tools and image
-processing in Python. The `fsl.wrapper` package tries to make this a little
+processing in Python. The `fsl.wrappers` package tries to make this a little
 easier for you - if you are working with image data in Python, you can pass
-`Image` or `nibabel` objects directly into `fsl.wrapper` functions - they will
+`Image` or `nibabel` objects directly into `fsl.wrappers` functions - they will
 be automatically saved to temporary files and passed to the underlying FSL
 command:
 
@@ -625,8 +630,8 @@ fig = ortho(betted .data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
 ### Loading outputs into Python
 
 
-By using the special `fsl.wrappers.LOAD` symbol, you can have any output
-files produced by the tool automatically loaded in too:
+By using the special `fsl.wrappers.LOAD` symbol, you can also have any output
+files produced by the tool automatically loaded:
 
 
 ```
@@ -662,9 +667,9 @@ fig = ortho(aligned.data, (45, 54, 45), cmap=plt.cm.inferno, fig=fig)
 ```
 
 
-For tools like `bet`, which expect an output *prefix* or *basename*, you can
-just set the prefix to `LOAD` - all output files with that prefix will be
-available in the returned dictionary:
+For tools like `bet` and `fast`, which expect an output *prefix* or
+*basename*, you can just set the prefix to `LOAD` - all output files with that
+prefix will be available in the returned dictionary:
 
 
 ```
@@ -683,7 +688,7 @@ fig = ortho(betted['output_mask'].data, (80, 112, 85), cmap=plt.cm.summer,  fig=
 ### The `fslmaths` wrapper
 
 
-*Most* of the `fsl.wrapper` functions aim to provide an interface which is as
+*Most* of the `fsl.wrappers` functions aim to provide an interface which is as
 close as possible to the underlying FSL tool. Ideally, if you read the
 command-line help for a tool, you should be able to figure out how to use the
 corresponding wrapper function. The wrapper for the `fslmaths` command is a
@@ -817,8 +822,8 @@ run("./mycmd 99")
 ```
 
 
-<a class="anchor" id="runfsl-and-submit"></a>
-### `runfsl` and `submit`
+<a class="anchor" id="the-runfsl-function"></a>
+### The `runfsl` function
 
 
 The `runfsl` function is a wrapper around `run` which simply makes sure that
@@ -828,10 +833,94 @@ same usage as the `run` function:
 
 ```
 from fsl.utils.run import runfsl
-runfsl('fslroi 08_fslpy/bighead_cropped bighead_slices 0 -1 0 -1 90 5')
+runfsl('bet 08_fslpy/bighead_cropped bighead_cropped_brain')
+runfsl('fslroi bighead_cropped_brain bighead_slices 0 -1 0 -1 90 3')
 runfsl('fast -o bighead_fast bighead_slices')
+
+render('-vl 80 112 91 -xh -yh '
+       '08_fslpy/bighead_cropped '
+       'bighead_slices.nii.gz -cm brain_colours_1hot -b 30 '
+       'bighead_fast_seg.nii.gz -ot label -o')
 ```
 
+
+<a class="anchor" id="submitting-to-the-cluster"></a>
+### Submitting to the cluster
+
+
+Both the `run` and `runfsl` accept an argument called `submit`, which allows
+you to submit jobs to be executed on the cluster via the FSL `fsl_sub`
+command.
+
+
+> Cluster submission is handled by the
+> [`fsl.utils.fslsub`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.fslsub.html)
+> module - it contains lower level functions for managing and querying jobs
+> that have been submitted to the cluster. The functions defined in this
+> module can be used directly if you have more complicated requirements.
+
+
+The semantics of the `run` and `runfsl` functions are slightly different when
+you use the `submit` option - when you submit a job, the `run`/`runfsl` will
+return immediately, and will return a string containing the job ID:
+
+
+```
+jobid  = run('ls', submit=True)
+print('Job ID:', jobid)
+stdout = f'ls.o{jobid}'
+print('Job output')
+print(open(stdout).read())
+```
+
+
+All of the `fsl.wrappers` functions also accept the `submit` argument:
+
+
+```
+jobid = bet('08_fslpy/bighead', 'bighead_brain', submit=True)
+print('Job ID:', jobid)
+```
+
+
+> But an error will occur if you try to pass in-memory images, or `LOAD` any
+> outputs when you call a wrapper function with `submit=True`.
+
+
+After submitting a job, you can use the `wait` function to wait until a job
+has completed:
+
+
+```
+from fsl.utils.run import wait
+jobid = bet('08_fslpy/bighead', 'bighead_brain', submit=True)
+print('Job ID:', jobid)
+wait(jobid)
+print('Done!')
+render('08_fslpy/bighead bighead_brain -cm hot')
+```
+
+
+When you submit a job, instead of passing `submit=True`, you can pass in a
+dict which contains cluster submission options - you can include any arguments
+to the
+[`fslsub.submit`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.fslsub.html#fsl.utils.fslsub.submit)
+function:
+
+
+```
+jid = runfsl('robustfov -i 08_fslpy/bighead -r bighead_cropped',    submit=dict(queue='short.q'))
+jid = runfsl('bet bighead_cropped bighead_brain',                   submit=dict(queue='short.q', wait_for=jid))
+jid = runfsl('fslroi bighead_brain bighead_slices 0 -1 111 3 0 -1', submit=dict(queue='short.q', wait_for=jid))
+jid = runfsl('fast -o bighead_fast bighead_slices',                 submit=dict(queue='short.q', wait_for=jid))
+
+wait(jid)
+
+render('-vl 80 112 91 -xh -zh -hc '
+       'bighead_brain '
+       'bighead_slices.nii.gz -cm brain_colours_1hot -b 30 '
+       'bighead_fast_seg.nii.gz -ot label -o')
+```
 
 
 <a class="anchor" id="redirecting-output"></a>
