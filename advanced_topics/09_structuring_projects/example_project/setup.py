@@ -21,7 +21,7 @@ setup(
 
     name='Example project',
     description='Example Python project for PyTreat',
-    url='https://git.fmrib.ox.ac.uk/fsl/pytreat-2018-practicals/',
+    url='https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020/',
     author='Paul McCarthy',
     author_email='pauldmccarthy@gmail.com',
     license='Apache License Version 2.0',
