@@ -1,18 +1,18 @@
-# Welcome to the WIN PyTreat 2018!
+# Welcome to the WIN PyTreat 2020!
 
 
-Program: https://docs.google.com/document/d/10CwLEhUi-YiwfC2F40QCVm6eEVwKiaXkfTKz67xWAfM/edit?usp=sharing
+Program: https://docs.google.com/document/d/11LQgxC-LZPG_TXS3MP9tYXNWABAQdTI00iavk-tKttU/edit
 
 
 __We need to do some setting up, so get your laptop ready!__
 
-__Make sure you have FSL 5.0.10 installed and working!__
+__Make sure you have FSL 6.0.3 installed and working!__
 
 __End all sentences with an exclamation mark!__
 
 __Open this page in your web browser!__
 
-https://git.fmrib.ox.ac.uk/fsl/pytreat-2018-practicals/tree/master/talks/introduction/pytreat_intro.md
+https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020/tree/master/talks/introduction/pytreat_intro.md
 
 
 ## Overview
@@ -92,8 +92,8 @@ So if you use `fslpython` for all of your development, you can be sure that it
 will work in FSL!
 
 
-> `fslpython` is based on _conda_ and, in FSL 5.0.10, is Python version
-> 3.5.2. You can read more about conda [here](https://conda.io/docs/).
+> `fslpython` is based on _conda_ and, in FSL 6.0.3, is Python version
+> 3.7.3. You can read more about conda [here](https://conda.io/docs/).
 
 
 <a class="anchor" id="running-python-scripts"></a>
@@ -160,20 +160,10 @@ Python has a standard interpreter built-in - run `fslpython` in a terminal,
 and see what happens (use CTRL+D to exit).
 
 
-__But__ there is another interpreter called [`ipython`](https://ipython.org/)
-which is vastly superior to the standard Python interpreter. Use `ipython`
-instead! It is already installed in `fslpython`, but we just need to create a
-link to it - do this now in a terminal:
-
-
-> You might need to "sudo" this if your version of FSL needs admin privileges
-> to modify.
->
->     ln -s $FSLDIR/fslpython/envs/fslpython/bin/ipython $FSLDIR/bin/fslipython
-
-
-Now if you want to do some interactive work, you can use `fslipython` in a
-terminal.
+__But__ there is another interpreter called [IPython](https://ipython.org/)
+which is vastly superior to the standard Python interpreter. Use IPython
+instead! It is already installed in `fslpython`, so if you want to do some
+interactive work, you can use `fslipython` in a terminal.
 
 
 __Exercise__ Do it now! Start `fslipython`, then copy/paste this code into the
@@ -384,24 +374,6 @@ All of the PyTreat practicals are written in a Jupyter notebook. Some of the
 talks are too - you're looking at a Jupyter Notebook right now!
 
 
-So you're going to need to install Jupyter to get the most out of the
-practicals that we have prepared for you.
-
-
-__Exercise__ Install Jupyter into `fslpython` - run these commands in a
-terminal:
-
-
-
-> Remember to prefix with sudo if your FSL install needs admin to modify.
->
->     $FSLDIR/fslpython/bin/conda install -n fslpython -y jupyter
-
-> And add a link so you can call it easily:
->
->     ln -s $FSLDIR/fslpython/envs/fslpython/bin/jupyter $FSLDIR/bin/fsljupyter
-
-
 <a class="anchor" id="git"></a>
 ## Git
 
@@ -538,14 +510,14 @@ git push origin master
 All of the practicals for PyTreat are hosted in a git repository at:
 
 
-https://git.fmrib.ox.ac.uk/fsl/pytreat-2018-practicals
+https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020
 
 
 So let's go get them!
 
 
 > ```
-> git clone https://git.fmrib.ox.ac.uk/fsl/pytreat-2018-practicals.git
-> cd pytreat-2018-practicals
-> fsljupyter notebook
+> git clone https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020.git
+> cd pytreat-practicals-2020
+> fslpython -m notebook
 > ```
