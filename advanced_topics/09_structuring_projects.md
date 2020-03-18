@@ -13,15 +13,15 @@ directory.
 
 
 * [Recommended project structure](#recommended-project-structure)
- * [The `mypackage/` directory](#the-mypackage-directory)
- * [`README`](#readme)
- * [`LICENSE`](#license)
- * [`requirements.txt`](#requirements-txt)
- * [`setup.py`](#setup-py)
+  * [The `mypackage/` directory](#the-mypackage-directory)
+  * [`README`](#readme)
+  * [`LICENSE`](#license)
+  * [`requirements.txt`](#requirements-txt)
+  * [`setup.py`](#setup-py)
 * [Appendix: Tests](#appendix-tests)
 * [Appendix: Versioning](#appendix-versioning)
- * [Include the version in your code](#include-the-version-in-your-code)
- * [Deprecate, don't remove!](#deprecate-dont-remove)
+  * [Include the version in your code](#include-the-version-in-your-code)
+  * [Deprecate, don't remove!](#deprecate-dont-remove)
 * [Appendix: Cookiecutter](#appendix-cookiecutter)
 
 
@@ -59,7 +59,7 @@ look through it if you like.
 
 The first thing you should do is make sure that all of your python code is
 organised into a sensibly-named
-[_package_](https://docs.python.org/3.5/tutorial/modules.html#packages). This
+[*package*](https://docs.python.org/3/tutorial/modules.html#packages). This
 is important, because it greatly reduces the possibility of naming collisions
 when people install your library alongside other libraries.  Hands up those of
 you who have ever written a file called `utils.[py|m|c|cpp]`!
@@ -100,10 +100,12 @@ standardised syntax. You can specify the exact version, or range of versions,
 that your project requires. For example:
 
 
->     six==1.*
->     numpy==1.*
->     scipy>=0.18,<2
->     nibabel==2.*
+> ```
+> six==1.*
+> numpy==1.*
+> scipy>=0.18
+> nibabel==2.*
+> ```
 
 
 If your project has optional dependencies, i.e. libraries which are not
@@ -116,7 +118,9 @@ Having all your dependencies listed in a file in this way makes it easy for
 others to install the dependencies needed by your project, simply by running:
 
 
->     pip install -r requirements.txt
+> ```
+> pip install -r requirements.txt
+> ```
 
 
 <a class="anchor" id="setup-py"></a>
@@ -168,7 +172,7 @@ The `setup.py` for our example project might look like this:
 >
 >     name='Example project',
 >     description='Example Python project for PyTreat',
->     url='https://git.fmrib.ox.ac.uk/fsl/pytreat-2018-practicals/',
+>     url='https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020/',
 >     author='Paul McCarthy',
 >     author_email='pauldmccarthy@gmail.com',
 >     license='Apache License Version 2.0',
@@ -214,7 +218,7 @@ There are no strict rules for where to put your tests (you have tests,
 right?). There are two main conventions:
 
 
-You can store your test files _inside_ your package directory:
+You can store your test files *inside* your package directory:
 
 
 > ```
@@ -228,8 +232,7 @@ You can store your test files _inside_ your package directory:
 > ```
 
 
-
-Or, you can store your test files _alongside_ your package directory:
+Or, you can store your test files *alongside* your package directory:
 
 
 > ```
@@ -261,7 +264,7 @@ really up to you.
 
 If you are intending to make your project available for public use (e.g. on
 [PyPI](https://pypi.python.org/pypi) and/or
-[conda](https://anaconda.org/anaconda/repo)), it is __very important__ to
+[conda](https://anaconda.org/anaconda/repo)), it is **very important** to
 manage the version number of your project. If somebody decides to build their
 software on top of your project, they are not going to be very happy with you
 if you make substantial, API-breaking changes without changing your version
@@ -271,11 +274,13 @@ number in an appropriate manner.
 Python has [official standards](https://www.python.org/dev/peps/pep-0440/) on
 what constitutes a valid version number. These standards can be quite
 complicated but, in the vast majority of cases, a simple three-number
-versioning scheme comprising _major_, _minor_, and _patch_ release
+versioning scheme comprising *major*, *minor*, and *patch* release
 numbers should suffice. Such a version number has the form:
 
 
->     major.minor.patch
+> ```
+> major.minor.patch
+> ```
 
 
 For example, a version number of `1.3.2` has a _major_ release of 1, _minor_
@@ -285,25 +290,25 @@ release of 3, and a _patch_ release of 2.
 If you follow some simple and rational guidelines for versioning
 `your_project`, then people who use your project can, for instance, specify
 that they depend on `your_project==1.*`, and be sure that their code will work
-for _any_ version of `your_project` with a major release of 1. Following these
+for *any* version of `your_project` with a major release of 1. Following these
 simple guidelines greatly improves software interoperability, and makes
 everybody (i.e. developers of other projects, and end users) much happier!
 
 
-Many modern Python projects use some form of [_semantic
-versioning_](https://semver.org/). Semantic versioning is simply a set of
+Many modern Python projects use some form of [*semantic
+versioning*](https://semver.org/). Semantic versioning is simply a set of
 guidelines on how to manage your version number:
 
 
- - The _major_ release number should be incremented whenever you introduce any
+ - The *major* release number should be incremented whenever you introduce any
    backwards-incompatible changes. In other words, if you change your code
    such that some other code which uses your code would break, you should
    increment the major release number.
 
- - The _minor_ release number should be incremented whenever you add any new
+ - The *minor* release number should be incremented whenever you add any new
    (backwards-compatible) features to your project.
 
- - The _patch_ release number should be incremented for backwards-compatible
+ - The *patch* release number should be incremented for backwards-compatible
    bug-fixes and other minor changes.
 
 
@@ -322,7 +327,9 @@ standard practice for a Python library to contain a version string called
 our `example_project/mypackage/__init__.py` file contains this line:
 
 
->     __version__ = '0.1.0'
+> ```
+> __version__ = '0.1.0'
+> ```
 
 
 This makes a library's version number programmatically accessible and
@@ -335,7 +342,7 @@ queryable.
 
 If you really want to change your API, but can't bring yourself to increment
 your major release number, consider
-[_deprecating_](https://en.wikipedia.org/wiki/Deprecation#Software_deprecation)
+[*deprecating*](https://en.wikipedia.org/wiki/Deprecation#Software_deprecation)
 the old API, and postponing its removal until you are ready for a major
 release. This will allow you to change your API, but retain
 backwards-compatilbiity with the old API until it can safely be removed at the
