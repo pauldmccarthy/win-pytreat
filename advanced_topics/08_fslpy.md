@@ -1,9 +1,13 @@
 # `fslpy`
 
 
+**Important:** Portions of this practical require `fslpy` 2.9.0, due to be
+released with FSL 6.0.4, in Spring 2020.
+
+
 [`fslpy`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/) is a
 Python library which is built into FSL, and contains a range of functionality
-for working with neuroimaging data from Python.
+for working with FSL and with neuroimaging data from Python.
 
 
 This practical highlights some of the most useful features provided by
@@ -60,16 +64,17 @@ And a little function that we can use to generate a simple orthographic plot:
 
 
 ```
-def ortho(data, voxel, fig=None, **kwargs):
+def ortho(data, voxel, fig=None, cursor=False, **kwargs):
     """Simple orthographic plot of a 3D array using matplotlib.
 
-    :arg data:  3D numpy array
-    :arg voxel: XYZ coordinates for each slice
-    :arg fig:   Existing figure and axes for overlay plotting
+    :arg data:   3D numpy array
+    :arg voxel:  XYZ coordinates for each slice
+    :arg fig:    Existing figure and axes for overlay plotting
+    :arg cursor: Show a cursor at the `voxel`
 
     All other arguments are passed through to the `imshow` function.
 
-    :returns:   The figure and axes (which can be passed back in as the
+    :returns:   The figure and orthogaxes (which can be passed back in as the
                 `fig` argument to plot overlays).
     """
 
@@ -92,6 +97,15 @@ def ortho(data, voxel, fig=None, **kwargs):
     xax.imshow(xslice, **kwargs)
     yax.imshow(yslice, **kwargs)
     zax.imshow(zslice, **kwargs)
+
+    if cursor:
+        cargs = {'color' : (0, 1, 0), 'linewidth' : 1}
+        xax.axvline(                y, **cargs)
+        xax.axhline(data.shape[2] - z, **cargs)
+        yax.axvline(                x, **cargs)
+        yax.axhline(data.shape[2] - z, **cargs)
+        zax.axvline(                x, **cargs)
+        zax.axhline(data.shape[1] - y, **cargs)
 
     for ax in (xax, yax, zax):
         ax.set_xticks([])
@@ -535,7 +549,7 @@ std_tstat1                 = std_tstat1.data
 std_tstat1[std_tstat1 < 3] = 0
 
 fig = ortho(std2mm.data, mnivoxels, cmap=plt.cm.gray)
-fig = ortho(std_tstat1,  mnivoxels, cmap=plt.cm.inferno, fig=fig)
+fig = ortho(std_tstat1,  mnivoxels, cmap=plt.cm.inferno, fig=fig, cursor=True)
 ```
 
 
@@ -690,8 +704,11 @@ aligned = flirt(tstat1, std2mm, applyxfm=True, init=func2std, out=LOAD)
 aligned = aligned.out.data
 aligned[aligned < 1] = 0
 
-fig = ortho(std2mm .data, (45, 54, 45), cmap=plt.cm.gray)
-fig = ortho(aligned.data, (45, 54, 45), cmap=plt.cm.inferno, fig=fig)
+peakvox = np.abs(aligned).argmax()
+peakvox = np.unravel_index(peakvox, aligned.shape)
+
+fig = ortho(std2mm .data, peakvox, cmap=plt.cm.gray)
+fig = ortho(aligned.data, peakvox, cmap=plt.cm.inferno, fig=fig, cursor=True)
 ```
 
 
@@ -702,7 +719,7 @@ prefix will be available in the object that is returned:
 
 ```
 img    = Image('bighead_cropped')
-betted = bet(img, LOAD, f=0.3, m=True)
+betted = bet(img, LOAD, f=0.3, mask=True)
 
 fig = ortho(img               .data, (80, 112, 85), cmap=plt.cm.gray)
 fig = ortho(betted.output     .data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
@@ -722,8 +739,9 @@ little different, however. It provides more of an object-oriented interface,
 which is hopefully a little easier to use from within Python.
 
 
-You can apply an `fslmaths` operation by specifying the input file, *chaining*
-method calls together, and finally calling the `run()` method. For example:
+You can apply an `fslmaths` operation by specifying the input image,
+*chaining* method calls together, and finally calling the `run()` method. For
+example:
 
 
 ```
@@ -848,12 +866,17 @@ Now that we have a `.tree` file which describe our data, we can create a
 ```
 from fsl.utils.filetree import FileTree
 
+# Create a FileTree, giving
+# it our tree specification,
+# and the path to our data.
 tree = FileTree.read('mydata.tree', 'mydata')
 ```
 
 We can list all of the T1 images via the `FileTree.get_all` method. The
 `glob_vars='all'` option tells the `FileTree` to fill in the `T1w` template
-with all possible combinations of variables:
+with all possible combinations of variables. The `FileTree.extract_variables`
+method accepts a file path, and gives you back the variable values contained
+within:
 
 
 ```
@@ -895,9 +918,9 @@ sub_{subject}
 ```
 
 
-Now we can use the `FileTree` to generate the relevant file names for us.
-Here we'll use the `FileTree.get_all_trees` method to create a sub-tree for
-each subject and each session:
+Now we can use the `FileTree` to generate the relevant file names for us,
+which we can then pass on to BET.  Here we'll use the `FileTree.get_all_trees`
+method to create a sub-tree for each subject and each session:
 
 
 ```
@@ -911,7 +934,7 @@ for subtree in tree.get_all_trees('T1w', glob_vars='all'):
 print('Done!')
 
 example = tree.update(subject='A', session='1')
-render('{} {} -ot mask -ol -w 2 -mc 0 1 0'.format(
+render('{} {} -ot mask -o -w 2 -mc 0 1 0'.format(
     example.get('T1w'),
     example.get('T1w_brain_mask')))
 
@@ -947,11 +970,11 @@ which match a set of variable values:
 
 
 ```
-print('All T1w images for subject A')
+print('All files for subject A')
 for template in query.templates:
-    print('  ', template)
-    for file in query.query(template, subject='A'):
-        print(file)
+    print('  {} files:'.format(template))
+    for match in query.query(template, subject='A'):
+        print('   ', match.filename)
 ```
 
 
@@ -1057,12 +1080,12 @@ same usage as the `run` function:
 
 ```
 from fsl.utils.run import runfsl
-runfsl('bet 08_fslpy/bighead_cropped bighead_cropped_brain')
+runfsl('bet bighead_cropped bighead_cropped_brain')
 runfsl('fslroi bighead_cropped_brain bighead_slices 0 -1 0 -1 90 3')
 runfsl('fast -o bighead_fast bighead_slices')
 
 render('-vl 80 112 91 -xh -yh '
-       '08_fslpy/bighead_cropped '
+       'bighead_cropped '
        'bighead_slices.nii.gz -cm brain_colours_1hot -b 30 '
        'bighead_fast_seg.nii.gz -ot label -o')
 ```
@@ -1085,8 +1108,9 @@ command.
 
 
 The semantics of the `run` and `runfsl` functions are slightly different when
-you use the `submit` option - when you submit a job, the `run`/`runfsl` will
-return immediately, and will return a string containing the job ID:
+you use the `submit` option - when you submit a job, the `run`/`runfsl`
+functions will return immediately, and will return a string containing the job
+ID:
 
 
 ```
@@ -1318,14 +1342,14 @@ fig = ortho(frontal,     (45, 54, 45), cmap=plt.cm.winter, fig=fig)
 ```
 
 
-Calling `get` on a :meth:`ProbabilisticAtlas` will return a probability image:
+Calling `get` on a `ProbabilisticAtlas` will return a probability image:
 
 
 ```
 stddir = op.expandvars('${FSLDIR}/data/standard/')
 std2mm = Image(op.join(stddir, 'MNI152_T1_2mm'))
 
-frontal = probatlas.get(name='Frontal Pole')
+frontal = probatlas.get(name='Frontal Pole').data
 frontal = np.ma.masked_where(frontal < 1, frontal)
 
 fig = ortho(std2mm.data, (45, 54, 45), cmap=plt.cm.gray)
