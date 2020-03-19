@@ -26,7 +26,11 @@ perform analyses and image processing in conjunction with FSL.
   * [In-memory images](#in-memory-images)
   * [Loading outputs into Python](#loading-outputs-into-python)
   * [The `fslmaths` wrapper](#the-fslmaths-wrapper)
-* [The `filetree`](#the-filetree)
+* [The `FileTree`](#the-filetree)
+  * [Describing your data](#describing-your-data)
+  * [Using the `FileTree`](#using-the-filetree)
+  * [Building a processing pipeline with `FileTree`](#building-a-processing-pipeline-with-filetree)
+  * [The `FileTreeQuery`](#the-filetreequery)
 * [Calling shell commands](#calling-shell-commands)
   * [The `runfsl` function](#the-runfsl-function)
   * [Submitting to the cluster](#submitting-to-the-cluster)
@@ -616,6 +620,10 @@ render('bighead_cropped             -b 40 '
 > # "twod" applies the -2D flag
 > flirt('source.nii.gz', 'ref.nii.gz', omat='src2ref.mat', twod=True)
 > ```
+>
+> Some of the `fsl.wrappers` functions also support aliases which may make
+> your code more readable. For example, when calling `bet`, you can use either
+> `m=True` or `mask=True` to apply the `-m` command line flag.
 
 
 <a class="anchor" id="in-memory-images"></a>
@@ -745,8 +753,206 @@ fig = ortho(erodedbrain.data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
 
 
 <a class="anchor" id="the-filetree"></a>
-## The `filetree`
+## The `FileTree`
 
+
+The
+[`fsl.utils.filetree`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.filetree.html)
+library provides functionality which allows you to work with *structured data
+directories*, such as HCP or BIDS datasets. You can use `filetree` for both
+reading and for creating datasets.
+
+
+This practical gives a very brief introduction to the `filetree` library -
+refer to the [full
+documentation](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.filetree.html)
+to get a feel for how powerful it can be.
+
+
+<a class="anchor" id="describing-your-data"></a>
+### Describing your data
+
+
+To introduce `filetree`, we'll begin with a small example. Imagine that we
+have a dataset which looks like this:
+
+
+> ```
+> mydata
+> ├── sub_A
+> │   ├── ses_1
+> │   │   └── T1w.nii.gz
+> │   ├── ses_2
+> │   │   └── T1w.nii.gz
+> │   └── T2w.nii.gz
+> ├── sub_B
+> │   ├── ses_1
+> │   │   └── T1w.nii.gz
+> │   ├── ses_2
+> │   │   └── T1w.nii.gz
+> │   └── T2w.nii.gz
+> └── sub_C
+>     ├── ses_1
+>     │   └── T1w.nii.gz
+>     ├── ses_2
+>     │   └── T1w.nii.gz
+>     └── T2w.nii.gz
+> ```
+
+
+(Run the code cell below to create a dummy data set with the above structure):
+
+
+```
+%%bash
+for sub in A B C; do
+  subdir=mydata/sub_$sub/
+  mkdir -p $subdir
+  cp $FSLDIR/data/standard/MNI152_T1_2mm.nii.gz $subdir/T2w.nii.gz
+  for ses in 1 2; do
+    sesdir=$subdir/ses_$ses/
+    mkdir $sesdir
+    cp $FSLDIR/data/standard/MNI152_T1_2mm.nii.gz $sesdir/T1w.nii.gz
+  done
+done
+```
+
+
+To use `filetree` with this dataset, we must first describe its structure - we
+do this by creating a `.tree` file:
+
+
+```
+%%writefile mydata.tree
+sub_{subject}
+  T2w.nii.gz
+  ses_{session}
+    T1w.nii.gz
+```
+
+
+A `.tree` file is simply a description of the structure of your data
+directory - it describes the *file types* (also known as *templates*) which
+are present in the dataset (`T1w` and `T2w`), and the *variables* which are
+implicitly present in the structure of the dataset (`subject` and `session`).
+
+
+<a class="anchor" id="using-the-filetree"></a>
+### Using the `FileTree`
+
+
+Now that we have a `.tree` file which describe our data, we can create a
+`FileTree` to work with it:
+
+
+```
+from fsl.utils.filetree import FileTree
+
+tree = FileTree.read('mydata.tree', 'mydata')
+```
+
+We can list all of the T1 images via the `FileTree.get_all` method. The
+`glob_vars='all'` option tells the `FileTree` to fill in the `T1w` template
+with all possible combinations of variables:
+
+
+```
+for t1file in tree.get_all('T1w', glob_vars='all'):
+    fvars = tree.extract_variables('T1w', t1file)
+    print(t1file, fvars)
+```
+
+
+The `FileTree.update` method allows you to "fill in" variable values; it
+returns a new `FileTree` object which can be used on a selection of the
+data set:
+
+
+```
+treeA = tree.update(subject='A')
+for t1file in treeA.get_all('T1w', glob_vars='all'):
+    fvars = treeA.extract_variables('T1w', t1file)
+    print(t1file, fvars)
+```
+
+
+<a class="anchor" id="building-a-processing-pipeline-with-filetree"></a>
+### Building a processing pipeline with `FileTree`
+
+
+Let's say we want to run BET on all of our T1 images. Let's start by modifying
+our `.tree` definition to include the BET outputs:
+
+
+```
+%%writefile mydata.tree
+sub_{subject}
+  T2w.nii.gz
+  ses_{session}
+    T1w.nii.gz
+    T1w_brain.nii.gz
+    T1w_brain_mask.nii.gz
+```
+
+
+Now we can use the `FileTree` to generate the relevant file names for us.
+Here we'll use the `FileTree.get_all_trees` method to create a sub-tree for
+each subject and each session:
+
+
+```
+from fsl.wrappers import bet
+tree = FileTree.read('mydata.tree', 'mydata')
+for subtree in tree.get_all_trees('T1w', glob_vars='all'):
+    t1file  = subtree.get('T1w')
+    t1brain = subtree.get('T1w_brain')
+    print('Running BET: {} -> {} ...'.format(t1file, t1brain))
+    bet(t1file, t1brain, mask=True)
+print('Done!')
+
+example = tree.update(subject='A', session='1')
+render('{} {} -ot mask -ol -w 2 -mc 0 1 0'.format(
+    example.get('T1w'),
+    example.get('T1w_brain_mask')))
+
+```
+
+
+<a class="anchor" id="the-filetreequery"></a>
+### The `FileTreeQuery`
+
+
+The `filetree` module contains another class called the
+[`FileTreeQuery`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.filetree.query.html),
+which provides an interface that is more convenient if you are reading data
+from large datasets with many different file types and variables.
+
+
+When you create a `FileTreeQuery`, it scans the entire data directory and
+identifies all of the values that are present for each variable defined in the
+`.tree` file:
+
+
+```
+from fsl.utils.filetree import FileTreeQuery
+tree = FileTree.read('mydata.tree', 'mydata')
+query = FileTreeQuery(tree)
+print('T1w variables:', query.variables('T1w'))
+print('T2w variables:', query.variables('T2w'))
+```
+
+
+The `FileTreeQuery.query` method will return the paths to all existing files
+which match a set of variable values:
+
+
+```
+print('All T1w images for subject A')
+for template in query.templates:
+    print('  ', template)
+    for file in query.query(template, subject='A'):
+        print(file)
+```
 
 
 <a class="anchor" id="calling-shell-commands"></a>
