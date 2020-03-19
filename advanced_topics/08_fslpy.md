@@ -102,13 +102,24 @@ And another function which uses FSLeyes for more complex plots:
 
 
 ```
-import shlex
-import IPython.display as display
-from fsleyes.render import main
-
 def render(cmdline):
+
+    import shlex
+    import IPython.display as display
+
     prefix = '-of screenshot.png -hl -c 2 '
-    main(shlex.split(prefix + cmdline))
+
+    try:
+        from fsleyes.render import main
+        main(shlex.split(prefix + cmdline))
+
+    except ImportError:
+        # fall-back for macOS - we have to run
+        # FSLeyes render in a separate process
+        from fsl.utils.run import runfsl
+        prefix = 'render ' + prefix
+        runfsl(prefix + cmdline, env={})
+
     return display.Image('screenshot.png')
 ```
 
@@ -278,7 +289,7 @@ corresponding `nibabel` types:
   class uses `dcm2niix` to load NIfTI images contained within a DICOM
   directory<sup>*</sup>.
 * The
-  [`fsl.data.mghimahe.MGHImage`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.mghimage.html)
+  [`fsl.data.mghimage.MGHImage`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.mghimage.html)
   class can be used too load `.mgh`/`.mgz` images (they are converted into
   NIfTI images).
 * The
@@ -304,11 +315,12 @@ corresponding `nibabel` types:
   and
   [`fsl.data.vtk`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.vtk.html)
   modules contain functionality form loading surface data from GIfTI,
-  freesurfer, and VTK files respectively.
+  freesurfer, and ASCII VTK files respectively.
 
 
-> <sup>*</sup>You must make sure that `dcm2niix` is installed on your system
-> in order to use this class.
+> <sup>*</sup>You must make sure that
+> [`dcm2niix`](https://github.com/rordenlab/dcm2niix/) is installed on your
+> system in order to use this class.
 
 
 <a class="anchor" id="nifti-coordinate-systems"></a>
@@ -439,6 +451,10 @@ from fsl.transform.affine import concat
 # linear algebra is *weird*.
 funcvox2mni = concat(fsl2mni, func2std, vox2fsl)
 ```
+
+> Below we will use the
+> [`fsl.transform.flirt.fromFlirt`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.transform.flirt.html#fsl.transform.flirt.fromFlirt)
+> function, which does all of the above for us.
 
 
 So we've now got some voxel coordinates from our functional data, and an
@@ -631,12 +647,16 @@ fig = ortho(betted .data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
 
 
 By using the special `fsl.wrappers.LOAD` symbol, you can also have any output
-files produced by the tool automatically loaded:
+files produced by the tool automatically loaded into memory for you:
 
 
 ```
 cropped = Image('bighead_cropped')
-betted  = bet(cropped, LOAD)['output']
+
+# The loaded result is called "output",
+# because that is the name of the
+# argument in the bet wrapper function.
+betted  = bet(cropped, LOAD).output
 
 fig = ortho(cropped.data, (80, 112, 85), cmap=plt.cm.gray)
 fig = ortho(betted .data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
@@ -644,8 +664,7 @@ fig = ortho(betted .data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
 
 
 You can use the `LOAD` symbol for any output argument - any output files which
-are loaded will be returned in a dictionary, with the argument name used as
-the key:
+are loaded will be available through the return value of the wrapper function:
 
 
 ```
@@ -657,9 +676,10 @@ func2std = np.loadtxt(op.join('08_fslpy', 'fmri.feat', 'reg', 'example_func2stan
 
 aligned = flirt(tstat1, std2mm, applyxfm=True, init=func2std, out=LOAD)
 
-print(aligned)
-
-aligned = aligned['out'].data
+# Here the resampled tstat image
+# is called "out", because that
+# is the name of the flirt argument.
+aligned = aligned.out.data
 aligned[aligned < 1] = 0
 
 fig = ortho(std2mm .data, (45, 54, 45), cmap=plt.cm.gray)
@@ -669,18 +689,16 @@ fig = ortho(aligned.data, (45, 54, 45), cmap=plt.cm.inferno, fig=fig)
 
 For tools like `bet` and `fast`, which expect an output *prefix* or
 *basename*, you can just set the prefix to `LOAD` - all output files with that
-prefix will be available in the returned dictionary:
+prefix will be available in the object that is returned:
 
 
 ```
 img    = Image('bighead_cropped')
 betted = bet(img, LOAD, f=0.3, m=True)
 
-print(betted)
-
-fig = ortho(img                  .data, (80, 112, 85), cmap=plt.cm.gray)
-fig = ortho(betted['output']     .data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
-fig = ortho(betted['output_mask'].data, (80, 112, 85), cmap=plt.cm.summer,  fig=fig, alpha=0.5)
+fig = ortho(img               .data, (80, 112, 85), cmap=plt.cm.gray)
+fig = ortho(betted.output     .data, (80, 112, 85), cmap=plt.cm.inferno, fig=fig)
+fig = ortho(betted.output_mask.data, (80, 112, 85), cmap=plt.cm.summer,  fig=fig, alpha=0.5)
 ```
 
 
@@ -1089,8 +1107,8 @@ std2mm = Image(op.join(stddir, 'MNI152_T1_2mm'))
 frontal = lblatlas.get(name='Frontal Pole').data
 frontal = np.ma.masked_where(frontal < 1, frontal)
 
-fig = ortho(std2mm,  (45, 54, 45), cmap=plt.cm.gray)
-fig = ortho(frontal, (45, 54, 45), cmap=plt.cm.winter, fig=fig)
+fig = ortho(std2mm.data, (45, 54, 45), cmap=plt.cm.gray)
+fig = ortho(frontal,     (45, 54, 45), cmap=plt.cm.winter, fig=fig)
 ```
 
 
@@ -1104,8 +1122,8 @@ std2mm = Image(op.join(stddir, 'MNI152_T1_2mm'))
 frontal = probatlas.get(name='Frontal Pole')
 frontal = np.ma.masked_where(frontal < 1, frontal)
 
-fig = ortho(std2mm,  (45, 54, 45), cmap=plt.cm.gray)
-fig = ortho(frontal, (45, 54, 45), cmap=plt.cm.inferno, fig=fig)
+fig = ortho(std2mm.data, (45, 54, 45), cmap=plt.cm.gray)
+fig = ortho(frontal,     (45, 54, 45), cmap=plt.cm.inferno, fig=fig)
 ```
 
 
