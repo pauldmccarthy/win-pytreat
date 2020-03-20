@@ -1119,7 +1119,7 @@ print('Job ID:', jobid)
 ```
 
 
-Once the job finishes, we shouldd be able to read the usual `.o` and `.e`
+Once the job finishes, we should be able to read the usual `.o` and `.e`
 files:
 
 
@@ -1158,9 +1158,9 @@ render('08_fslpy/bighead bighead_brain -cm hot')
 
 
 When you use `submit=True`, you can also specify cluster submission options -
-you can include any arguments to the
+you can include any arguments that are accepted by the
 [`fslsub.submit`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.fslsub.html#fsl.utils.fslsub.submit)
-function:
+function
 
 
 ```
