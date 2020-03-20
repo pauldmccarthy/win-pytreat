@@ -1116,6 +1116,14 @@ ID:
 ```
 jobid  = run('ls', submit=True)
 print('Job ID:', jobid)
+```
+
+
+Once the job finishes, we shouldd be able to read the usual `.o` and `.e`
+files:
+
+
+```
 stdout = f'ls.o{jobid}'
 print('Job output')
 print(open(stdout).read())
@@ -1149,20 +1157,20 @@ render('08_fslpy/bighead bighead_brain -cm hot')
 ```
 
 
-When you submit a job, instead of passing `submit=True`, you can pass in a
-dict which contains cluster submission options - you can include any arguments
-to the
+When you use `submit=True`, you can also specify cluster submission options -
+you can include any arguments to the
 [`fslsub.submit`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.fslsub.html#fsl.utils.fslsub.submit)
 function:
 
 
 ```
-jid = runfsl('robustfov -i 08_fslpy/bighead -r bighead_cropped',    submit=dict(queue='short.q'))
-jid = runfsl('bet bighead_cropped bighead_brain',                   submit=dict(queue='short.q', wait_for=jid))
-jid = runfsl('fslroi bighead_brain bighead_slices 0 -1 111 3 0 -1', submit=dict(queue='short.q', wait_for=jid))
-jid = runfsl('fast -o bighead_fast bighead_slices',                 submit=dict(queue='short.q', wait_for=jid))
-
-wait(jid)
+jobs = []
+jobs.append(runfsl('robustfov -i 08_fslpy/bighead -r bighead_cropped',    submit=True, queue='short.q'))
+jobs.append(runfsl('bet bighead_cropped bighead_brain',                   submit=True, queue='short.q', wait_for=jobs[-1]))
+jobs.append(runfsl('fslroi bighead_brain bighead_slices 0 -1 111 3 0 -1', submit=True, queue='short.q', wait_for=jobs[-1]))
+jobs.append(runfsl('fast -o bighead_fast bighead_slices',                 submit=True, queue='short.q', wait_for=jobs[-1]))
+print('Waiting for', jobs, '...')
+wait(jobs)
 
 render('-vl 80 112 91 -xh -zh -hc '
        'bighead_brain '
