@@ -20,7 +20,6 @@ masksize=size(mask);
 mask=reshape(mask,prod(masksize),1);
 
 demean = @(x) x - repmat(mean(x,1),[size(x,1), 1, 1]);
-ss_svds = @(x,n) svds(x, n);
 
 for i = 1:Nsub
 
@@ -37,7 +36,7 @@ for i = 1:Nsub
     % var-norm separately for each subject
     if sep_vn==true
         fprintf('\tNormalising by voxel-wise variance\r');
-        [uu,ss,vv]=ss_svds(grot,30);
+        [uu,ss,vv]=svds(grot,30);
         vv(abs(vv)<2.3*std(vv(:)))=0;
         stddevs=max(std(grot-uu*ss*vv'),0.001);
         grot=grot./repmat(stddevs,size(grot,1),1);
