@@ -55,7 +55,7 @@ If you can not connect to the internet, you can run the command below to load
 this locally stored titanic dataset
 
 ```
-titanic = pd.read_csv('09_pandas/titanic.csv')
+titanic = pd.read_csv('titanic.csv')
 titanic
 ```
 
@@ -394,7 +394,7 @@ However, it is more often combined with one of the aggregation functions
 discussed above as illustrated in this figure from the [Python data science
 handbook](https://jakevdp.github.io/PythonDataScienceHandbook/06.00-figure-code.html#Split-Apply-Combine)
 
-![group by image](09_pandas/group_by.png)
+![group by image](group_by.png)
 
 ```
 titanic.groupby('class').mean()
