@@ -320,8 +320,7 @@ The key difference between lists and tuples is that tuples are *immutable*
 
 ```
 a = [10, 20, 30]
-a = a + [70]
-a += [80]
+a[2] = 999
 print(a)
 ```
 
