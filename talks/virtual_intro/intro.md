@@ -311,6 +311,8 @@ t2 = (t, l)
 l2 = [t, l]
 print('t2 is: ', t2)
 print('l3 is: ', l2)
+print(len(t2))
+print(len(l2))
 ```
 
 
@@ -628,7 +630,7 @@ for s, c in nchars.items():
 ```
 
 
-<a class="anchor" id=" reading-and-writing-text-files"></a>
+<a class="anchor" id="reading-and-writing-text-files"></a>
 # Reading and writing text files
 
 
@@ -784,7 +786,7 @@ might change it!
 
 
 ```
-def changeList(l):
+def changelist(l):
    l[0] = 'mwahahaha!'
 
 mylist = [1,2,3,4,5]
@@ -792,6 +794,9 @@ mylist = [1,2,3,4,5]
 print('before:', mylist)
 changelist(mylist)
 print('after:', mylist)
+
+mytup = [1,2,3,4,5]
+changelist(mytup)
 ```
 
 
@@ -871,8 +876,10 @@ data = np.array([10, 8, 12, 14, 7, 6, 11])
 xyz_coords = np.array([[-11.4,   1.0,  22.6],
                        [ 22.7, -32.8,  19.1],
                        [ 62.8, -18.2, -34.5]])
-print('data:', data)
-print('xyz_coords:', xyz_coords)
+print('data:            ', data)
+print('xyz_coords:      ', xyz_coords)
+print('data.shape:      ', data.shape)
+print('xyz_coords.shape:', xyz_coords.shape)
 ```
 
 
