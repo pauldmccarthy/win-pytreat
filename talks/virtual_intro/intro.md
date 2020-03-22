@@ -1,13 +1,18 @@
 # Welcome to the WIN Virtual Mini PyTreat 2020!
 
 
-This notebook is available at
-https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020
+This notebook is available at:
 
 
-If you have FSL installed and you'd like to follow along, follow the
-instructions for attendees in the `README.md` file of the above repository,
-and then open the `talks/virtual_intro/intro.ipynb` notebook.
+https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020/-/tree/master/talks%2Fvirtual_intro/intro.ipynb
+
+
+If you have FSL installed and you'd like to follow along *interactively*,
+follow the instructions for attendees in the `README.md` file of the above
+repository, and then open the `talks/virtual_intro/intro.ipynb` notebook.
+
+
+# Contents
 
 
 * [Introduction](#introduction)
