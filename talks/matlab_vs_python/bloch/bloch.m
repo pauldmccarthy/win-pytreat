@@ -18,7 +18,7 @@ subplot(2,1,2);
 plot(pulseq(:,3));
 ylabel('Gradient');
 
-% Integrate ODE
+%% Integrate ODE
 T1 = 1500;
 T2 = 50;
 t0 = 0;
@@ -27,20 +27,20 @@ dt = 0.005;
 M0 = [0; 0; 1];
 [t, M] = ode45(@(t,M)bloch_ode(t, M, T1, T2), linspace(t0, t1, (t1-t0)/dt), M0);
 
-% Plot Results
+%% Plot Results
 % create figure
 figure();hold on;
 
 % plot x, y and z components of Magnetisation
-plot(t, M(:,1));
-plot(t, M(:,2));
-plot(t, M(:,3));
+plot(t, M(:,1), 'linewidth', 2);
+plot(t, M(:,2), 'linewidth', 2);
+plot(t, M(:,3), 'linewidth', 2);
 
 % add legend and grid
 legend({'Mx','My','Mz'});
 grid on;
 
-% define the bloch equation
+%% define the bloch equation
 function dM = bloch_ode(t, M, T1, T2)
     % get effective B-field at time t
     B   =   B_eff(t);                               
@@ -51,7 +51,7 @@ function dM = bloch_ode(t, M, T1, T2)
             M(1)*B(2) - M(2)*B(1) - (M(3)-1)/T1];   
 end
 
-% define effective B-field
+%% define effective B-field
 function b = B_eff(t)
     % Do nothing for 0.25 ms
     if t < 0.25             

@@ -15,6 +15,10 @@ y = fftshift(fft2(img),1) + n;
 % set bottom 24/96 lines to 0
 y(73:end,:) = 0;
 
+% show sampling
+figure();
+imshow(log(abs(fftshift(y,2))), [], 'colormap', jet)
+
 %% Estimate phase
 % create zero-padded hanning filter for ky-filtering
 filt = padarray(hann(48),24);
@@ -24,6 +28,16 @@ low = ifft2(ifftshift(y.*filt,1));
 
 % get phase image
 phs = exp(1j*angle(low));
+
+% show phase estimate alongside true phase
+figure();
+subplot(1,2,1);
+imshow(angle(img), [-pi,pi], 'colormap', hsv);
+title('True image phase');
+
+subplot(1,2,2);
+imshow(angle(phs), [-pi,pi], 'colormap', hsv)
+title('Estimated phase');
 
 %% POCS reconstruction
 % initialise image estimate to be zeros
@@ -74,11 +88,15 @@ fprintf(1, 'RMSE for POCS recon: %f\n', err_pocs);
 figure();
 
 % plot zero-filled
-subplot(1,2,1);
+subplot(2,2,1);
 imshow(abs(zf), [0 1]);
 title('Zero-Filled');
+subplot(2,2,3);
+plot(abs(zf(:,48)), 'linewidth', 2);
 
 % plot POCS
-subplot(1,2,2);
+subplot(2,2,2);
 imshow(est, [0 1]);
 title('POCS recon');
+subplot(2,2,4);
+plot(abs(est(:,48)), 'linewidth', 2);
