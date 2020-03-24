@@ -15,11 +15,6 @@ This practical highlights some of the most useful features provided by
 perform analyses and image processing in conjunction with FSL.
 
 
-> **Note**: `fslpy` is distinct from `fslpython` - `fslpython` is the Python
-> environment that is baked into FSL. `fslpy` is a Python library which is
-> installed into the `fslpython` environment.
-
-
 * [The `Image` class, and other data types](#the-image-class-and-other-data-types)
   * [Creating images](#creating-images)
   * [Working with image data](#working-with-image-data)
@@ -43,6 +38,11 @@ perform analyses and image processing in conjunction with FSL.
   * [Querying atlases](#querying-atlases)
   * [Loading atlas images](#loading-atlas-images)
   * [Working with atlases](#working-with-atlases)
+
+
+> **Note**: `fslpy` is distinct from `fslpython` - `fslpython` is the Python
+> environment that is baked into FSL. `fslpy` is a Python library which is
+> installed into the `fslpython` environment.
 
 
 Let's start with some standard imports and environment set-up:
