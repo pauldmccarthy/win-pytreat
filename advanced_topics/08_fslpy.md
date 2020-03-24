@@ -161,6 +161,14 @@ as:
 - Ability to load metadata from BIDS sidecar files
 
 
+> The `Image` class behaves differently to the `nibabel.Nifti1Image`. For
+> example, when you create an `Image` object, the default behaviour is to load
+> the image data into memory. This is configurable however; take a look at
+> [the
+> documentation](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.image.html#fsl.data.image.Image)
+> to explore all of the options.
+
+
 Some simple image processing routines are also provided - these are covered
 [below](#image-processing).
 
