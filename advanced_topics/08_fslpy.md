@@ -57,6 +57,7 @@ import nibabel as nib
 import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
+np.set_printoptions(suppress=True, precision=4)
 ```
 
 
@@ -321,7 +322,7 @@ corresponding `nibabel` types:
 
 * The
   [`fsl.data.bitmap.Bitmap`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.bitmap.html)
-  class can be used to load a bitmap image (e.g. `jpg, `png`, etc) and
+  class can be used to load a bitmap image (e.g. `jpg`, `png`, etc) and
   convert it to a NIfTI image.
 * The
   [`fsl.data.dicom.DicomImage`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.data.dicom.html)
@@ -496,6 +497,7 @@ from fsl.transform.affine import concat
 # have to list them in reverse -
 # linear algebra is *weird*.
 funcvox2mni = concat(fsl2mni, func2std, vox2fsl)
+print(funcvox2mni)
 ```
 
 > In the next section we will use the
@@ -668,7 +670,7 @@ MNI152 space into structural space:
 
 
 ```
-seedstruc = struc2std.transform([seedmni], 'world', 'voxel')[0]
+seedstruc = struc2std.transform(seedmni, 'world', 'voxel')
 seedfunc  = transform(seedstruc, struc2func)
 
 print('Seed location in MNI coordinates:  ', seedmni)
@@ -744,7 +746,7 @@ corresponding tool via the command-line:
 
 
 ```
-from fsl.wrappers import bet, robustfov, LOAD
+from fsl.wrappers import robustfov
 
 robustfov('08_fslpy/bighead', 'bighead_cropped')
 
@@ -780,6 +782,8 @@ positional arguments, and pass the additional options as keyword arguments:
 
 
 ```
+from fsl.wrappers import bet
+
 bet('bighead_cropped', 'bighead_cropped_brain', f=0.3, m=True, s=True)
 
 render('bighead_cropped             -b 40 '
@@ -837,6 +841,8 @@ files produced by the tool automatically loaded into memory for you:
 
 
 ```
+from fsl.wrappers import LOAD
+
 cropped = Image('bighead_cropped')
 
 # The loaded result is called "output",
