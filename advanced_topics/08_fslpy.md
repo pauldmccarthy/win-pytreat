@@ -188,8 +188,8 @@ stddir = op.expandvars('${FSLDIR}/data/standard/')
 # load a FSL image - the file
 # suffix is optional, just like
 # in real FSL-land!
-img = Image(op.join(stddir, 'MNI152_T1_1mm'))
-print(img)
+std1mm = Image(op.join(stddir, 'MNI152_T1_1mm'))
+print(std1mm)
 ```
 
 
@@ -200,7 +200,7 @@ You can create an `Image` from an existing `nibabel` image:
 # load a nibabel image, and
 # convert it into an FSL image
 nibimg = nib.load(op.join(stddir, 'MNI152_T1_1mm.nii.gz'))
-img    = Image(nibimg)
+std1mm = Image(nibimg)
 ```
 
 
@@ -208,15 +208,26 @@ Or you can create an `Image` from a `numpy` array:
 
 
 ```
-data = np.zeros((100, 100, 100))
+data = np.zeros((182, 218, 182))
 img = Image(data, xform=np.eye(4))
 ```
+
+If you have generated some data from another `Image` (or from a
+`nibabel.Nifti1Image`) you can use the `header` option to set
+the header information on the new image:
+
+
+```
+img = Image(data, header=std1mm.header)
+```
+
 
 You can save an image to file via the `save` method:
 
 
 ```
-img.save('empty.nii.gz')
+img.save('empty')
+!ls
 ```
 
 
