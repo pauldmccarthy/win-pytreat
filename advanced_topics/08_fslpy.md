@@ -25,7 +25,7 @@ perform analyses and image processing in conjunction with FSL.
   * [Working with image data](#working-with-image-data)
   * [Loading other file types](#loading-other-file-types)
   * [NIfTI coordinate systems](#nifti-coordinate-systems)
-  * [Image processing](#image-processing)
+  * [Transformations and resampling](#transformations-and-resampling)
 * [FSL wrapper functions](#fsl-wrapper-functions)
   * [In-memory images](#in-memory-images)
   * [Loading outputs into Python](#loading-outputs-into-python)
@@ -77,6 +77,8 @@ def ortho(data, voxel, fig=None, cursor=False, **kwargs):
     :returns:   The figure and orthogaxes (which can be passed back in as the
                 `fig` argument to plot overlays).
     """
+
+    voxel = [int(round(v)) for v in voxel]
 
     data            = np.asanyarray(data, dtype=np.float)
     data[data <= 0] = np.nan
@@ -364,11 +366,18 @@ vox2world = std2mm.getAffine('voxel', 'world')
 # Apply the world->voxel
 # affine to the coordinates
 voxcoords = (np.dot(world2vox[:3, :3], mnicoords.T)).T + world2vox[:3, 3]
+```
 
-# The code above is a bit fiddly, so
-# instead of figuring it out, you can
-# just use the transform() function:
+
+The code above is a bit fiddly, so instead of figuring it out, you can just
+use the
+[`affine.transform`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.transform.affine.html#fsl.transform.affine.transform)
+function:
+
+
+```
 from fsl.transform.affine import transform
+
 voxcoords = transform(mnicoords, world2vox)
 
 # just to double check, let's transform
@@ -470,7 +479,7 @@ from fsl.transform.affine import concat
 funcvox2mni = concat(fsl2mni, func2std, vox2fsl)
 ```
 
-> Below we will use the
+> In the next section we will use the
 > [`fsl.transform.flirt.fromFlirt`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.transform.flirt.html#fsl.transform.flirt.fromFlirt)
 > function, which does all of the above for us.
 
@@ -488,15 +497,14 @@ print('Peak activation (MNI voxels):     ', mnivoxels)
 ```
 
 
-> Note that in the above example we are only applying a linear transformation
-> into MNI space - in reality you would also want to apply your non-linear
-> structural-to-standard transformation too. But this is left as [an exercise
-> for the
-> reader](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.transform.fnirt.html).
+Note that in the above example we are only applying a linear transformation
+into MNI space - in reality you would also want to apply your non-linear
+structural-to-standard transformation too. This is covered in the next
+section.
 
 
-<a class="anchor" id="image-processing"></a>
-### Image processing
+<a class="anchor" id="transformations-and-resampling"></a>
+### Transformations and resampling
 
 
 Now, it's all well and good to look at t-statistic values and voxel
@@ -505,33 +513,44 @@ at some images. Let's display our peak activation location in MNI space. To do
 this, we're going to resample our functional image into MNI space, so we can
 overlay it on the MNI template. This can be done using some handy functions
 from the
+[`fsl.transform.flirt`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.transform.flirt.html)
+and
 [`fsl.utils.image.resample`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.image.resample.html)
-module:
+modules.
+
+
+Let's make sure we've got our source and reference images loaded:
+
+
+```
+featdir = op.join(op.join('08_fslpy', 'fmri.feat'))
+tstat1  = Image(op.join(featdir, 'stats', 'tstat1'))
+std     = Image(op.expandvars(op.join('$FSLDIR', 'data', 'standard', 'MNI152_T1_2mm')))
+```
+
+
+Now we'll load the `example_func2standard` FLIRT matrix, and adjust it so that
+it transforms from functional *world* coordinates into standard *world*
+coordinates - this is what is expected by the `resampleToReference` function,
+used below:
 
 
 ```
 from fsl.transform.flirt import fromFlirt
-from fsl.utils.image.resample import resampleToReference
 
-featdir = op.join(op.join('08_fslpy', 'fmri.feat'))
-tstat1  = Image(op.join(featdir, 'stats', 'tstat1'))
-std     = Image(op.expandvars(op.join('$FSLDIR', 'data', 'standard', 'MNI152_T1_2mm')))
-
-# Load the func2standard FLIRT matrix, and adjust it
-# so that it transforms from functional *world*
-# coordinates into standard *world* coordinates -
-# this is what is expected by the resampleToReference
-# function, used below
 func2std = np.loadtxt(op.join(featdir, 'reg', 'example_func2standard.mat'))
 func2std = fromFlirt(func2std, tstat1, std, 'world', 'world')
+```
 
-# All of the functions in the resample module
-# return a numpy array containing the resampled
-# data, and an adjusted voxel-to-world affine
-# transformation. But when using the
-# resampleToReference function, the affine will
-# be the same as the MNI152 2mm affine, so we
-# can ignore it.
+
+Now we can use `resampleToReference` to resample our functional data into
+MNI152 space. This function returns a `numpy` array containing the resampled
+data, and an adjusted voxel-to-world affine transformation. But in this case,
+we know that the data will be aligned to MNI152, so we can ignore the affine:
+
+```
+from fsl.utils.image.resample import resampleToReference
+
 std_tstat1 = resampleToReference(tstat1, std, func2std)[0]
 std_tstat1 = Image(std_tstat1, header=std.header)
 ```
@@ -553,11 +572,137 @@ fig = ortho(std_tstat1,  mnivoxels, cmap=plt.cm.inferno, fig=fig, cursor=True)
 ```
 
 
+In the example above, we resampled some data from functional space into
+standard space using a linear transformation. But we all know that this is not
+how things work in the real world - linear transformations are for kids. The
+real world is full of lions and tigers and bears and warp fields.
+
+
+The
+[`fsl.transform.fnirt`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.transform.fnirt.html#fsl.transform.fnirt.fromFnirt)
+and
+[`fsl.transform.nonlinear`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.transform.nonlinear.html)
+modules contain classes and functions for working with FNIRT-style warp fields
+(modules for working with lions, tigers, and bears are still under
+development).
+
+
+Let's imagine that we have defined an ROI in MNI152 space, and we want to
+project it into the space of our functional data.  We can do this by combining
+the nonlinear structural to standard registration produced by FNIRT with the
+linear functional to structural registration generated by FLIRT.  First of
+all, we'll load images from each of the functional, structural, and standard
+spaces:
+
+
+```
+featdir = op.join('08_fslpy', 'fmri.feat')
+func    = Image(op.join(featdir, 'reg', 'example_func'))
+struc   = Image(op.join(featdir, 'reg', 'highres'))
+std     = Image(op.expandvars(op.join('$FSLDIR', 'data', 'standard', 'MNI152_T1_2mm')))
+```
+
+
+Now, let's say we have obtained our seed location in MNI152 coordinates. Let's
+convert them to MNI152 voxels just to double check:
+
+
+```
+seedmni    = [-48, -74, -9]
+seedmnivox = transform(seedmni, std.getAffine('world', 'voxel'))
+ortho(std.data, seedmnivox, cursor=True)
+```
+
+
+Now we'll load the FNIRT warp field, which encodes a nonlinear transformation
+from structural space to standard space. FNIRT warp fields are often stored as
+*coefficient* fields to reduce the file size, but in order to use it, we must
+convert the coefficient field into a *deformation* (a.k.a. *displacement*)
+field. This takes a few seconds:
+
+
+```
+from fsl.transform.fnirt     import readFnirt
+from fsl.transform.nonlinear import coefficientFieldToDeformationField
+
+struc2std = readFnirt(op.join(featdir, 'reg', 'highres2standard_warp'), struc, std)
+struc2std = coefficientFieldToDeformationField(struc2std)
+```
+
+We'll also load our FLIRT functional to structural transformation, adjust it
+so that it transforms between voxel coordinate systems instead of the FSL
+coordinate system, and invert so it can transform from structural voxels to
+functional voxels:
+
+
+```
+from fsl.transform.affine import invert
+func2struc = np.loadtxt(op.join(featdir, 'reg', 'example_func2highres.mat'))
+func2struc = fromFlirt(func2struc, func, struc, 'voxel', 'voxel')
+struc2func = invert(func2struc)
+```
+
+
+Now we can transform our seed coordinates from MNI152 space into functional
+space in two stages. First, we'll use our deformation field to transform from
+MNI152 space into structural space:
+
+
+```
+seedstruc = struc2std.transform([seedmni], 'world', 'voxel')[0]
+seedfunc  = transform(seedstruc, struc2func)
+
+print('Seed location in MNI coordinates:  ', seedmni)
+print('Seed location in functional voxels:', seedfunc)
+ortho(func.data, seedfunc, cursor=True)
+```
+
+
+> FNIRT warp fields kind of work backwards - we can use them to transform
+> reference coordinates into source coordinates, but would need to invert the
+> warp field using `invwarp` if we wanted to transform from source coordinates
+> into referemce coordinates.
+
+
+Of course, we can also use our deformation field to resample an image from
+structural space into MNI152 space. The `applyDeformation` function takes an
+`Image` and a `DeformationField`, and returns a `numpy` array containing the
+resampled data.
+
+
+```
+from fsl.transform.nonlinear import applyDeformation
+
+strucmni = applyDeformation(struc, struc2std)
+
+# remove low-valued voxels,
+# just for visualisation below
+strucmni[strucmni < 1] = 0
+
+fig = ortho(std.data, [45, 54, 45], cmap=plt.cm.gray)
+fig = ortho(strucmni, [45, 54, 45], fig=fig)
+```
+
+
+The `premat` option to `applyDeformation` can be used to specify our linear
+functional to structural transformation, and hence resample a functional image
+into MNI152 space:
+
+
+```
+tstatmni = applyDeformation(tstat1, struc2std, premat=func2struc)
+tstatmni[tstatmni < 3] = 0
+
+fig = ortho(std.data, [45, 54, 45], cmap=plt.cm.gray)
+fig = ortho(tstatmni, [45, 54, 45], fig=fig)
+```
+
+
 There are a few other useful functions tucked away in the
-[fsl.utils.image](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.image.html)
-package, with more to be added in the future. The [`fsl.transform`]() package
-also contains a wealth of functionality for working with linear (FLIRT) and
-non-linear (FNIRT) transformations.
+[`fsl.utils.image`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.utils.image.html)
+and
+[`fsl.transform`](https://users.fmrib.ox.ac.uk/~paulmc/fsleyes/fslpy/latest/fsl.transform.html)
+packages, with more to be added in the future.
 
 
 <a class="anchor" id="fsl-wrapper-functions"></a>
