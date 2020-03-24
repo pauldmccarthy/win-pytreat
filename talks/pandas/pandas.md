@@ -1,5 +1,7 @@
 # Pandas
 
+Follow along online at: https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020/-/blob/master/talks/pandas/pandas.ipynb
+
 Pandas is a data analysis library focused on the cleaning and exploration of
 tabular data.
 
@@ -8,6 +10,7 @@ Some useful links are:
 - [documentation](http://pandas.pydata.org/pandas-docs/stable/)<sup>1</sup>
 - [Python Data Science Handbook](https://jakevdp.github.io/PythonDataScienceHandbook/)<sup>1</sup> by
   Jake van der Plas
+- [List of Pandas tutorials](https://pandas.pydata.org/pandas-docs/stable/getting_started/tutorials.html)
 
 <sup>1</sup> This tutorial borrows heavily from the pandas documentation and
 the Python Data Science Handbook
@@ -45,7 +48,7 @@ represents a table of data.  The other file formats all start with
 `pd.read_{format}`.  Note that we can provide the URL to the dataset, rather
 than download it beforehand.
 
-We can write out the dataset using `dataframe.to_{format}(<filename)`:
+We can write out the dataset using `dataframe.to_{format}(<filename>)`:
 
 ```
 titanic.to_csv('titanic_copy.csv', index=False)  # we set index to False to prevent pandas from storing the row names
@@ -82,10 +85,10 @@ pd.DataFrame.from_dict({
 
 For many applications (e.g., ICA, machine learning input) you might want to
 extract your data as a numpy array. The underlying numpy array can be accessed
-using the `values` attribute
+using the `to_numpy` method
 
 ```
-titanic.values
+titanic.to_numpy()
 ```
 
 Note that the type of the returned array is the most common type (in this case
@@ -93,7 +96,7 @@ object). If you just want the numeric parts of the table you can use
 `select_dtypes`, which selects specific columns based on their dtype:
 
 ```
-titanic.select_dtypes(include=np.number).values
+titanic.select_dtypes(include=np.number).to_numpy()
 ```
 
 Note that the numpy array has no information on the column names or row indices.
@@ -234,6 +237,12 @@ a name that cannot be used as a Python identifier.
 titanic.query('(age > 60) & (embark_town == "Southampton")')
 ```
 
+When selecting a categorical multiple options from a categorical values you 
+might want to use `isin`:
+```
+titanic[titanic['class'].isin(['First','Second'])]
+```
+
 Particularly useful when selecting data like this is the `isna` method which
 finds all missing data
 
@@ -272,7 +281,11 @@ titanic.fare.hist(bins=20, log=True)
 titanic.age.plot()
 ```
 
-Individual columns are essentially 1D arrays, so we can use them as such in
+To plot all variables simply call `plot` or `hist` on the full dataframe
+rather than a single Series (i.e., column). You might want to set `subplots=True`
+to plot each variable in a different subplot.
+
+Individual Series are essentially 1D arrays, so we can use them as such in
 `matplotlib`
 
 ```
@@ -349,6 +362,16 @@ summary measures
 
 ```
 titanic.describe()
+```
+
+For a more detailed exploration of the data, you might want to check 
+[pandas_profiliing](https://pandas-profiling.github.io/pandas-profiling/docs/)
+(not installed in fslpython, so the following will not run in fslpython):
+
+```
+from pandas_profiling import ProfileReport
+profile = ProfileReport(titanic, title='Titanic Report', html={'style':{'full_width':True}})
+profile.to_widgets()
 ```
 
 Note that non-numeric columns are ignored when summarizing data in this way.
@@ -643,15 +666,8 @@ extracted this from our environment. This can lead to confusing behaviour...
 
 Other useful features
 
-- [Concatenating](https://jakevdp.github.io/PythonDataScienceHandbook/03.06-concat-and-append.html)
-  and
-  [merging](https://jakevdp.github.io/PythonDataScienceHandbook/03.07-merge-and-join.html)
-  of tables
-- [Lots
-  of](http://pandas.pydata.org/pandas-docs/stable/basics.html#dt-accessor)
-  [time](http://pandas.pydata.org/pandas-docs/stable/timeseries.html)
-  [series](http://pandas.pydata.org/pandas-docs/stable/timedeltas.html)
-  support
+- [Concatenating and merging tables](https://pandas.pydata.org/pandas-docs/stable/getting_started/intro_tutorials/08_combine_dataframes.html)
+- [Lots of time series support](https://pandas.pydata.org/pandas-docs/stable/getting_started/intro_tutorials/09_timeseries.html)
 - [Rolling Window
   functions](http://pandas.pydata.org/pandas-docs/stable/computation.html#window-
   functions) for after you have meaningfully sorted your data
