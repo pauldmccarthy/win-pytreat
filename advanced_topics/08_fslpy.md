@@ -1313,15 +1313,15 @@ print('Job ID:', jobid)
 > outputs when you call a wrapper function with `submit=True`.
 
 
-After submitting a job, you can use the `wait` function to wait until a job
+After submitting a job, you can use the `hold` function to wait until a job
 has completed:
 
 
 ```
-from fsl.utils.run import wait
+from fsl.utils.run import hold
 jobid = bet('08_fslpy/bighead', 'bighead_brain', submit=True)
 print('Job ID:', jobid)
-wait(jobid)
+hold(jobid)
 print('Done!')
 render('08_fslpy/bighead bighead_brain -cm hot')
 ```
@@ -1340,7 +1340,7 @@ jobs.append(runfsl('bet bighead_cropped bighead_brain',                   submit
 jobs.append(runfsl('fslroi bighead_brain bighead_slices 0 -1 111 3 0 -1', submit=True, queue='short.q', wait_for=jobs[-1]))
 jobs.append(runfsl('fast -o bighead_fast bighead_slices',                 submit=True, queue='short.q', wait_for=jobs[-1]))
 print('Waiting for', jobs, '...')
-wait(jobs)
+hold(jobs)
 
 render('-vl 80 112 91 -xh -zh -hc '
        'bighead_brain '
