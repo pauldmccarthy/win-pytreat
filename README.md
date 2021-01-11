@@ -1,11 +1,11 @@
 # 2020 WIN PyTreat
 
 
-This repository contains Jupyter notebooks and data for the 2020 WIN PyTreat.
+This repository contains Jupyter notebooks and data for the WIN PyTreat series.
 It contains the following:
 
-- The `talks` directory contains some (but not all) of the _Topyc_ talks that
-  will be given throughout the week.
+- The `talks` directory contains a series of _Topyc_ talks that have been/will
+  be given during the PyTreat.
 
 - The `getting_started` directory contains a series of practicals intended
   for those of you who are new to the Python programming language, or need
@@ -16,6 +16,8 @@ It contains the following:
   of you who are familiar with the basics of Python, and want to learn more
   about the language.
 
+- The `applications` directory contains a series of practicals which focus
+  on using Python to accomplish specific tasks.
 
 The practicals have been written under the assumption that FSL 6.0.3 is
 installed.
@@ -28,8 +30,8 @@ These notebooks can be run in the `fslpython` environment using:
 
 
 ```
-git clone https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020.git
-cd pytreat-practicals-2020
+git clone https://git.fmrib.ox.ac.uk/fsl/win-pytreat.git
+cd win-pytreat
 fslpython -m notebook
 ```
 
@@ -59,9 +61,13 @@ Have fun!
 ## For contributors
 
 
+**IMPORTANT** Temporarily hosting at https://github.com/pauldmccarthy/win-pytreat, instead
+of https://git.fmrib.ox.ac.uk/fsl/win-pytreat
+
+
 The main repository can be found at:
 
-https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020
+https://git.fmrib.ox.ac.uk/fsl/win-pytreat
 
 
 Updates to the master branch should occur via merge requests. You can choose
@@ -73,7 +79,7 @@ repository (advanced).
 1. Make a local clone of the repository:
 
     ```
-    git clone https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020.git
+    git clone https://git.fmrib.ox.ac.uk/fsl/win-pytreat.git
     ```
 
 2. Create a branch for your work:
@@ -108,13 +114,13 @@ repository (advanced).
 2. Make a local clone of your fork:
 
     ```
-    git clone https://git.fmrib.ox.ac.uk/<your_username>/pytreat-practicals-2020.git
+    git clone https://git.fmrib.ox.ac.uk/<your_username>/win-pytreat.git
     ```
 
 3. Add the upstream repository as a remote:
 
     ```
-    git remote add upstream https://git.fmrib.ox.ac.uk/fsl/pytreat-practicals-2020.git
+    git remote add upstream https://git.fmrib.ox.ac.uk/fsl/win-pytreat.git
     ```
 
 4. Make your changes on your local repository
@@ -132,7 +138,7 @@ repository (advanced).
 
 6. In gitlab, submit a merge request from your fork back to the upstream
    repository.
-    
+
     https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html
 
 
