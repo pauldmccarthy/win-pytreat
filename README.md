@@ -1,4 +1,4 @@
-# 2020 WIN PyTreat
+# WIN PyTreat seriesx
 
 
 This repository contains Jupyter notebooks and data for the WIN PyTreat series.
